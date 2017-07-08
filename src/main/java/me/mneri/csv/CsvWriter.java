@@ -45,6 +45,9 @@ public class CsvWriter<T> implements Closeable {
     }
 
     private void writeField(String string) throws IOException {
+        if (string == null)
+            return;
+
         int length = string.length();
         boolean shouldQuote = false;
 
@@ -100,10 +103,7 @@ public class CsvWriter<T> implements Closeable {
         }
 
         for (int i = 0; i < size; i++) {
-            String field = line.get(i);
-
-            if (field != null)
-                writeField(field);
+            writeField(line.get(i));
 
             if (i != size - 1)
                 writer.write(",");
