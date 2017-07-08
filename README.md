@@ -11,7 +11,8 @@ Let `Person` be a POJO.
     }
 
 We first need to define a `CsvConverter`. Converters have two methods: `toObject()` used to define object creation
-starting from a CSV line and `toCsvLine()` used to convert an object to a CSV line.
+starting from a CSV line and `toCsvLine()` used to convert an object to a CSV line. The library handles all the details
+of the CSV format and lets you work with plain and clean Java Strings.
 
     public class PersonConverter implements CsvConverter<Person> {
         @Override
