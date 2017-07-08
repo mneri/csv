@@ -2,7 +2,6 @@ package me.mneri.csv;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class CsvWriter<T> implements Closeable {
@@ -82,7 +81,7 @@ public class CsvWriter<T> implements Closeable {
             throw new NullPointerException("The supplied object was null.");
 
         line.clear();
-        converter.toList(object, line);
+        converter.toCsvLine(object, line);
 
         int size = line.size();
 
