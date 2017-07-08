@@ -212,7 +212,10 @@ public class CsvReader<T> implements Closeable, Iterable<T> {
     }
 
     public static <T> Stream<T> stream(Reader reader, CsvConverter<T> converter) throws IOException {
+        //@formatter:off
         CsvReader<T> csvReader = CsvReader.open(reader, converter);
-        return StreamSupport.stream(csvReader.spliterator(), false);
+        return StreamSupport.stream(csvReader.spliterator(), false)
+                .onClose(() -> { try { csvReader.close(); } catch (Exception ignored) { } });
+        //@formatter:on
     }
 }
