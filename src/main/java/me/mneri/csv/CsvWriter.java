@@ -109,4 +109,9 @@ public class CsvWriter<T> implements Closeable {
         writer.write("\r\n");
         lineno++;
     }
+
+    public void writeLines(List<T> objects) throws CsvException, IOException {
+        for (T object : objects)
+            writeLine(object);
+    }
 }
