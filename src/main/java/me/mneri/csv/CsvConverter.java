@@ -3,7 +3,7 @@ package me.mneri.csv;
 import java.util.List;
 
 public interface CsvConverter<T> {
-    T toObject(List<String> values);
+    T toObject(List<String> line);
 
-    void toList(T object, List<String> out);
+    void toCsvLine(T object, List<String> out);
 }
