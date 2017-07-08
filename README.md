@@ -35,12 +35,25 @@ To write a CSV file you use `CsvWriter` class.
     try (CsvWriter<Person> writer = CsvWriter.open(new File("test.csv"), new PersonConverter())) {
         for (Person person : persons)
             writer.writeLine(person);
+    } catch (CsvException | IOException e) {
+        e.printStackTrace();
     }
 
 To read from a CSV file you use `CsvReader` class.
 
     try (CsvReader<Person> reader = CsvReader.open(new File("test.csv"), new PersonConverter())) {
         Person person;
+
         while ((person = reader.readLine()) != null)
-            persons.add(person);
+            System.out.println(person);
+    } catch (CsvException | IOException e) {
+        e.printStackTrace();
+    }
+
+To get a Java 8 `Stream` from a CSV file you use `CsvReader#stream()` static method.
+
+    try (Stream<Person> stream = CsvReader.stream(new File("test.csv"), new PersonConverter())) {
+        stream.forEach(System.out::println);
+    } catch (IOException e) {
+        e.printStackTrace();
     }
