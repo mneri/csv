@@ -31,14 +31,14 @@ starting from a CSV line and `toCsvLine()` used to convert an object to a CSV li
 
 To write a CSV file you use `CsvWriter` class.
 
-    try (CsvWriter writer = CsvWriter.open(new File("test.csv"), new PersonConverter())) {
+    try (CsvWriter<Person> writer = CsvWriter.open(new File("test.csv"), new PersonConverter())) {
         for (Person person : persons)
             writer.writeLine(person);
     }
 
 To read from a CSV file you use `CsvReader` class.
 
-    try (CsvReader reader = CsvReader.open(new File("test.csv"), new PersonConverter())) {
+    try (CsvReader<Person> reader = CsvReader.open(new File("test.csv"), new PersonConverter())) {
         Person person;
         while ((person = reader.readLine()) != null)
             persons.add(person);
