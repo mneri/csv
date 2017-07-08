@@ -8,23 +8,23 @@ import java.util.stream.StreamSupport;
 
 public class CsvReader<T> implements Closeable, Iterable<T> {
     // States
-    private static final int ERROR = -1;
-    private static final int START = 0;
-    private static final int QUOTE = 1;
-    private static final int ESCAP = 2;
-    private static final int STRNG = 3;
-    private static final int CARRG = 4;
-    private static final int FINSH = 5;
+    private static final byte ERROR = -1;
+    private static final byte START = 0;
+    private static final byte QUOTE = 1;
+    private static final byte ESCAP = 2;
+    private static final byte STRNG = 3;
+    private static final byte CARRG = 4;
+    private static final byte FINSH = 5;
 
     // Actions
-    private static final int NO_OP = 0;
-    private static final int ACCUM = 1;
-    private static final int FIELD = 2;
-    private static final int DIRTY = 4;
-    private static final int NLINE = 8;
+    private static final byte NO_OP = 0;
+    private static final byte ACCUM = 1;
+    private static final byte FIELD = 2;
+    private static final byte DIRTY = 4;
+    private static final byte NLINE = 8;
 
     //@formatter:off
-    private static final int[][] TRANSITIONS = {
+    private static final byte[][] TRANSITIONS = {
     //       *      "      ,      \r     \n     eof
             {STRNG, QUOTE, START, CARRG, FINSH, FINSH},  // START
             {QUOTE, ESCAP, QUOTE, QUOTE, QUOTE, ERROR},  // QUOTE
@@ -35,7 +35,7 @@ public class CsvReader<T> implements Closeable, Iterable<T> {
     //@formatter:on
 
     //@formatter:off
-    private static final int[][] ACTIONS = {
+    private static final byte[][] ACTIONS = {
     //       *              "              ,              \r             \n             eof
             {ACCUM        , DIRTY        , FIELD        , FIELD        , FIELD | NLINE, NO_OP        },  // START
             {ACCUM        , NO_OP        , ACCUM        , ACCUM        , ACCUM        , NO_OP        },  // QUOTE
@@ -48,13 +48,13 @@ public class CsvReader<T> implements Closeable, Iterable<T> {
     private static final int OPENED = 0;
     private static final int CLOSED = 1;
 
-    private StringBuilder buffer = new StringBuilder();
-    private List<String> fields = new ArrayList<>();
+    private final StringBuilder buffer = new StringBuilder();
+    private final List<String> fields = new ArrayList<>();
     private int lineno = 1;
     private int nfields = -1;
-    private Reader reader;
+    private final Reader reader;
     private int state = OPENED;
-    private CsvConverter<T> converter;
+    private final CsvConverter<T> converter;
 
     private CsvReader(Reader reader, CsvConverter<T> converter) {
         this.reader = reader;
@@ -129,6 +129,9 @@ public class CsvReader<T> implements Closeable, Iterable<T> {
     public static <T> CsvReader<T> open(Reader reader, CsvConverter<T> converter) {
         if (reader == null)
             throw new IllegalArgumentException("Reader cannot be null.");
+
+        if (converter == null)
+            throw new IllegalArgumentException("Converter cannot be null.");
 
         return new CsvReader<>(reader, converter);
     }

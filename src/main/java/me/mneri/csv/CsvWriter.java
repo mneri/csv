@@ -35,6 +35,12 @@ public class CsvWriter<T> implements Closeable {
     }
 
     public static <T> CsvWriter<T> open(Writer writer, CsvConverter<T> converter) {
+        if (writer == null)
+            throw new IllegalArgumentException("Writer cannot be null.");
+
+        if (converter == null)
+            throw new IllegalArgumentException("Converter cannot be null.");
+
         return new CsvWriter<>(writer, converter);
     }
 
@@ -76,9 +82,6 @@ public class CsvWriter<T> implements Closeable {
     public void writeLine(T object) throws CsvException, IOException {
         if (state == CLOSED)
             throw new IllegalStateException("The writer has already been closed.");
-
-        if (object == null)
-            throw new NullPointerException("The supplied object was null.");
 
         line.clear();
         converter.toCsvLine(object, line);
