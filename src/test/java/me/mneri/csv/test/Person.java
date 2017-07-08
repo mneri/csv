@@ -158,7 +158,7 @@ public class Person {
 
     @Override
     public String toString() {
-        return String.format("[%s, %s, %s, %s, %s, %s, %s]", firstName, middleName, lastName, nickname,
+        return String.format("['%s', '%s', '%s', '%s', '%s', '%s', '%s']", firstName, middleName, lastName, nickname,
                 birthDate, address, website);
     }
 }

@@ -14,7 +14,12 @@ public class PersonConverter implements CsvConverter<Person> {
         person.setMiddleName(line.get(1));
         person.setLastName(line.get(2));
         person.setNickname(line.get(3));
-        person.setBirthDate(new Date(Long.parseLong(line.get(4))));
+
+        String number = line.get(4);
+
+        if (number != null)
+            person.setBirthDate(new Date(Long.parseLong(number)));
+
         person.setAddress(line.get(5));
         person.setWebsite(line.get(6));
 

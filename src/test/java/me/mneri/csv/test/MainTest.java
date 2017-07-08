@@ -1,15 +1,20 @@
 package me.mneri.csv.test;
 
-import me.mneri.csv.CsvException;
-import me.mneri.csv.CsvReader;
-import me.mneri.csv.CsvWriter;
-import org.junit.Assert;
-import org.junit.Test;
-
 import java.io.File;
 import java.io.IOException;
 
+import me.mneri.csv.CsvException;
+import me.mneri.csv.CsvReader;
+import me.mneri.csv.CsvWriter;
+
+import org.junit.Assert;
+import org.junit.Test;
+
 public class MainTest {
+    public static void main(String... args) {
+        new MainTest().main();
+    }
+
     @Test
     public void main() {
         Person mneri = new Person();

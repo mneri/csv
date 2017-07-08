@@ -185,10 +185,8 @@ public class CsvReader<T> implements Closeable, Iterable<T> {
                 }
 
                 try {
-                    T object = converter.toObject(fields);
                     fields.clear();
-
-                    return object;
+                    return converter.toObject(fields);
                 } catch (Exception e) {
                     throw new CsvConversionException(fields, e);
                 }
