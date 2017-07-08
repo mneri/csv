@@ -19,20 +19,26 @@ public class MainTest {
         mneri.setAddress("Gambettola, Italy");
         mneri.setWebsite("http://mneri.me");
 
+        File tempFile = null;
+
         try {
             File dir = new File(System.getProperty("java.io.tmpdir"));
-            File file = File.createTempFile("junit_", ".csv", dir);
+            tempFile = File.createTempFile("junit_", ".csv", dir);
 
-            try (CsvWriter<Person> writer = CsvWriter.open(file, new PersonConverter())) {
+            try (CsvWriter<Person> writer = CsvWriter.open(tempFile, new PersonConverter())) {
                 writer.writeLine(mneri);
             }
 
-            try (CsvReader<Person> reader = CsvReader.open(file, new PersonConverter())) {
+            try (CsvReader<Person> reader = CsvReader.open(tempFile, new PersonConverter())) {
                 Person person = reader.readLine();
                 Assert.assertEquals(mneri, person);
             }
         } catch (CsvException | IOException e) {
             e.printStackTrace();
+        } finally {
+            //@formatter:off
+            try { tempFile.delete(); } catch (Exception ignored) { }
+            //@formatter:on
         }
     }
 }
