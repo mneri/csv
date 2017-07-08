@@ -1,10 +1,12 @@
 package me.mneri.csv;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
-public class CsvReader {
+public class CsvReader<T> implements Closeable, Iterable<T> {
     // States
     private static final int ERROR = -1;
     private static final int START = 0;
@@ -47,17 +49,19 @@ public class CsvReader {
     private static final int CLOSED = 1;
 
     private StringBuilder buffer = new StringBuilder();
-    private int fields = -1;
+    private List<String> fields = new ArrayList<>();
     private int lineno = 1;
+    private int nfields = -1;
     private Reader reader;
     private int state = OPENED;
-    private CsvConverter converter;
+    private CsvConverter<T> converter;
 
-    private CsvReader(Reader reader, CsvConverter translator) {
+    private CsvReader(Reader reader, CsvConverter<T> converter) {
         this.reader = reader;
-        this.converter = translator;
+        this.converter = converter;
     }
 
+    @Override
     public void close() throws IOException {
         if (state == CLOSED)
             throw new IllegalStateException("The reader has already been closed.");
@@ -66,8 +70,14 @@ public class CsvReader {
         reader.close();
     }
 
+    @Override
+    public void forEach(Consumer<? super T> action) {
+        for (T object : this)
+            action.accept(object);
+    }
+
     private int indexOf(int c) {
-        switch(c) {
+        switch (c) {
             //@formatter:off
             case '"' : return 1;
             case ',' : return 2;
@@ -79,54 +89,58 @@ public class CsvReader {
         }
     }
 
-    public static void main(String... args) {
-        CsvReader reader = null;
+    @Override
+    public Iterator<T> iterator() {
+        return new Iterator<T>() {
+            private T object = null;
 
-        try {
-            reader = CsvReader.open(new File(args[0]));
-            List<Object> line = new ArrayList<>();
+            @Override
+            public boolean hasNext() {
+                if (object != null)
+                    return true;
 
-            while (reader.readLine(line) != -1) {
-                System.out.println(line);
-                line.clear();
+                try {
+                    return (object = readLine()) != null;
+                } catch (CsvException e) {
+                    throw new UncheckedCsvException(e);
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            //@formatter:off
-            try { reader.close(); } catch (Exception ignored) { }
-            //@formatter:on
-        }
+
+            @Override
+            public T next() {
+                if (!hasNext())
+                    throw new NoSuchElementException();
+
+                T result = object;
+                object = null;
+
+                return result;
+            }
+        };
     }
 
-    public static CsvReader open(File file) throws FileNotFoundException {
-        return open(file, null);
-    }
-
-    public static CsvReader open(File file, CsvConverter converter) throws FileNotFoundException {
+    public static <T> CsvReader<T> open(File file, CsvConverter<T> converter) throws FileNotFoundException {
         Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
         return open(reader, converter);
     }
 
-    public static CsvReader open(Reader reader) {
-        return new CsvReader(reader, null);
-    }
-
-    public static CsvReader open(Reader reader, CsvConverter converter) {
+    public static <T> CsvReader<T> open(Reader reader, CsvConverter<T> converter) {
         if (reader == null)
             throw new IllegalArgumentException("Reader cannot be null.");
 
-        return new CsvReader(reader, converter);
+        return new CsvReader<>(reader, converter);
     }
 
-    public int readLine(List<Object> out) throws IOException {
+    public T readLine() throws CsvException, IOException {
         if (state == CLOSED)
             throw new IllegalStateException("The reader has already been closed.");
 
         int action;
         int character;
-        int column = 0;
         boolean dirty = false;
+        int fieldno = 0;
         int index;
         int state = START;
 
@@ -142,17 +156,14 @@ public class CsvReader {
 
             if ((action & FIELD) != 0) {
                 if (dirty) {
-                    String string = buffer.toString();
-                    Object value = converter != null ? converter.fromString(column, string) : string;
-
-                    out.add(value);
+                    fields.add(buffer.toString());
                     buffer.setLength(0);
                     dirty = false;
                 } else {
-                    out.add(null);
+                    fields.add(null);
                 }
 
-                column++;
+                fieldno++;
             }
 
             if ((action & DIRTY) != 0)
@@ -161,24 +172,47 @@ public class CsvReader {
             if ((action & NLINE) != 0) {
                 lineno++;
 
-                if (fields == -1) {
-                    fields = column;
-                } else if (fields != column) {
-                    if (column < fields)
-                        throw new NotEnoughFieldsException(lineno, fields, column);
+                if (nfields == -1) {
+                    nfields = fieldno;
+                } else if (nfields != fieldno) {
+                    if (fieldno < nfields)
+                        throw new NotEnoughFieldsException(lineno, nfields, fieldno);
                     else
-                        throw new TooManyFieldsException(lineno, fields, column);
+                        throw new TooManyFieldsException(lineno, nfields, fieldno);
                 }
 
-                return column;
+                try {
+                    T object = converter.toObject(fields);
+                    fields.clear();
+
+                    return object;
+                } catch (Exception e) {
+                    throw new CsvConversionException(fields, e);
+                }
             }
 
             state = TRANSITIONS[state][index];
 
             if (state == FINSH)
-                return -1;
+                return null;
             else if (state == ERROR)
                 throw new UnexpectedCharacterException(lineno, character);
         }
+    }
+
+    @Override
+    public Spliterator<T> spliterator() {
+        int characteristics = Spliterator.IMMUTABLE | Spliterator.ORDERED;
+        return Spliterators.spliteratorUnknownSize(iterator(), characteristics);
+    }
+
+    public static <T> Stream<T> stream(File file, CsvConverter<T> converter) throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
+        return stream(reader, converter);
+    }
+
+    public static <T> Stream<T> stream(Reader reader, CsvConverter<T> converter) throws IOException {
+        CsvReader<T> csvReader = CsvReader.open(reader, converter);
+        return StreamSupport.stream(csvReader.spliterator(), false);
     }
 }

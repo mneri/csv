@@ -1,11 +1,9 @@
 package me.mneri.csv;
 
-public abstract class CsvConverter {
-    public Object fromString(int column, String value) {
-        return value;
-    }
+import java.util.List;
 
-    public String toString(int column, Object value) {
-        return value != null ? value.toString() : null;
-    }
+public interface CsvConverter<T> {
+    T toObject(List<String> values);
+
+    void toList(T object, List<String> out);
 }
