@@ -6,7 +6,7 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-public class CsvReader<T> implements Closeable, Iterable<T> {
+public class CsvReader<T> implements Closeable {
     // States
     private static final byte ERROR = -1;
     private static final byte START = 0;
@@ -70,12 +70,6 @@ public class CsvReader<T> implements Closeable, Iterable<T> {
         reader.close();
     }
 
-    @Override
-    public void forEach(Consumer<? super T> action) {
-        for (T object : this)
-            action.accept(object);
-    }
-
     private int indexOf(int c) {
         switch (c) {
             //@formatter:off
@@ -89,8 +83,7 @@ public class CsvReader<T> implements Closeable, Iterable<T> {
         }
     }
 
-    @Override
-    public Iterator<T> iterator() {
+    private Iterator<T> iterator() {
         return new Iterator<T>() {
             private T object = null;
 
@@ -203,8 +196,7 @@ public class CsvReader<T> implements Closeable, Iterable<T> {
         }
     }
 
-    @Override
-    public Spliterator<T> spliterator() {
+    private Spliterator<T> spliterator() {
         int characteristics = Spliterator.IMMUTABLE | Spliterator.ORDERED;
         return Spliterators.spliteratorUnknownSize(iterator(), characteristics);
     }
