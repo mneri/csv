@@ -23,3 +23,12 @@ hs_err_pid*
 
 # Temporary files
 *~
+
+# IntelliJ IDEA Files
+.idea
+
+# Gradle files
+.gradle
+
+# Build
+build
