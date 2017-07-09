@@ -4,7 +4,7 @@
 [![Build Status](https://travis-ci.org/mneri/csv.svg?branch=master)](https://travis-ci.org/mneri/csv)
 
 ## Example
-A real world example Let `Person` be a POJO.
+example Let `Person` be a POJO.
 
     public class Person {
         private String firstName;
