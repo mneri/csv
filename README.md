@@ -1,8 +1,10 @@
 # mneri/csv
 `mneri/csv` is a fast and easy-to-use library to read and write CSV files.
 
+[![Build Status](https://travis-ci.org/mneri/csv.svg?branch=master)](https://travis-ci.org/mneri/csv)
+
 ## Example
-Let `Person` be a POJO.
+A real world example Let `Person` be a POJO.
 
     public class Person {
         private String firstName;
