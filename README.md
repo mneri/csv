@@ -57,3 +57,4 @@ To get a Java 8 `Stream` from a CSV file you use `CsvReader#stream()` static met
     } catch (IOException e) {
         e.printStackTrace();
     }
+
