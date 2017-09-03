@@ -2,7 +2,6 @@ package me.mneri.csv;
 
 import java.io.*;
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -29,7 +28,7 @@ public class CsvReader<T> implements Closeable {
             {STRNG, QUOTE, START, CARRG, FINSH, FINSH},  // START
             {QUOTE, ESCAP, QUOTE, QUOTE, QUOTE, ERROR},  // QUOTE
             {ERROR, QUOTE, START, CARRG, FINSH, FINSH},  // ESCAP
-            {STRNG, ERROR, START, CARRG, FINSH, FINSH},  // STRNG
+            {STRNG, STRNG, START, CARRG, FINSH, FINSH},  // STRNG
             {ERROR, ERROR, ERROR, ERROR, FINSH, ERROR},  // CARRG
             {ERROR, ERROR, ERROR, ERROR, ERROR, ERROR}}; // FINSH
     //@formatter:on
@@ -40,7 +39,7 @@ public class CsvReader<T> implements Closeable {
             {ACCUM        , DIRTY        , FIELD        , FIELD        , FIELD | NLINE, NO_OP        },  // START
             {ACCUM        , NO_OP        , ACCUM        , ACCUM        , ACCUM        , NO_OP        },  // QUOTE
             {NO_OP        , ACCUM        , FIELD        , FIELD        , FIELD | NLINE, FIELD | NLINE},  // ESCAP
-            {ACCUM        , NO_OP        , FIELD        , FIELD        , FIELD | NLINE, FIELD | NLINE},  // STRNG
+            {ACCUM        , ACCUM        , FIELD        , FIELD        , FIELD | NLINE, FIELD | NLINE},  // STRNG
             {NO_OP        , NO_OP        , NO_OP        , NO_OP        , NLINE        , NO_OP        },  // CARRG
             {NO_OP        , NO_OP        , NO_OP        , NO_OP        , NO_OP        , NO_OP        }}; // FINSH
     //@formatter:on
@@ -48,7 +47,7 @@ public class CsvReader<T> implements Closeable {
     private static final int OPENED = 0;
     private static final int CLOSED = 1;
 
-    private final StringBuilder buffer = new StringBuilder();
+    private final StringBuilder buffer = new StringBuilder(1024);
     private final List<String> fields = new ArrayList<>();
     private int lineno = 1;
     private int nfields = -1;
@@ -115,7 +114,7 @@ public class CsvReader<T> implements Closeable {
     }
 
     public static <T> CsvReader<T> open(File file, CsvConverter<T> converter) throws FileNotFoundException {
-        Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
+        Reader reader = new BufferedReader(new FileReader(file));
         return open(reader, converter);
     }
 
@@ -133,12 +132,12 @@ public class CsvReader<T> implements Closeable {
         if (state == CLOSED)
             throw new IllegalStateException("The reader has already been closed.");
 
-        int action;
+        byte action;
         int character;
         boolean dirty = false;
         int fieldno = 0;
         int index;
-        int state = START;
+        byte state = START;
 
         while (true) {
             character = reader.read();
