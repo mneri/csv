@@ -13,6 +13,42 @@ import org.junit.Assert;
 import org.junit.Test;
 
 public class MainTest {
+    @Test(expected = CsvConversionException.class)
+    public void conversionException1() throws CsvException {
+        File file = getResourceFile("simple.csv");
+
+        try (CsvReader<Void> reader = CsvReader.open(file, new ExceptionConverter())) {
+            while (reader.readLine() != null) {
+                // Do nothing
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test(expected = CsvConversionException.class)
+    public void conversionException2() throws CsvException {
+        CsvWriter<Void> writer = null;
+        File tempFile = null;
+
+        try {
+            tempFile = createTempFile();
+            writer = CsvWriter.open(tempFile, new ExceptionConverter());
+
+            writer.writeLine(null);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            //@formatter:off
+            if (writer != null)
+                try { writer.close(); } catch (Exception ignored) { }
+
+            if (tempFile != null)
+                try { tempFile.delete(); } catch (Exception ignored) { }
+            //@formatter:on
+        }
+    }
+
     private File createTempFile() throws IOException {
         File dir = new File(System.getProperty("java.io.tmpdir"));
         return File.createTempFile("junit_", ".csv", dir);

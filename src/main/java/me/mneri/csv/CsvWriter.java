@@ -99,8 +99,12 @@ public class CsvWriter<T> implements Closeable {
         if (state == CLOSED)
             throw new IllegalStateException("The writer has already been closed.");
 
-        line.clear();
-        converter.toCsvLine(object, line);
+        try {
+            line.clear();
+            converter.toCsvLine(object, line);
+        } catch (Exception e) {
+            throw new CsvConversionException(line, e);
+        }
 
         int fieldno = line.size();
 
