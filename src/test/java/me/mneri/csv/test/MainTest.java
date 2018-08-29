@@ -2,6 +2,7 @@ package me.mneri.csv.test;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -23,7 +24,7 @@ public class MainTest {
     }
 
     @Test(expected = NotEnoughFieldsException.class)
-    public void notEnoughFields() throws CsvException {
+    public void notEnoughFields1() throws CsvException {
         File file = getResourceFile("not-enough-fields.csv");
 
         try (CsvReader<List<Integer>> reader = CsvReader.open(file, new IntegerConverter())) {
@@ -32,6 +33,33 @@ public class MainTest {
             }
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    @Test(expected = NotEnoughFieldsException.class)
+    public void notEnoughFields2() throws CsvException {
+        CsvWriter<List<Integer>> writer = null;
+        File tempFile = null;
+
+        List<Integer> first = Arrays.asList(1, 2, 3, 4, 5);
+        List<Integer> second = Arrays.asList(6, 7, 8, 9);
+
+        try {
+            tempFile = createTempFile();
+            writer = CsvWriter.open(tempFile, new IntegerConverter());
+
+            writer.writeLine(first);
+            writer.writeLine(second);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            //@formatter:off
+            if (writer != null)
+                try { writer.close(); } catch (Exception ignored) { }
+
+            if (tempFile != null)
+                try { tempFile.delete(); } catch (Exception ignored) { }
+            //@formatter:on
         }
     }
 
@@ -140,7 +168,7 @@ public class MainTest {
     }
 
     @Test(expected = TooManyFieldsException.class)
-    public void tooManyFields() throws CsvException {
+    public void tooManyFields1() throws CsvException {
         File file = getResourceFile("too-many-fields.csv");
 
         try (CsvReader<List<Integer>> reader = CsvReader.open(file, new IntegerConverter())) {
@@ -149,6 +177,33 @@ public class MainTest {
             }
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    @Test(expected = TooManyFieldsException.class)
+    public void tooManyFields2() throws CsvException {
+        CsvWriter<List<Integer>> writer = null;
+        File tempFile = null;
+
+        List<Integer> first = Arrays.asList(1, 2, 3, 4);
+        List<Integer> second = Arrays.asList(5, 6, 7, 8, 9);
+
+        try {
+            tempFile = createTempFile();
+            writer = CsvWriter.open(tempFile, new IntegerConverter());
+
+            writer.writeLine(first);
+            writer.writeLine(second);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            //@formatter:off
+            if (writer != null)
+                try { writer.close(); } catch (Exception ignored) { }
+
+            if (tempFile != null)
+                try { tempFile.delete(); } catch (Exception ignored) { }
+            //@formatter:on
         }
     }
 
