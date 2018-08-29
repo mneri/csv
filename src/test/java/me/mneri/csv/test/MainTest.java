@@ -15,10 +15,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 public class MainTest {
-    public static void main(String... args) {
-        new MainTest().main();
-    }
-
     @Test
     public void main() {
         Person mneri = new Person();
@@ -80,7 +76,8 @@ public class MainTest {
             e.printStackTrace();
         } finally {
             //@formatter:off
-            try { tempFile.delete(); } catch (Exception ignored) { }
+            if (tempFile != null)
+                try { tempFile.delete(); } catch (Exception ignored) { }
             //@formatter:on
         }
     }

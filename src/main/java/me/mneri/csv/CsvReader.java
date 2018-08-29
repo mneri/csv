@@ -6,33 +6,18 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 public class CsvReader<T> implements Closeable {
+    private static final byte ACCUM = 1;
+    private static final byte CARRG = 4;
+    private static final int CLOSED = 1;
+    private static final byte DIRTY = 4;
     // States
     private static final byte ERROR = -1;
-    private static final byte START = 0;
-    private static final byte QUOTE = 1;
     private static final byte ESCAP = 2;
-    private static final byte STRNG = 3;
-    private static final byte CARRG = 4;
+    private static final byte FIELD = 2;
     private static final byte FINSH = 5;
-
+    private static final byte NLINE = 8;
     // Actions
     private static final byte NO_OP = 0;
-    private static final byte ACCUM = 1;
-    private static final byte FIELD = 2;
-    private static final byte DIRTY = 4;
-    private static final byte NLINE = 8;
-
-    //@formatter:off
-    private static final byte[][] TRANSITIONS = {
-    //       *      "      ,      \r     \n     eof
-            {STRNG, QUOTE, START, CARRG, FINSH, FINSH},  // START
-            {QUOTE, ESCAP, QUOTE, QUOTE, QUOTE, ERROR},  // QUOTE
-            {ERROR, QUOTE, START, CARRG, FINSH, FINSH},  // ESCAP
-            {STRNG, STRNG, START, CARRG, FINSH, FINSH},  // STRNG
-            {ERROR, ERROR, ERROR, ERROR, FINSH, ERROR},  // CARRG
-            {ERROR, ERROR, ERROR, ERROR, ERROR, ERROR}}; // FINSH
-    //@formatter:on
-
     //@formatter:off
     private static final byte[][] ACTIONS = {
     //       *              "              ,              \r             \n             eof
@@ -42,22 +27,43 @@ public class CsvReader<T> implements Closeable {
             {ACCUM        , ACCUM        , FIELD        , FIELD        , FIELD | NLINE, FIELD | NLINE},  // STRNG
             {NO_OP        , NO_OP        , NO_OP        , NO_OP        , NLINE        , NO_OP        },  // CARRG
             {NO_OP        , NO_OP        , NO_OP        , NO_OP        , NO_OP        , NO_OP        }}; // FINSH
-    //@formatter:on
-
     private static final int OPENED = 0;
-    private static final int CLOSED = 1;
-
+    private static final byte QUOTE = 1;
+    //@formatter:on
+    private static final byte START = 0;
+    //@formatter:on
+    private static final byte STRNG = 3;
+    //@formatter:off
+    private static final byte[][] TRANSITIONS = {
+    //       *      "      ,      \r     \n     eof
+            {STRNG, QUOTE, START, CARRG, FINSH, FINSH},  // START
+            {QUOTE, ESCAP, QUOTE, QUOTE, QUOTE, ERROR},  // QUOTE
+            {ERROR, QUOTE, START, CARRG, FINSH, FINSH},  // ESCAP
+            {STRNG, STRNG, START, CARRG, FINSH, FINSH},  // STRNG
+            {ERROR, ERROR, ERROR, ERROR, FINSH, ERROR},  // CARRG
+            {ERROR, ERROR, ERROR, ERROR, ERROR, ERROR}}; // FINSH
     private final StringBuilder buffer = new StringBuilder(1024);
+    private final CsvConverter<T> converter;
     private final List<String> fields = new ArrayList<>();
     private int lineno = 1;
     private int nfields = -1;
     private final Reader reader;
     private int state = OPENED;
-    private final CsvConverter<T> converter;
 
     private CsvReader(Reader reader, CsvConverter<T> converter) {
         this.reader = reader;
         this.converter = converter;
+    }
+
+    private void checkFields(int fieldno) throws NotEnoughFieldsException, TooManyFieldsException {
+        if (nfields == -1) {
+            nfields = fieldno;
+        } else if (nfields != fieldno) {
+            if (fieldno < nfields)
+                throw new NotEnoughFieldsException(lineno, nfields, fieldno);
+            else
+                throw new TooManyFieldsException(lineno, nfields, fieldno);
+        }
     }
 
     @Override
@@ -166,15 +172,7 @@ public class CsvReader<T> implements Closeable {
 
             if ((action & NLINE) != 0) {
                 lineno++;
-
-                if (nfields == -1) {
-                    nfields = fieldno;
-                } else if (nfields != fieldno) {
-                    if (fieldno < nfields)
-                        throw new NotEnoughFieldsException(lineno, nfields, fieldno);
-                    else
-                        throw new TooManyFieldsException(lineno, nfields, fieldno);
-                }
+                checkFields(fieldno);
 
                 try {
                     T object = converter.toObject(fields);
