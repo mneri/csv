@@ -2,6 +2,7 @@ package me.mneri.csv.test;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -15,6 +16,11 @@ import org.junit.Assert;
 import org.junit.Test;
 
 public class MainTest {
+    private File createTempFile() throws IOException {
+        File dir = new File(System.getProperty("java.io.tmpdir"));
+        return File.createTempFile("junit_", ".csv", dir);
+    }
+
     @Test
     public void main() {
         Person mneri = new Person();
@@ -27,8 +33,7 @@ public class MainTest {
         File tempFile = null;
 
         try {
-            File dir = new File(System.getProperty("java.io.tmpdir"));
-            tempFile = File.createTempFile("junit_", ".csv", dir);
+            tempFile = createTempFile();
 
             try (CsvWriter<Person> writer = CsvWriter.open(tempFile, new PersonConverter())) {
                 writer.writeLine(mneri);
@@ -42,8 +47,40 @@ public class MainTest {
             e.printStackTrace();
         } finally {
             //@formatter:off
-            try { tempFile.delete(); } catch (Exception ignored) { }
+            if (tempFile != null)
+                try { tempFile.delete(); } catch (Exception ignored) { }
             //@formatter:on
+        }
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void nullConverter() {
+        File tempFile = null;
+
+        try {
+            tempFile = createTempFile();
+
+            try (CsvReader<Person> reader = CsvReader.open(tempFile, null)) {
+                // Do nothing
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            //@formatter:off
+            if (tempFile != null)
+                try { tempFile.delete(); } catch (Exception ignored) { }
+            //@formatter:on
+        }
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void nullReader() {
+        try (CsvReader<Person> reader = CsvReader.open((Reader) null, new PersonConverter())) {
+            // Do nothing
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -61,8 +98,7 @@ public class MainTest {
         File tempFile = null;
 
         try {
-            File dir = new File(System.getProperty("java.io.tmpdir"));
-            tempFile = File.createTempFile("junit_", ".csv", dir);
+            tempFile = createTempFile();
 
             try (CsvWriter<Person> writer = CsvWriter.open(tempFile, new PersonConverter())) {
                 writer.writeLines(persons);
