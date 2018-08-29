@@ -5,8 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CsvWriter<T> implements Closeable {
-    private static final int OPENED = 0;
     private static final int CLOSED = 1;
+    private static final int OPENED = 0;
 
     private CsvConverter<T> converter;
     private List<String> line = new ArrayList<>();
@@ -18,6 +18,19 @@ public class CsvWriter<T> implements Closeable {
     private CsvWriter(Writer writer, CsvConverter<T> converter) {
         this.writer = writer;
         this.converter = converter;
+    }
+
+    private void checkFields(int fieldno) throws NotEnoughFieldsException, TooManyFieldsException {
+        if (nfields == -1) {
+            nfields = fieldno;
+        } else {
+            if (nfields != fieldno) {
+                if (fieldno < nfields)
+                    throw new NotEnoughFieldsException(lineno, nfields, fieldno);
+                else
+                    throw new TooManyFieldsException(lineno, nfields, fieldno);
+            }
+        }
     }
 
     @Override
@@ -89,23 +102,14 @@ public class CsvWriter<T> implements Closeable {
         line.clear();
         converter.toCsvLine(object, line);
 
-        int size = line.size();
+        int fieldno = line.size();
 
-        if (nfields == -1) {
-            nfields = size;
-        } else {
-            if (nfields != size) {
-                if (size < nfields)
-                    throw new NotEnoughFieldsException(lineno, nfields, size);
-                else
-                    throw new TooManyFieldsException(lineno, nfields, size);
-            }
-        }
+        checkFields(fieldno);
 
-        for (int i = 0; i < size; i++) {
+        for (int i = 0; i < fieldno; i++) {
             writeField(line.get(i));
 
-            if (i != size - 1)
+            if (i != fieldno - 1)
                 writer.write(",");
         }
 
