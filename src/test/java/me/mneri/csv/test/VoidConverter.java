@@ -6,6 +6,7 @@ import me.mneri.csv.CsvConverter;
 public class VoidConverter implements CsvConverter<Void> {
     @Override
     public void toCsvLine(Void object, List<String> out) {
+        // Do nothing
     }
 
     @Override
