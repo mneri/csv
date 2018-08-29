@@ -1,6 +1,7 @@
 package me.mneri.csv.test;
 
 import java.util.Date;
+import java.util.Objects;
 
 public class Person {
     private String address;
@@ -11,9 +12,6 @@ public class Person {
     private String nickname;
     private String website;
 
-    public Person() {
-    }
-
     @Override
     public boolean equals(Object object) {
         if (this == object)
@@ -22,68 +20,30 @@ public class Person {
         if (object == null)
             return false;
 
-        if (getClass() != object.getClass())
+        if (!(object instanceof Person))
             return false;
 
         Person other = (Person) object;
 
-        if (address == null) {
-            if (other.address != null)
-                return false;
-        } else {
-            if (!address.equals(other.address))
-                return false;
-        }
+        if (!Objects.equals(getAddress(), other.getAddress()))
+            return false;
 
-        if (birthDate == null) {
-            if (other.birthDate != null)
-                return false;
-        } else {
-            if (!birthDate.equals(other.birthDate))
-                return false;
-        }
+        if (!Objects.equals(getBirthDate(), other.getBirthDate()))
+            return false;
 
-        if (firstName == null) {
-            if (other.firstName != null)
-                return false;
-        } else {
-            if (!firstName.equals(other.firstName))
-                return false;
-        }
+        if (!Objects.equals(getFirstName(), other.getFirstName()))
+            return false;
 
-        if (lastName == null) {
-            if (other.lastName != null)
-                return false;
-        } else {
-            if (!lastName.equals(other.lastName))
-                return false;
-        }
+        if (!Objects.equals(getLastName(), other.getLastName()))
+            return false;
 
-        if (middleName == null) {
-            if (other.middleName != null)
-                return false;
-        } else {
-            if (!middleName.equals(other.middleName))
-                return false;
-        }
+        if (!Objects.equals(getMiddleName(), other.getMiddleName()))
+            return false;
 
-        if (nickname == null) {
-            if (other.nickname != null)
-                return false;
-        } else {
-            if (!nickname.equals(other.nickname))
-                return false;
-        }
+        if (!Objects.equals(getNickname(), other.getNickname()))
+            return false;
 
-        if (website == null) {
-            if (other.website != null)
-                return false;
-        } else {
-            if (!website.equals(other.website))
-                return false;
-        }
-
-        return true;
+        return Objects.equals(getWebsite(), other.getWebsite());
     }
 
     public String getAddress() {
@@ -116,16 +76,15 @@ public class Person {
 
     @Override
     public int hashCode() {
-        int result = address != null ? address.hashCode() : 0;
-
-        result = 31 * result + (birthDate != null ? birthDate.hashCode() : 0);
-        result = 31 * result + (firstName != null ? firstName.hashCode() : 0);
-        result = 31 * result + (lastName != null ? lastName.hashCode() : 0);
-        result = 31 * result + (middleName != null ? middleName.hashCode() : 0);
-        result = 31 * result + (nickname != null ? nickname.hashCode() : 0);
-        result = 31 * result + (website != null ? website.hashCode() : 0);
-
-        return result;
+        //@formatter:off
+        return Objects.hash(getAddress(),
+                            getBirthDate(),
+                            getFirstName(),
+                            getLastName(),
+                            getMiddleName(),
+                            getNickname(),
+                            getWebsite());
+        //@formatter:on
     }
 
     public void setAddress(String address) {
@@ -158,7 +117,15 @@ public class Person {
 
     @Override
     public String toString() {
-        return String.format("['%s', '%s', '%s', '%s', '%s', '%s', '%s']", firstName, middleName, lastName, nickname,
-                birthDate, address, website);
+        //@formatter:off
+        return String.format("['%s', '%s', '%s', '%s', '%s', '%s', '%s']",
+                             getFirstName(),
+                             getMiddleName(),
+                             getLastName(),
+                             getNickname(),
+                             getBirthDate(),
+                             getAddress(),
+                             getWebsite());
+        //@formatter:on
     }
 }
