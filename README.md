@@ -1,8 +1,9 @@
 # mneri/csv
 `mneri/csv` is a fast and easy-to-use library to read and write CSV files.
 
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/d30b8cc221234302a0f4686cd9a38f42)](https://app.codacy.com/app/mneri_2/csv?utm_source=github.com&utm_medium=referral&utm_content=mneri/csv&utm_campaign=Badge_Grade_Dashboard)
 [![Build Status](https://travis-ci.org/mneri/csv.svg?branch=master)](https://travis-ci.org/mneri/csv)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/d30b8cc221234302a0f4686cd9a38f42)](https://app.codacy.com/app/mneri_2/csv?utm_source=github.com&utm_medium=referral&utm_content=mneri/csv&utm_campaign=Badge_Grade_Dashboard)
+[![Coverage Status](https://coveralls.io/repos/github/mneri/csv/badge.svg?branch=master)](https://coveralls.io/github/mneri/csv?branch=master)
 
 ## Example
 Let `Person` be a POJO.
