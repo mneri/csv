@@ -44,7 +44,7 @@ public class CsvWriter<T> implements Closeable {
 
     public static <T> CsvWriter<T> open(File file, CsvConverter<T> converter) throws FileNotFoundException {
         Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)));
-        return new CsvWriter<>(writer, converter);
+        return open(writer, converter);
     }
 
     public static <T> CsvWriter<T> open(Writer writer, CsvConverter<T> converter) {

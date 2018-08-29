@@ -1,4 +1,15 @@
 package me.mneri.csv.test;
 
-public class VoidConverter {
+import java.util.List;
+import me.mneri.csv.CsvConverter;
+
+public class VoidConverter implements CsvConverter<Void> {
+    @Override
+    public void toCsvLine(Void object, List<String> out) {
+    }
+
+    @Override
+    public Void toObject(List<String> line) {
+        return null;
+    }
 }
