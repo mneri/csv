@@ -16,24 +16,24 @@ public class Person {
 }
 ```
 
-We first need to define a `CsvConverter`. Converters have two methods: `toObject()` used to define object creation
-starting from a CSV line and `toCsvLine()` used to convert an object to a CSV line. The library handles all the details
-of the CSV format and lets you work with plain and clean Java Strings.
+We first need to define a `CsvSerializer` and `CsvDeserializer`.
 
 ```java
-public class PersonConverter implements CsvConverter<Person> {
+public class PersonSerializer implements CsvSerializer<Person> {
     @Override
-    public Person toObject(List<String> line) {
+    public void serialize(Person person, List<String> out) {
+        out.add(person.getFirstName());
+        out.add(person.getLastName());
+    }
+}
+
+public class PersonDeserializer implements CsvDeserializer<Person> {
+    @Override
+    public Person deserialize(List<String> line) {
         Person person = new Person();
         person.setFirstName(line.get(0));
         person.setLastName(line.get(1));
         return person;
-    }
-    
-    @Override
-    public void toCsvLine(Person person, List<String> out) {
-        out.add(person.getFirstName());
-        out.add(person.getLastName());
     }
 }
 ```

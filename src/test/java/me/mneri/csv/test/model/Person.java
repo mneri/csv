@@ -1,9 +1,9 @@
-package me.mneri.csv.test;
+package me.mneri.csv.test.model;
 
 import java.util.Date;
 import java.util.Objects;
 
-public class Person {
+public class Person implements Cloneable {
     private String address;
     private Date birthDate;
     private String firstName;
@@ -13,32 +13,48 @@ public class Person {
     private String website;
 
     @Override
-    public boolean equals(Object object) {
-        if (object == null)
-            return false;
+    public Person clone() {
+        try {
+            Person clone = (Person) super.clone();
 
-        if (!(object instanceof Person))
+            clone.address = address;
+            clone.birthDate = (Date) birthDate.clone();
+            clone.firstName = firstName;
+            clone.lastName = lastName;
+            clone.middleName = middleName;
+            clone.nickname = nickname;
+            clone.website = website;
+
+            return clone;
+        } catch (CloneNotSupportedException ignored) {
+            return null;
+        }
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (object == this) {
+            return true;
+        }
+
+        if (object == null) {
             return false;
+        }
+
+        if (!(object instanceof Person)) {
+            return false;
+        }
 
         Person other = (Person) object;
 
-        if (!Objects.equals(getAddress(), other.getAddress()))
-            return false;
-
-        if (!Objects.equals(getBirthDate(), other.getBirthDate()))
-            return false;
-
-        if (!Objects.equals(getFirstName(), other.getFirstName()))
-            return false;
-
-        if (!Objects.equals(getLastName(), other.getLastName()))
-            return false;
-
-        if (!Objects.equals(getMiddleName(), other.getMiddleName()))
-            return false;
-
-        if (!Objects.equals(getNickname(), other.getNickname()))
-            return false;
+        //@formatter:off
+        if (!Objects.equals(getAddress(),    other.getAddress()))    { return false; }
+        if (!Objects.equals(getBirthDate(),  other.getBirthDate()))  { return false; }
+        if (!Objects.equals(getFirstName(),  other.getFirstName()))  { return false; }
+        if (!Objects.equals(getLastName(),   other.getLastName()))   { return false; }
+        if (!Objects.equals(getMiddleName(), other.getMiddleName())) { return false; }
+        if (!Objects.equals(getNickname(),   other.getNickname()))   { return false; }
+        //@formatter:on
 
         return Objects.equals(getWebsite(), other.getWebsite());
     }

@@ -1,65 +1,79 @@
 package me.mneri.csv;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CsvWriter<T> implements Closeable {
+public final class CsvWriter<T> implements Closeable {
     private static final int CLOSED = 1;
     private static final int OPENED = 0;
 
-    private CsvConverter<T> converter;
+    private CsvSerializer<T> serializer;
     private List<String> line = new ArrayList<>();
     private int lineno = 1;
     private int nfields = -1;
     private int state = OPENED;
     private Writer writer;
 
-    private CsvWriter(Writer writer, CsvConverter<T> converter) {
+    private CsvWriter(Writer writer, CsvSerializer<T> serializer) {
         this.writer = writer;
-        this.converter = converter;
+        this.serializer = serializer;
     }
 
-    private void checkFields(int fieldno) throws NotEnoughFieldsException, TooManyFieldsException {
+    private void checkFields(int fieldno) throws IllegalCsvFormatException {
         if (nfields == -1) {
             nfields = fieldno;
         } else {
             if (nfields != fieldno) {
-                if (fieldno < nfields)
+                if (fieldno < nfields) {
                     throw new NotEnoughFieldsException(lineno, nfields, fieldno);
-                else
+                } else {
                     throw new TooManyFieldsException(lineno, nfields, fieldno);
+                }
             }
         }
     }
 
     @Override
     public void close() throws IOException {
-        if (state == CLOSED)
+        if (state == CLOSED) {
             throw new IllegalStateException("The writer has already been closed.");
+        }
 
         state = CLOSED;
         writer.close();
     }
 
-    public static <T> CsvWriter<T> open(File file, CsvConverter<T> converter) throws FileNotFoundException {
-        Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)));
-        return open(writer, converter);
+    public static CsvWriter<List<String>> open(File file) throws IOException {
+        return open(file, new StringListSerializer());
     }
 
-    public static <T> CsvWriter<T> open(Writer writer, CsvConverter<T> converter) {
-        if (writer == null)
+    public static <T> CsvWriter<T> open(File file, CsvSerializer<T> serializer) throws IOException {
+        Writer writer = Files.newBufferedWriter(file.toPath());
+        return open(writer, serializer);
+    }
+
+    public static CsvWriter<List<String>> open(Writer writer) {
+        return open(writer, new StringListSerializer());
+    }
+
+    public static <T> CsvWriter<T> open(Writer writer, CsvSerializer<T> serializer) {
+        if (writer == null) {
             throw new IllegalArgumentException("Writer cannot be null.");
+        }
 
-        if (converter == null)
-            throw new IllegalArgumentException("Converter cannot be null.");
+        if (serializer == null) {
+            throw new IllegalArgumentException("Serializer cannot be null.");
+        }
 
-        return new CsvWriter<>(writer, converter);
+        return new CsvWriter<>(writer, serializer);
     }
 
     private void writeField(String string) throws IOException {
-        if (string == null)
+        if (string == null) {
             return;
+        }
 
         int length = string.length();
         boolean shouldQuote = false;
@@ -83,10 +97,11 @@ public class CsvWriter<T> implements Closeable {
             for (int i = 0; i < length; i++) {
                 int c = string.charAt(i);
 
-                if (c == '"')
+                if (c == '"') {
                     writer.write("\"\"");
-                else
+                } else {
                     writer.write(c);
+                }
             }
 
             writer.write('"');
@@ -96,12 +111,13 @@ public class CsvWriter<T> implements Closeable {
     }
 
     public void writeLine(T object) throws CsvException, IOException {
-        if (state == CLOSED)
+        if (state == CLOSED) {
             throw new IllegalStateException("The writer has already been closed.");
+        }
 
         try {
             line.clear();
-            converter.toCsvLine(object, line);
+            serializer.serialize(object, line);
         } catch (Exception e) {
             throw new CsvConversionException(line, e);
         }
@@ -113,8 +129,9 @@ public class CsvWriter<T> implements Closeable {
         for (int i = 0; i < fieldno; i++) {
             writeField(line.get(i));
 
-            if (i != fieldno - 1)
+            if (i != fieldno - 1) {
                 writer.write(",");
+            }
         }
 
         writer.write("\r\n");
@@ -122,7 +139,8 @@ public class CsvWriter<T> implements Closeable {
     }
 
     public void writeLines(List<T> objects) throws CsvException, IOException {
-        for (T object : objects)
+        for (T object : objects) {
             writeLine(object);
+        }
     }
 }

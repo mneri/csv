@@ -1,11 +1,12 @@
 package me.mneri.csv;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-public class CsvReader<T> implements Closeable {
+public final class CsvReader<T> implements Closeable {
     // States
     private static final byte ERROR = -1;
     private static final byte START = 0;
@@ -25,63 +26,65 @@ public class CsvReader<T> implements Closeable {
     //@formatter:off
     private static final byte[][] TRANSITIONS = {
     //       *      "      ,      \r     \n     eof
-            {STRNG, QUOTE, START, CARRG, FINSH, FINSH},  // START
-            {QUOTE, ESCAP, QUOTE, QUOTE, QUOTE, ERROR},  // QUOTE
-            {ERROR, QUOTE, START, CARRG, FINSH, FINSH},  // ESCAP
-            {STRNG, STRNG, START, CARRG, FINSH, FINSH},  // STRNG
-            {ERROR, ERROR, ERROR, ERROR, FINSH, ERROR},  // CARRG
-            {ERROR, ERROR, ERROR, ERROR, ERROR, ERROR}}; // FINSH
+            { STRNG, QUOTE, START, CARRG, FINSH, FINSH },  // START
+            { QUOTE, ESCAP, QUOTE, QUOTE, QUOTE, ERROR },  // QUOTE
+            { ERROR, QUOTE, START, CARRG, FINSH, FINSH },  // ESCAP
+            { STRNG, STRNG, START, CARRG, FINSH, FINSH },  // STRNG
+            { ERROR, ERROR, ERROR, ERROR, FINSH, ERROR },  // CARRG
+            { ERROR, ERROR, ERROR, ERROR, ERROR, ERROR }}; // FINSH
     //@formatter:on
 
     //@formatter:off
     private static final byte[][] ACTIONS = {
     //       *              "              ,              \r             \n             eof
-            {ACCUM        , DIRTY        , FIELD        , FIELD        , FIELD | NLINE, NO_OP        },  // START
-            {ACCUM        , NO_OP        , ACCUM        , ACCUM        , ACCUM        , NO_OP        },  // QUOTE
-            {NO_OP        , ACCUM        , FIELD        , FIELD        , FIELD | NLINE, FIELD | NLINE},  // ESCAP
-            {ACCUM        , ACCUM        , FIELD        , FIELD        , FIELD | NLINE, FIELD | NLINE},  // STRNG
-            {NO_OP        , NO_OP        , NO_OP        , NO_OP        , NLINE        , NO_OP        },  // CARRG
-            {NO_OP        , NO_OP        , NO_OP        , NO_OP        , NO_OP        , NO_OP        }}; // FINSH
+            { ACCUM        , DIRTY        , FIELD        , FIELD        , FIELD | NLINE, NO_OP         },  // START
+            { ACCUM        , NO_OP        , ACCUM        , ACCUM        , ACCUM        , NO_OP         },  // QUOTE
+            { NO_OP        , ACCUM        , FIELD        , FIELD        , FIELD | NLINE, FIELD | NLINE },  // ESCAP
+            { ACCUM        , ACCUM        , FIELD        , FIELD        , FIELD | NLINE, FIELD | NLINE },  // STRNG
+            { NO_OP        , NO_OP        , NO_OP        , NO_OP        , NLINE        , NO_OP         },  // CARRG
+            { NO_OP        , NO_OP        , NO_OP        , NO_OP        , NO_OP        , NO_OP         }}; // FINSH
     //@formatter:on
 
     private static final int OPENED = 0;
     private static final int CLOSED = 1;
 
     private final StringBuilder buffer = new StringBuilder(1024);
-    private final List<String> fields = new ArrayList<>();
-    private int lineno = 1;
-    private int nfields = -1;
+    private final List<String> line = new ArrayList<>();
+    private int lines = 1;
+    private int fields = -1;
     private final Reader reader;
     private int state = OPENED;
-    private final CsvConverter<T> converter;
+    private final CsvDeserializer<T> deserializer;
 
-    private CsvReader(Reader reader, CsvConverter<T> converter) {
+    private CsvReader(Reader reader, CsvDeserializer<T> deserializer) {
         this.reader = reader;
-        this.converter = converter;
+        this.deserializer = deserializer;
     }
 
-    private void checkFields(int fieldno) throws NotEnoughFieldsException, TooManyFieldsException {
-        if (nfields == -1) {
-            nfields = fieldno;
-        } else if (nfields != fieldno) {
-            if (fieldno < nfields)
-                throw new NotEnoughFieldsException(lineno, nfields, fieldno);
-            else
-                throw new TooManyFieldsException(lineno, nfields, fieldno);
+    private void checkFields(int fields) throws IllegalCsvFormatException {
+        if (this.fields == -1) {
+            this.fields = fields;
+        } else if (this.fields != fields) {
+            if (fields < this.fields) {
+                throw new NotEnoughFieldsException(lines, this.fields, fields);
+            } else {
+                throw new TooManyFieldsException(lines, this.fields, fields);
+            }
         }
     }
 
     @Override
     public void close() throws IOException {
-        if (state == CLOSED)
+        if (state == CLOSED) {
             throw new IllegalStateException("The reader has already been closed.");
+        }
 
         state = CLOSED;
         reader.close();
     }
 
-    private int indexOf(int c) {
-        switch (c) {
+    private int indexOf(int charCode) {
+        switch (charCode) {
             //@formatter:off
             case '"' : return 1;
             case ',' : return 2;
@@ -99,8 +102,9 @@ public class CsvReader<T> implements Closeable {
 
             @Override
             public boolean hasNext() {
-                if (object != null)
+                if (object != null) {
                     return true;
+                }
 
                 try {
                     return (object = readLine()) != null;
@@ -113,8 +117,9 @@ public class CsvReader<T> implements Closeable {
 
             @Override
             public T next() {
-                if (!hasNext())
+                if (!hasNext()) {
                     throw new NoSuchElementException();
+                }
 
                 T result = object;
                 object = null;
@@ -124,77 +129,93 @@ public class CsvReader<T> implements Closeable {
         };
     }
 
-    public static <T> CsvReader<T> open(File file, CsvConverter<T> converter) throws FileNotFoundException {
-        Reader reader = new BufferedReader(new FileReader(file));
-        return open(reader, converter);
+    public static CsvReader<List<String>> open(File file) throws IOException {
+        return open(file, new StringListDeserializer());
     }
 
-    public static <T> CsvReader<T> open(Reader reader, CsvConverter<T> converter) {
-        if (reader == null)
+    public static <T> CsvReader<T> open(File file, CsvDeserializer<T> deserializer) throws IOException {
+        if (deserializer == null) {
+            throw new IllegalArgumentException("Deserializer cannot be null.");
+        }
+
+        return open(Files.newBufferedReader(file.toPath()), deserializer);
+    }
+
+    public static CsvReader<List<String>> open(Reader reader) {
+        return open(reader, new StringListDeserializer());
+    }
+
+    public static <T> CsvReader<T> open(Reader reader, CsvDeserializer<T> deserializer) {
+        if (reader == null) {
             throw new IllegalArgumentException("Reader cannot be null.");
+        }
 
-        if (converter == null)
-            throw new IllegalArgumentException("Converter cannot be null.");
+        if (deserializer == null) {
+            throw new IllegalArgumentException("Deserializer cannot be null.");
+        }
 
-        return new CsvReader<>(reader, converter);
+        return new CsvReader<>(reader, deserializer);
     }
 
     public T readLine() throws CsvException, IOException {
-        if (state == CLOSED)
+        if (state == CLOSED) {
             throw new IllegalStateException("The reader has already been closed.");
+        }
 
         byte action;
-        int character;
+        int charCode;
         boolean dirty = false;
-        int fieldno = 0;
+        int fields = 0;
         int index;
         byte state = START;
 
         while (true) {
-            character = reader.read();
-            index = indexOf(character);
+            charCode = reader.read();
+            index = indexOf(charCode);
             action = ACTIONS[state][index];
 
             if ((action & ACCUM) != 0) {
-                buffer.append((char) character);
+                buffer.append((char) charCode);
                 dirty = true;
             }
 
             if ((action & FIELD) != 0) {
                 if (dirty) {
-                    fields.add(buffer.toString());
+                    this.line.add(buffer.toString());
                     buffer.setLength(0);
                     dirty = false;
                 } else {
-                    fields.add(null);
+                    this.line.add(null);
                 }
 
-                fieldno++;
+                fields++;
             }
 
-            if ((action & DIRTY) != 0)
+            if ((action & DIRTY) != 0) {
                 dirty = true;
+            }
 
             if ((action & NLINE) != 0) {
-                lineno++;
-                checkFields(fieldno);
+                lines++;
+                checkFields(fields);
 
                 try {
-                    T object = converter.toObject(fields);
-                    fields.clear();
+                    T object = deserializer.deserialize(line);
+                    line.clear();
 
                     return object;
                 } catch (Exception e) {
-                    throw new CsvConversionException(fields, e);
+                    throw new CsvConversionException(line, e);
                 }
             }
 
             state = TRANSITIONS[state][index];
 
-            if (state == FINSH)
+            if (state == FINSH) {
                 return null;
-            else if (state == ERROR)
-                throw new UnexpectedCharacterException(lineno, character);
+            } else if (state == ERROR) {
+                throw new UnexpectedCharacterException(lines, charCode);
+            }
         }
     }
 
@@ -203,16 +224,23 @@ public class CsvReader<T> implements Closeable {
         return Spliterators.spliteratorUnknownSize(iterator(), characteristics);
     }
 
-    public static <T> Stream<T> stream(File file, CsvConverter<T> converter) throws IOException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
-        return stream(reader, converter);
+    public static Stream<List<String>> stream(File file) throws IOException {
+        return stream(file, new StringListDeserializer());
     }
 
-    public static <T> Stream<T> stream(Reader reader, CsvConverter<T> converter) throws IOException {
+    public static <T> Stream<T> stream(File file, CsvDeserializer<T> deserializer) throws IOException {
+        return stream(Files.newBufferedReader(file.toPath()), deserializer);
+    }
+
+    public static <T> Stream<T> stream(Reader reader, CsvDeserializer<T> deserializer) {
+        if (reader == null) {
+            throw new IllegalArgumentException("Reader cannot be null.");
+        }
+
         //@formatter:off
-        CsvReader<T> csvReader = CsvReader.open(reader, converter);
+        CsvReader<T> csvReader = CsvReader.open(reader, deserializer);
         return StreamSupport.stream(csvReader.spliterator(), false)
-                .onClose(() -> { try { csvReader.close(); } catch (Exception ignored) { } });
+                            .onClose(() -> { try { csvReader.close(); } catch (Exception ignored) { } });
         //@formatter:on
     }
 }
