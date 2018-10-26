@@ -10,11 +10,10 @@ public final class CsvWriter<T> implements Closeable {
     private static final int OPENED = 0;
     private static final int CLOSED = 1;
 
-    private CsvSerializer<T> serializer;
-    private List<String> line = new ArrayList<>();
-    private int lines = 1;
+    private final CsvSerializer<T> serializer;
+    private final List<String> line = new ArrayList<>();
     private int state = OPENED;
-    private Writer writer;
+    private final Writer writer;
 
     private CsvWriter(Writer writer, CsvSerializer<T> serializer) {
         this.writer = writer;
@@ -44,8 +43,7 @@ public final class CsvWriter<T> implements Closeable {
     }
 
     public static <T> CsvWriter<T> open(File file, Charset charset, CsvSerializer<T> serializer) throws IOException {
-        Writer writer = Files.newBufferedWriter(file.toPath(), charset);
-        return open(writer, serializer);
+        return open(Files.newBufferedWriter(file.toPath(), charset), serializer);
     }
 
     public static CsvWriter<List<String>> open(Writer writer) {
@@ -62,22 +60,22 @@ public final class CsvWriter<T> implements Closeable {
         }
 
         int length = string.length();
-        boolean shouldQuote = false;
+        boolean quote = false;
 
         if (string.length() == 0) {
-            shouldQuote = true;
+            quote = true;
         } else {
             for (int i = 0; i < length; i++) {
                 int c = string.charAt(i);
 
                 if (c == ',' || c == '"') {
-                    shouldQuote = true;
+                    quote = true;
                     break;
                 }
             }
         }
 
-        if (shouldQuote) {
+        if (quote) {
             writer.write('"');
 
             for (int i = 0; i < length; i++) {
@@ -119,7 +117,6 @@ public final class CsvWriter<T> implements Closeable {
         }
 
         writer.write("\r\n");
-        lines++;
     }
 
     public void writeLines(List<T> objects) throws CsvException, IOException {

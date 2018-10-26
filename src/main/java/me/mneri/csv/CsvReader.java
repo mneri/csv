@@ -53,7 +53,7 @@ public final class CsvReader<T> implements Closeable {
 
     private final StringBuilder buffer = new StringBuilder(DEFAULT_BUFFER_SIZE);
     private final List<String> line = new ArrayList<>();
-    private int lines = 1;
+    private int lines;
     private final Reader reader;
     private int state = OPENED;
     private final CsvDeserializer<T> deserializer;
@@ -128,7 +128,7 @@ public final class CsvReader<T> implements Closeable {
     }
 
     public static <T> CsvReader<T> open(File file, CsvDeserializer<T> deserializer) throws IOException {
-        return open(Files.newBufferedReader(file.toPath(), Charset.defaultCharset()), deserializer);
+        return open(file, Charset.defaultCharset(), deserializer);
     }
 
     public static <T> CsvReader<T> open(File file, Charset charset, CsvDeserializer<T> deserializer) throws IOException {
