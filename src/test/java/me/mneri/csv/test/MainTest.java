@@ -1,19 +1,21 @@
 package me.mneri.csv.test;
 
-import java.io.*;
-import java.nio.charset.Charset;
+import me.mneri.csv.*;
+import me.mneri.csv.test.model.Person;
+import me.mneri.csv.test.serialization.ExceptionDeserializer;
+import me.mneri.csv.test.serialization.ExceptionSerializer;
+import me.mneri.csv.test.serialization.PersonDeserializer;
+import me.mneri.csv.test.serialization.PersonSerializer;
+import org.junit.Assert;
+import org.junit.Test;
+
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import me.mneri.csv.*;
-
-import me.mneri.csv.test.model.Person;
-import me.mneri.csv.test.serialization.*;
-import org.junit.Assert;
-import org.junit.Test;
 
 public class MainTest {
     @Test(expected = CsvConversionException.class)
@@ -57,95 +59,6 @@ public class MainTest {
     private File getResourceFile(String name) {
         ClassLoader classLoader = getClass().getClassLoader();
         return new File(classLoader.getResource(name).getFile());
-    }
-
-    @Test(expected = NotEnoughFieldsException.class)
-    public void notEnoughFields1() throws CsvException {
-        File file = getResourceFile("not-enough-fields.csv");
-
-        try (CsvReader<List<Integer>> reader = CsvReader.open(file, new IntegerListDeserializer())) {
-            while (reader.readLine() != null) {
-                // Do nothing
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Test(expected = NotEnoughFieldsException.class)
-    public void notEnoughFields2() throws CsvException {
-        CsvWriter<List<Integer>> writer = null;
-        File tempFile = null;
-
-        List<Integer> first = Arrays.asList(1, 2, 3, 4, 5);
-        List<Integer> second = Arrays.asList(6, 7, 8, 9);
-
-        try {
-            tempFile = createTempFile();
-            writer = CsvWriter.open(tempFile, new IntegerListSerializer());
-
-            writer.writeLine(first);
-            writer.writeLine(second);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            //@formatter:off
-            if (writer != null)   { try { writer.close(); }    catch (Exception ignored) { } }
-            if (tempFile != null) { try { tempFile.delete(); } catch (Exception ignored) { } }
-            //@formatter:on
-        }
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void nullConverter1() {
-        CsvReader<Void> reader = null;
-        File tempFile = null;
-
-        try {
-            tempFile = createTempFile();
-            reader = CsvReader.open(tempFile, (CsvDeserializer<Void>) null);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            //@formatter:off
-            if (reader != null)   { try { reader.close(); }    catch (Exception ignored) { } }
-            if (tempFile != null) { try { tempFile.delete(); } catch (Exception ignored) { } }
-            //@formatter:on
-        }
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void nullConverter2() {
-        CsvWriter<Void> writer = null;
-        File tempFile = null;
-
-        try {
-            tempFile = createTempFile();
-            writer = CsvWriter.open(tempFile, null);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            //@formatter:off
-            if (writer != null)   { try { writer.close(); }    catch (Exception ignored) { } }
-            if (tempFile != null) { try { tempFile.delete(); } catch (Exception ignored) { } }
-            //@formatter:on
-        }
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void nullReader() {
-        try (CsvReader reader = CsvReader.open((Reader) null, new VoidDeserializer())) {
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void nullWriter() {
-        try (CsvWriter<Void> writer = CsvWriter.open((Writer) null, new VoidSerializer())) {
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     @Test
@@ -201,43 +114,6 @@ public class MainTest {
             e.printStackTrace();
         } finally {
             //@formatter:off
-            if (tempFile != null) { try { tempFile.delete(); } catch (Exception ignored) { } }
-            //@formatter:on
-        }
-    }
-
-    @Test(expected = TooManyFieldsException.class)
-    public void tooManyFields1() throws CsvException {
-        File file = getResourceFile("too-many-fields.csv");
-
-        try (CsvReader<List<Integer>> reader = CsvReader.open(file, new IntegerListDeserializer())) {
-            while (reader.readLine() != null) {
-                // Do nothing
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Test(expected = TooManyFieldsException.class)
-    public void tooManyFields2() throws CsvException {
-        CsvWriter<List<Integer>> writer = null;
-        File tempFile = null;
-
-        List<Integer> first = Arrays.asList(1, 2, 3, 4);
-        List<Integer> second = Arrays.asList(5, 6, 7, 8, 9);
-
-        try {
-            tempFile = createTempFile();
-            writer = CsvWriter.open(tempFile, new IntegerListSerializer());
-
-            writer.writeLine(first);
-            writer.writeLine(second);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            //@formatter:off
-            if (writer != null)   { try { writer.close(); }    catch (Exception ignored) { } }
             if (tempFile != null) { try { tempFile.delete(); } catch (Exception ignored) { } }
             //@formatter:on
         }

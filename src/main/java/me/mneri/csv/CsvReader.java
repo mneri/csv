@@ -49,10 +49,11 @@ public final class CsvReader<T> implements Closeable {
     private static final int OPENED = 0;
     private static final int CLOSED = 1;
 
-    private final StringBuilder buffer = new StringBuilder(8192);
+    private static final int DEFAULT_BUFFER_SIZE = 8192;
+
+    private final StringBuilder buffer = new StringBuilder(DEFAULT_BUFFER_SIZE);
     private final List<String> line = new ArrayList<>();
     private int lines = 1;
-    private int fields = -1;
     private final Reader reader;
     private int state = OPENED;
     private final CsvDeserializer<T> deserializer;
@@ -60,18 +61,6 @@ public final class CsvReader<T> implements Closeable {
     private CsvReader(Reader reader, CsvDeserializer<T> deserializer) {
         this.reader = reader;
         this.deserializer = deserializer;
-    }
-
-    private void checkFields(int fields) throws IllegalCsvFormatException {
-        if (this.fields == -1) {
-            this.fields = fields;
-        } else if (this.fields != fields) {
-            if (fields < this.fields) {
-                throw new NotEnoughFieldsException(lines, this.fields, fields);
-            } else {
-                throw new TooManyFieldsException(lines, this.fields, fields);
-            }
-        }
     }
 
     @Override
@@ -139,18 +128,10 @@ public final class CsvReader<T> implements Closeable {
     }
 
     public static <T> CsvReader<T> open(File file, CsvDeserializer<T> deserializer) throws IOException {
-        if (deserializer == null) {
-            throw new IllegalArgumentException("Deserializer cannot be null.");
-        }
-
         return open(Files.newBufferedReader(file.toPath(), Charset.defaultCharset()), deserializer);
     }
 
     public static <T> CsvReader<T> open(File file, Charset charset, CsvDeserializer<T> deserializer) throws IOException {
-        if (deserializer == null) {
-            throw new IllegalArgumentException("Deserializer cannot be null.");
-        }
-
         return open(Files.newBufferedReader(file.toPath(), charset), deserializer);
     }
 
@@ -159,14 +140,6 @@ public final class CsvReader<T> implements Closeable {
     }
 
     public static <T> CsvReader<T> open(Reader reader, CsvDeserializer<T> deserializer) {
-        if (reader == null) {
-            throw new IllegalArgumentException("Reader cannot be null.");
-        }
-
-        if (deserializer == null) {
-            throw new IllegalArgumentException("Deserializer cannot be null.");
-        }
-
         return new CsvReader<>(reader, deserializer);
     }
 
@@ -206,7 +179,6 @@ public final class CsvReader<T> implements Closeable {
 
             if ((action & NLINE) != 0) {
                 lines++;
-                checkFields(fields);
 
                 try {
                     T object = deserializer.deserialize(line);
@@ -242,10 +214,6 @@ public final class CsvReader<T> implements Closeable {
     }
 
     public static <T> Stream<T> stream(Reader reader, CsvDeserializer<T> deserializer) {
-        if (reader == null) {
-            throw new IllegalArgumentException("Reader cannot be null.");
-        }
-
         //@formatter:off
         CsvReader<T> csvReader = CsvReader.open(reader, deserializer);
         return StreamSupport.stream(csvReader.spliterator(), false)
