@@ -1,6 +1,7 @@
 package me.mneri.csv.test;
 
 import java.io.*;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -102,7 +103,7 @@ public class MainTest {
 
         try {
             tempFile = createTempFile();
-            reader = CsvReader.open(tempFile, null);
+            reader = CsvReader.open(tempFile, (CsvDeserializer<Void>) null);
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
@@ -145,10 +146,6 @@ public class MainTest {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    public static void main(String... args) throws CsvException {
-        new MainTest().shouldQuote();
     }
 
     @Test
