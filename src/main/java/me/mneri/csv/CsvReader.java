@@ -151,7 +151,6 @@ public final class CsvReader<T> implements Closeable {
         byte action;
         int charCode;
         boolean dirty = false;
-        int fields = 0;
         int index;
         byte state = START;
 
@@ -171,8 +170,6 @@ public final class CsvReader<T> implements Closeable {
                 } else {
                     line.add(null);
                 }
-
-                fields++;
             } else if ((action & DIRTY) != 0) {
                 dirty = true;
             }
