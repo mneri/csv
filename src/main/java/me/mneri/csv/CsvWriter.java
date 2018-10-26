@@ -1,6 +1,7 @@
 package me.mneri.csv;
 
 import java.io.*;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,11 +47,15 @@ public final class CsvWriter<T> implements Closeable {
     }
 
     public static CsvWriter<List<String>> open(File file) throws IOException {
-        return open(file, new StringListSerializer());
+        return open(file, Charset.defaultCharset());
     }
 
-    public static <T> CsvWriter<T> open(File file, CsvSerializer<T> serializer) throws IOException {
-        Writer writer = Files.newBufferedWriter(file.toPath());
+    public static CsvWriter<List<String>> open(File file, Charset charset) throws IOException {
+        return open(file, charset, new StringListSerializer());
+    }
+
+    public static <T> CsvWriter<T> open(File file, Charset charset, CsvSerializer<T> serializer) throws IOException {
+        Writer writer = Files.newBufferedWriter(file.toPath(), charset);
         return open(writer, serializer);
     }
 

@@ -1,6 +1,7 @@
 package me.mneri.csv;
 
 import java.io.*;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.*;
 import java.util.stream.Stream;
@@ -48,7 +49,7 @@ public final class CsvReader<T> implements Closeable {
     private static final int OPENED = 0;
     private static final int CLOSED = 1;
 
-    private final StringBuilder buffer = new StringBuilder(1024);
+    private final StringBuilder buffer = new StringBuilder(8192);
     private final List<String> line = new ArrayList<>();
     private int lines = 1;
     private int fields = -1;
@@ -130,7 +131,11 @@ public final class CsvReader<T> implements Closeable {
     }
 
     public static CsvReader<List<String>> open(File file) throws IOException {
-        return open(file, new StringListDeserializer());
+        return open(file, Charset.defaultCharset());
+    }
+
+    public static CsvReader<List<String>> open(File file, Charset charset) throws IOException {
+        return open(file, charset, new StringListDeserializer());
     }
 
     public static <T> CsvReader<T> open(File file, CsvDeserializer<T> deserializer) throws IOException {
@@ -138,7 +143,15 @@ public final class CsvReader<T> implements Closeable {
             throw new IllegalArgumentException("Deserializer cannot be null.");
         }
 
-        return open(Files.newBufferedReader(file.toPath()), deserializer);
+        return open(Files.newBufferedReader(file.toPath(), Charset.defaultCharset()), deserializer);
+    }
+
+    public static <T> CsvReader<T> open(File file, Charset charset, CsvDeserializer<T> deserializer) throws IOException {
+        if (deserializer == null) {
+            throw new IllegalArgumentException("Deserializer cannot be null.");
+        }
+
+        return open(Files.newBufferedReader(file.toPath(), charset), deserializer);
     }
 
     public static CsvReader<List<String>> open(Reader reader) {
@@ -177,21 +190,17 @@ public final class CsvReader<T> implements Closeable {
             if ((action & ACCUM) != 0) {
                 buffer.append((char) charCode);
                 dirty = true;
-            }
-
-            if ((action & FIELD) != 0) {
+            } else if ((action & FIELD) != 0) {
                 if (dirty) {
-                    this.line.add(buffer.toString());
+                    line.add(buffer.toString());
                     buffer.setLength(0);
                     dirty = false;
                 } else {
-                    this.line.add(null);
+                    line.add(null);
                 }
 
                 fields++;
-            }
-
-            if ((action & DIRTY) != 0) {
+            } else if ((action & DIRTY) != 0) {
                 dirty = true;
             }
 
