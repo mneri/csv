@@ -66,7 +66,6 @@ public final class CsvReader<T> implements Closeable {
     private final List<String> line = new ArrayList<>();
     private int lines;
     private final Reader reader;
-    private int skip;
     private int state = ELEMENT_NOT_READ;
 
     private CsvReader(Reader reader, CsvDeserializer<T> deserializer) {
@@ -108,19 +107,16 @@ public final class CsvReader<T> implements Closeable {
         else if (state == NO_SUCH_ELEMENT) { return false; }
         //@formatter:on
 
-        byte action;
-        int charCode;
         boolean dirty = false;
-        int column;
         byte row = START;
 
         while (true) {
-            charCode = reader.read();
-            column = columnOf(charCode);
-            action = ACTIONS[row][column];
+            int nextChar = reader.read();
+            int column = columnOf(nextChar);
+            int action = ACTIONS[row][column];
 
             if ((action & ACCUM) != 0) {
-                buffer.append((char) charCode);
+                buffer.append((char) nextChar);
                 dirty = true;
             } else if ((action & FIELD) != 0) {
                 if (dirty) {
@@ -137,24 +133,16 @@ public final class CsvReader<T> implements Closeable {
             if ((action & NLINE) != 0) {
                 lines++;
 
-                if (skip > 0) {
-                    skip--;
-                    dirty = false;
-                    row = START;
+                try {
+                    T object = deserializer.deserialize(line);
                     line.clear();
-                    continue;
-                } else {
-                    try {
-                        T object = deserializer.deserialize(line);
-                        line.clear();
 
-                        element = object;
-                        state = ELEMENT_READ;
+                    element = object;
+                    state = ELEMENT_READ;
 
-                        return true;
-                    } catch (Exception e) {
-                        throw new CsvConversionException(line, e);
-                    }
+                    return true;
+                } catch (Exception e) {
+                    throw new CsvConversionException(line, e);
                 }
             }
 
@@ -164,7 +152,7 @@ public final class CsvReader<T> implements Closeable {
                 state = NO_SUCH_ELEMENT;
                 return false;
             } else if (row == ERROR) {
-                throw new UnexpectedCharacterException(lines, charCode);
+                throw new UnexpectedCharacterException(lines, nextChar);
             }
         }
     }
@@ -217,9 +205,45 @@ public final class CsvReader<T> implements Closeable {
         return new CsvReader<>(reader, deserializer);
     }
 
-    public void skip(int skip) {
+    public void skip(int skip) throws CsvException, IOException {
         checkClosedState();
-        this.skip = skip;
+
+        if (state == NO_SUCH_ELEMENT) {
+            return;
+        }
+
+        if (state == ELEMENT_READ) {
+            element = null;
+            state = ELEMENT_NOT_READ;
+            skip--;
+        }
+
+        byte row = START;
+
+        while (true) {
+            int nextChar = reader.read();
+            int column = columnOf(nextChar);
+            int action = ACTIONS[row][column];
+
+            if ((action & NLINE) != 0) {
+                lines++;
+
+                if (--skip > 0) {
+                    row = START;
+                } else {
+                    return;
+                }
+            } else {
+                row = TRANSITIONS[row][column];
+            }
+
+            if (row == FINSH) {
+                state = NO_SUCH_ELEMENT;
+                return;
+            } else if (row == ERROR) {
+                throw new UnexpectedCharacterException(lines, nextChar);
+            }
+        }
     }
 
     private Spliterator<T> spliterator() {
