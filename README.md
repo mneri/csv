@@ -65,7 +65,7 @@ try (CsvReader<Person> reader = CsvReader.open(new File("test.csv"), new PersonD
 To get a Java 8 `Stream` from a CSV file you use `CsvReader#stream()` static method.
 
 ```java
-try (Stream<Person> stream = CsvReader.stream(new File("test.csv"), new PersonConverter())) {
+try (Stream<Person> stream = CsvReader.stream(new File("test.csv"), new PersonDeserializer())) {
    stream.forEach(System.out::println);
 } catch (IOException e) {
     e.printStackTrace();
