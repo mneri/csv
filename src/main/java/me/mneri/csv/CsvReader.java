@@ -219,6 +219,7 @@ public final class CsvReader<T> implements Closeable {
     }
 
     public void skip(int skip) {
+        checkClosedState();
         this.skip = skip;
     }
 
