@@ -43,7 +43,7 @@ public class PersonDeserializer implements CsvDeserializer<Person> {
 To write a CSV file you use `CsvWriter` class.
 
 ```java
-try (CsvWriter<Person> writer = CsvWriter.open(new File("test.csv"), new PersonConverter())) {
+try (CsvWriter<Person> writer = CsvWriter.open(new File("test.csv"), new PersonSerializer())) {
     for (Person person : persons)
         writer.put(person);
 } catch (CsvException | IOException e) {
@@ -54,7 +54,7 @@ try (CsvWriter<Person> writer = CsvWriter.open(new File("test.csv"), new PersonC
 To read from a CSV file you use `CsvReader` class.
 
 ```java
-try (CsvReader<Person> reader = CsvReader.open(new File("test.csv"), new PersonConverter())) {
+try (CsvReader<Person> reader = CsvReader.open(new File("test.csv"), new PersonDeserializer())) {
     while (reader.hasNext())
         System.out.println(reader.get());
 } catch (CsvException | IOException e) {
