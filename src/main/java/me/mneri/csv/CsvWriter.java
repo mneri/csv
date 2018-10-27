@@ -39,6 +39,10 @@ public final class CsvWriter<T> implements Closeable {
         return open(Files.newBufferedWriter(file.toPath(), charset), serializer);
     }
 
+    public static <T> CsvWriter<T> open(File file, CsvSerializer<T> serializer) throws IOException {
+        return open(file, Charset.defaultCharset(), serializer);
+    }
+
     public static <T> CsvWriter<T> open(Writer writer, CsvSerializer<T> serializer) {
         return new CsvWriter<>(writer, serializer);
     }

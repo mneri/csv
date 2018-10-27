@@ -103,7 +103,7 @@ public final class CsvReader<T> implements Closeable {
                 }
 
                 try {
-                    return (object = read()) != null;
+                    return (object = readLine()) != null;
                 } catch (CsvException e) {
                     throw new UncheckedCsvException(e);
                 } catch (IOException e) {
@@ -125,6 +125,10 @@ public final class CsvReader<T> implements Closeable {
         };
     }
 
+    public static <T> CsvReader<T> open(File file, CsvDeserializer<T> deserializer) throws IOException {
+        return open(file, Charset.defaultCharset(), deserializer);
+    }
+
     public static <T> CsvReader<T> open(File file, Charset charset, CsvDeserializer<T> deserializer) throws IOException {
         return open(Files.newBufferedReader(file.toPath(), charset), deserializer);
     }
@@ -133,7 +137,7 @@ public final class CsvReader<T> implements Closeable {
         return new CsvReader<>(reader, deserializer);
     }
 
-    public T read() throws CsvException, IOException {
+    public T readLine() throws CsvException, IOException {
         if (state == CLOSED) {
             throw new IllegalStateException("The reader has already been closed.");
         }
@@ -173,7 +177,7 @@ public final class CsvReader<T> implements Closeable {
                     dirty = false;
                     state = START;
                     line.clear();
-
+                    
                     continue;
                 } else {
                     try {
@@ -204,6 +208,10 @@ public final class CsvReader<T> implements Closeable {
     private Spliterator<T> spliterator() {
         int characteristics = Spliterator.IMMUTABLE | Spliterator.ORDERED;
         return Spliterators.spliteratorUnknownSize(iterator(), characteristics);
+    }
+
+    public static <T> Stream<T> stream(File file, CsvDeserializer<T> deserializer) throws IOException {
+        return stream(file, Charset.defaultCharset(), deserializer);
     }
 
     public static <T> Stream<T> stream(File file, Charset charset, CsvDeserializer<T> deserializer) throws IOException {

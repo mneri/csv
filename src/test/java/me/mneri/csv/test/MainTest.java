@@ -17,15 +17,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 public class MainTest {
     @Test(expected = CsvConversionException.class)
     public void conversionException1() throws CsvException {
         File file = getResourceFile("simple.csv");
 
-        try (CsvReader<Void> reader = CsvReader.open(file, UTF_8, new ExceptionDeserializer())) {
-            while (reader.read() != null) {
+        try (CsvReader<Void> reader = CsvReader.open(file, new ExceptionDeserializer())) {
+            while (reader.readLine() != null) {
                 // Do nothing
             }
         } catch (IOException e) {
@@ -40,7 +38,7 @@ public class MainTest {
 
         try {
             file = createTempFile();
-            writer = CsvWriter.open(file, UTF_8, new ExceptionSerializer());
+            writer = CsvWriter.open(file, new ExceptionSerializer());
 
             writer.writeLine(null);
         } catch (IOException e) {
@@ -71,12 +69,12 @@ public class MainTest {
         try {
             file = createTempFile();
 
-            try (CsvWriter<List<String>> writer = CsvWriter.open(file, UTF_8, new StringListSerializer())) {
+            try (CsvWriter<List<String>> writer = CsvWriter.open(file, new StringListSerializer())) {
                 writer.writeLine(strings);
             }
 
-            try (CsvReader<List<String>> reader = CsvReader.open(file, UTF_8, new StringListDeserializer())) {
-                Assert.assertEquals(strings, reader.read());
+            try (CsvReader<List<String>> reader = CsvReader.open(file, new StringListDeserializer())) {
+                Assert.assertEquals(strings, reader.readLine());
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -92,9 +90,9 @@ public class MainTest {
         File file = getResourceFile("simple.csv");
         List<Integer> expected = Arrays.asList(6, 7, 8, 9, 0);
 
-        try (CsvReader<List<Integer>> reader = CsvReader.open(file, UTF_8, new IntegerListDeserializer())) {
+        try (CsvReader<List<Integer>> reader = CsvReader.open(file, new IntegerListDeserializer())) {
             reader.skip(1);
-            List<Integer> second = reader.read();
+            List<Integer> second = reader.readLine();
             Assert.assertEquals(second, expected);
         } catch (IOException e) {
             e.printStackTrace();
@@ -116,11 +114,11 @@ public class MainTest {
         try {
             file = createTempFile();
 
-            try (CsvWriter<Person> writer = CsvWriter.open(file, UTF_8, new PersonSerializer())) {
+            try (CsvWriter<Person> writer = CsvWriter.open(file, new PersonSerializer())) {
                 writer.writeLines(persons);
             }
 
-            try (Stream<Person> stream = CsvReader.stream(file, UTF_8, new PersonDeserializer())) {
+            try (Stream<Person> stream = CsvReader.stream(file, new PersonDeserializer())) {
                 List<Person> collected = stream.collect(Collectors.toList());
                 Assert.assertEquals(persons, collected);
             }
@@ -147,12 +145,12 @@ public class MainTest {
         try {
             file = createTempFile();
 
-            try (CsvWriter<Person> writer = CsvWriter.open(file, UTF_8, new PersonSerializer())) {
+            try (CsvWriter<Person> writer = CsvWriter.open(file, new PersonSerializer())) {
                 writer.writeLine(mneri);
             }
 
-            try (CsvReader<Person> reader = CsvReader.open(file, UTF_8, new PersonDeserializer())) {
-                Person person = reader.read();
+            try (CsvReader<Person> reader = CsvReader.open(file, new PersonDeserializer())) {
+                Person person = reader.readLine();
                 Assert.assertEquals(mneri, person);
             }
         } catch (IOException e) {
