@@ -8,10 +8,17 @@ import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
 
-public final class CsvWriter<T> implements Closeable {
+/**
+ * Write Java object as csv lines.
+ *
+ * @param <T> The type of the Java objects to write.
+ * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
+ */
+public final class CsvWriter<T> implements Closeable, Flushable {
     private static final int OPENED = 0;
     private static final int CLOSED = 1;
 
@@ -31,26 +38,85 @@ public final class CsvWriter<T> implements Closeable {
         }
     }
 
+    /**
+     * Closes the stream, flushing it first. Once the stream has been closed, further {@link CsvWriter#flush()},
+     * {@link CsvWriter#put(Object)}, {@link CsvWriter#putAll(Collection)} and {@link CsvWriter#putAll(Stream)}
+     * invocations will cause an {@link IOException} to be thrown. Closing a previously closed stream has no effect.
+     *
+     * @throws IOException if an I/O error occurs.
+     */
     @Override
     public void close() throws IOException {
-        checkClosedState();
         state = CLOSED;
+        writer.flush();
         writer.close();
     }
 
+    /**
+     * Flushes this stream by writing any buffered output to the underlying stream.
+     *
+     * @throws IOException if an I/O error occurs.
+     */
+    @Override
+    public void flush() throws IOException {
+        checkClosedState();
+        writer.flush();
+    }
+
+    /**
+     * Opens or creates a file for writing, returning a {@code CsvWriter} that may be used to write object to the file
+     * in csv format. The file is opened for writing, created if it doesn't exist or initially truncated to a size of 0
+     * if it exists. Characters are encoded using the specified charset. Objects are serialized using the specified
+     * serializer.
+     *
+     * @param file       the file to open.
+     * @param charset    the charset to use for encoding.
+     * @param serializer the serializer used to convert objects into csv lines.
+     * @param <T>        the type of the objects to serialize.
+     * @return A new {@code CsvWriter} to write into the specified file.
+     * @throws IOException if an I/O error occurs.
+     */
     public static <T> CsvWriter<T> open(File file, Charset charset, CsvSerializer<T> serializer) throws IOException {
         return open(Files.newBufferedWriter(file.toPath(), charset), serializer);
     }
 
+    /**
+     * Opens or creates a file for writing, returning a {@code CsvWriter} that may be used to write object to the file
+     * in csv format. The file is opened for writing, created if it doesn't exist or initially truncated to a size of 0
+     * if it exists. Characters are encoded using the default JVM charset. Objects are serialized using the specified
+     * serializer.
+     *
+     * @param file       the file to open.
+     * @param serializer the serializer used to convert objects into csv lines.
+     * @param <T>        the type of the objects to serialize.
+     * @return A new {@code CsvWriter} to write into the specified file.
+     * @throws IOException if an I/O error occurs.
+     */
     public static <T> CsvWriter<T> open(File file, CsvSerializer<T> serializer) throws IOException {
         return open(file, Charset.defaultCharset(), serializer);
     }
 
+    /**
+     * Return a new {@code CsvWriter} using the specified {@link Writer} for writing. Bytes file are encoded into
+     * characters using the writer's charset. Writing commences at the point specified by the reader.
+     *
+     * @param writer     the {@link Writer} used to write.
+     * @param serializer the serializer used to convert objects into csv lines.
+     * @param <T>        the type of the objects to serialize.
+     * @return A new {@code CsvWriter} to write into the specified file.
+     */
     public static <T> CsvWriter<T> open(Writer writer, CsvSerializer<T> serializer) {
         return new CsvWriter<>(writer, serializer);
     }
 
-    public void put(T object) throws CsvException, IOException {
+    /**
+     * Write a single object as csv line.
+     *
+     * @param object the object to write.
+     * @throws CsvConversionException if an error occurs during object serialization.
+     * @throws IOException            if an I/O error occurs.
+     */
+    public void put(T object) throws CsvConversionException, IOException {
         checkClosedState();
 
         try {
@@ -73,7 +139,14 @@ public final class CsvWriter<T> implements Closeable {
         writer.write("\r\n");
     }
 
-    public void putAll(List<T> objects) throws CsvException, IOException {
+    /**
+     * Write a {@link Collection} of objects as csv lines.
+     *
+     * @param objects the objects to write.
+     * @throws CsvConversionException if an error occurs during object serialization.
+     * @throws IOException            if an I/O error occurs.
+     */
+    public void putAll(Collection<T> objects) throws CsvConversionException, IOException {
         checkClosedState();
 
         for (T object : objects) {
@@ -81,6 +154,11 @@ public final class CsvWriter<T> implements Closeable {
         }
     }
 
+    /**
+     * Write a {@link Stream} of objects as csv lines.
+     *
+     * @param stream the stream of objects to write.
+     */
     public void putAll(Stream<T> stream) {
         checkClosedState();
 
