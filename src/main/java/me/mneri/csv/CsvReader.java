@@ -107,7 +107,7 @@ public final class CsvReader<T> implements Closeable {
      * {@link CsvReader#hasNext()}, {@link CsvReader#next()} and {@link CsvReader#skip(int)} invocations will throw an
      * {@link IOException}. Closing a previously closed stream has no effect.
      *
-     * @throws IOException if I/O error occurs.
+     * @throws IOException if an I/O error occurs.
      */
     @Override
     public void close() throws IOException {
@@ -294,10 +294,12 @@ public final class CsvReader<T> implements Closeable {
             return;
         }
 
+        int toSkip = n;
+
         if (state == ELEMENT_READ) {
             element = null;
             state = ELEMENT_NOT_READ;
-            n--;
+            toSkip--;
         }
 
         byte row = START;
@@ -310,7 +312,7 @@ public final class CsvReader<T> implements Closeable {
             if ((action & NLINE) != 0) {
                 lines++;
 
-                if (--n > 0) {
+                if (--toSkip > 0) {
                     row = START;
                 } else {
                     return;
