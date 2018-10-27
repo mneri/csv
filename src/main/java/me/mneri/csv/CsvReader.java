@@ -52,11 +52,10 @@ public final class CsvReader<T> implements Closeable {
     //@formatter:on
 
     //@formatter:off
-    private static final int OPENED           = 0;
-    private static final int ELEMENT_NOT_READ = 1;
-    private static final int ELEMENT_READ     = 2;
-    private static final int NO_SUCH_ELEMENT  = 3;
-    private static final int CLOSED           = 4;
+    private static final int ELEMENT_NOT_READ = 0;
+    private static final int ELEMENT_READ     = 1;
+    private static final int NO_SUCH_ELEMENT  = 2;
+    private static final int CLOSED           = 3;
     //@formatter:on
 
     private static final int DEFAULT_BUFFER_SIZE = 8192;
@@ -68,7 +67,7 @@ public final class CsvReader<T> implements Closeable {
     private int lines;
     private final Reader reader;
     private int skip;
-    private int state = OPENED;
+    private int state = ELEMENT_NOT_READ;
 
     private CsvReader(Reader reader, CsvDeserializer<T> deserializer) {
         this.reader = reader;
