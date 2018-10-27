@@ -75,12 +75,15 @@ public final class CsvReader<T> implements Closeable {
         this.deserializer = deserializer;
     }
 
+    private void checkClosedState() {
+        if (state == CLOSED) {
+            throw new IllegalStateException("The reader is closed.");
+        }
+    }
+
     @Override
     public void close() throws IOException {
-        if (state == CLOSED) {
-            throw new IllegalStateException("The reader has already been closed.");
-        }
-
+        checkClosedState();
         state = CLOSED;
         reader.close();
     }
@@ -99,9 +102,7 @@ public final class CsvReader<T> implements Closeable {
     }
 
     public T get() throws CsvException, IOException {
-        if (state == CLOSED) {
-            throw new IllegalStateException("The reader has already been closed.");
-        }
+        checkClosedState();
 
         if (!hasNext()) {
             throw new NoSuchElementException();
@@ -115,9 +116,10 @@ public final class CsvReader<T> implements Closeable {
     }
 
     public boolean hasNext() throws CsvException, IOException {
+        checkClosedState();
+
         //@formatter:off
-        if      (state == CLOSED)          { throw new IllegalStateException("The reader has already been closed."); }
-        else if (state == ELEMENT_READ)    { return true; }
+        if      (state == ELEMENT_READ)    { return true; }
         else if (state == NO_SUCH_ELEMENT) { return false; }
         //@formatter:on
 

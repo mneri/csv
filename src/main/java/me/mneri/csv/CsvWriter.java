@@ -17,7 +17,7 @@ public final class CsvWriter<T> implements Closeable {
 
     private final CsvSerializer<T> serializer;
     private final List<String> line = new ArrayList<>();
-    private int status = OPENED;
+    private int state = OPENED;
     private final Writer writer;
 
     private CsvWriter(Writer writer, CsvSerializer<T> serializer) {
@@ -25,13 +25,16 @@ public final class CsvWriter<T> implements Closeable {
         this.serializer = serializer;
     }
 
+    private void checkClosedState() {
+        if (state == CLOSED) {
+            throw new IllegalStateException("The writer is closed.");
+        }
+    }
+
     @Override
     public void close() throws IOException {
-        if (status == CLOSED) {
-            throw new IllegalStateException("The writer has already been closed.");
-        }
-
-        status = CLOSED;
+        checkClosedState();
+        state = CLOSED;
         writer.close();
     }
 
@@ -48,9 +51,7 @@ public final class CsvWriter<T> implements Closeable {
     }
 
     public void put(T object) throws CsvException, IOException {
-        if (status == CLOSED) {
-            throw new IllegalStateException("The writer has already been closed.");
-        }
+        checkClosedState();
 
         try {
             line.clear();
@@ -73,12 +74,16 @@ public final class CsvWriter<T> implements Closeable {
     }
 
     public void putAll(List<T> objects) throws CsvException, IOException {
+        checkClosedState();
+
         for (T object : objects) {
             put(object);
         }
     }
 
     public void putAll(Stream<T> stream) {
+        checkClosedState();
+
         stream.forEach(object -> {
             try {
                 put(object);
