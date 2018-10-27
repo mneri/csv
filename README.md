@@ -45,7 +45,7 @@ To write a CSV file you use `CsvWriter` class.
 ```java
 try (CsvWriter<Person> writer = CsvWriter.open(new File("test.csv"), new PersonConverter())) {
     for (Person person : persons)
-        writer.writeLine(person);
+        writer.put(person);
 } catch (CsvException | IOException e) {
     e.printStackTrace();
 }
@@ -55,10 +55,8 @@ To read from a CSV file you use `CsvReader` class.
 
 ```java
 try (CsvReader<Person> reader = CsvReader.open(new File("test.csv"), new PersonConverter())) {
-    Person person;
-
-    while ((person = reader.readLine()) != null)
-        System.out.println(person);
+    while (reader.hasNext())
+        System.out.println(reader.get());
 } catch (CsvException | IOException e) {
     e.printStackTrace();
 }

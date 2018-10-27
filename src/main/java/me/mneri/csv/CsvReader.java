@@ -51,18 +51,24 @@ public final class CsvReader<T> implements Closeable {
             { NO_OP        , NO_OP        , NO_OP        , NO_OP        , NO_OP        , NO_OP         }}; // FINSH
     //@formatter:on
 
-    private static final int OPENED = 0;
-    private static final int CLOSED = 1;
+    //@formatter:off
+    private static final int OPENED           = 0;
+    private static final int ELEMENT_NOT_READ = 1;
+    private static final int ELEMENT_READ     = 2;
+    private static final int NO_SUCH_ELEMENT  = 3;
+    private static final int CLOSED           = 4;
+    //@formatter:on
 
     private static final int DEFAULT_BUFFER_SIZE = 8192;
 
     private final StringBuilder buffer = new StringBuilder(DEFAULT_BUFFER_SIZE);
+    private final CsvDeserializer<T> deserializer;
+    private T element;
     private final List<String> line = new ArrayList<>();
     private int lines;
     private final Reader reader;
     private int skip;
     private int state = OPENED;
-    private final CsvDeserializer<T> deserializer;
 
     private CsvReader(Reader reader, CsvDeserializer<T> deserializer) {
         this.reader = reader;
@@ -79,7 +85,7 @@ public final class CsvReader<T> implements Closeable {
         reader.close();
     }
 
-    private int indexOf(int charCode) {
+    private int columnOf(int charCode) {
         switch (charCode) {
             //@formatter:off
             case '"' : return 1;
@@ -92,66 +98,39 @@ public final class CsvReader<T> implements Closeable {
         }
     }
 
-    private Iterator<T> iterator() {
-        return new Iterator<T>() {
-            private T object = null;
-
-            @Override
-            public boolean hasNext() {
-                if (object != null) {
-                    return true;
-                }
-
-                try {
-                    return (object = readLine()) != null;
-                } catch (CsvException e) {
-                    throw new UncheckedCsvException(e);
-                } catch (IOException e) {
-                    throw new UncheckedIOException(e);
-                }
-            }
-
-            @Override
-            public T next() {
-                if (!hasNext()) {
-                    throw new NoSuchElementException();
-                }
-
-                T result = object;
-                object = null;
-
-                return result;
-            }
-        };
-    }
-
-    public static <T> CsvReader<T> open(File file, CsvDeserializer<T> deserializer) throws IOException {
-        return open(file, Charset.defaultCharset(), deserializer);
-    }
-
-    public static <T> CsvReader<T> open(File file, Charset charset, CsvDeserializer<T> deserializer) throws IOException {
-        return open(Files.newBufferedReader(file.toPath(), charset), deserializer);
-    }
-
-    public static <T> CsvReader<T> open(Reader reader, CsvDeserializer<T> deserializer) {
-        return new CsvReader<>(reader, deserializer);
-    }
-
-    public T readLine() throws CsvException, IOException {
+    public T get() throws CsvException, IOException {
         if (state == CLOSED) {
             throw new IllegalStateException("The reader has already been closed.");
         }
 
+        if (!hasNext()) {
+            throw new NoSuchElementException();
+        }
+
+        T result = element;
+        element = null;
+        state = ELEMENT_NOT_READ;
+
+        return result;
+    }
+
+    public boolean hasNext() throws CsvException, IOException {
+        //@formatter:off
+        if      (state == CLOSED)          { throw new IllegalStateException("The reader has already been closed."); }
+        else if (state == ELEMENT_READ)    { return true; }
+        else if (state == NO_SUCH_ELEMENT) { return false; }
+        //@formatter:on
+
         byte action;
         int charCode;
         boolean dirty = false;
-        int index;
-        byte state = START;
+        int column;
+        byte row = START;
 
         while (true) {
             charCode = reader.read();
-            index = indexOf(charCode);
-            action = ACTIONS[state][index];
+            column = columnOf(charCode);
+            action = ACTIONS[row][column];
 
             if ((action & ACCUM) != 0) {
                 buffer.append((char) charCode);
@@ -173,32 +152,68 @@ public final class CsvReader<T> implements Closeable {
 
                 if (skip > 0) {
                     skip--;
-
                     dirty = false;
-                    state = START;
+                    row = START;
                     line.clear();
-                    
                     continue;
                 } else {
                     try {
                         T object = deserializer.deserialize(line);
                         line.clear();
 
-                        return object;
+                        element = object;
+                        state = ELEMENT_READ;
+
+                        return true;
                     } catch (Exception e) {
                         throw new CsvConversionException(line, e);
                     }
                 }
             }
 
-            state = TRANSITIONS[state][index];
+            row = TRANSITIONS[row][column];
 
-            if (state == FINSH) {
-                return null;
-            } else if (state == ERROR) {
+            if (row == FINSH) {
+                state = NO_SUCH_ELEMENT;
+                return false;
+            } else if (row == ERROR) {
                 throw new UnexpectedCharacterException(lines, charCode);
             }
         }
+    }
+
+    private Iterator<T> iterator() {
+        return new Iterator<T>() {
+            @Override
+            public boolean hasNext() {
+                //@formatter:off
+                try                    { return CsvReader.this.hasNext(); }
+                catch (CsvException e) { throw new UncheckedCsvException(e); }
+                catch (IOException e)  { throw new UncheckedIOException(e); }
+                //@formatter:on
+            }
+
+            @Override
+            public T next() {
+                //@formatter:off
+                try                    { return get(); }
+                catch (CsvException e) { throw new UncheckedCsvException(e); }
+                catch (IOException e)  { throw new UncheckedIOException(e); }
+                //@formatter:on
+            }
+        };
+    }
+
+    public static <T> CsvReader<T> open(File file, CsvDeserializer<T> deserializer) throws IOException {
+        return open(file, Charset.defaultCharset(), deserializer);
+    }
+
+    public static <T> CsvReader<T> open(File file, Charset charset, CsvDeserializer<T> deserializer) throws IOException {
+        return open(Files.newBufferedReader(file.toPath(), charset), deserializer);
+    }
+
+    public static <T> CsvReader<T> open(Reader reader, CsvDeserializer<T> deserializer) {
+        return new CsvReader<>(reader, deserializer);
     }
 
     public void skip(int skip) {

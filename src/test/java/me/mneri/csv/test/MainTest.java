@@ -23,8 +23,8 @@ public class MainTest {
         File file = getResourceFile("simple.csv");
 
         try (CsvReader<Void> reader = CsvReader.open(file, new ExceptionDeserializer())) {
-            while (reader.readLine() != null) {
-                // Do nothing
+            while (reader.hasNext()) {
+                reader.get();
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -40,7 +40,7 @@ public class MainTest {
             file = createTempFile();
             writer = CsvWriter.open(file, new ExceptionSerializer());
 
-            writer.writeLine(null);
+            writer.put(null);
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
@@ -70,11 +70,11 @@ public class MainTest {
             file = createTempFile();
 
             try (CsvWriter<List<String>> writer = CsvWriter.open(file, new StringListSerializer())) {
-                writer.writeLine(strings);
+                writer.put(strings);
             }
 
             try (CsvReader<List<String>> reader = CsvReader.open(file, new StringListDeserializer())) {
-                Assert.assertEquals(strings, reader.readLine());
+                Assert.assertEquals(strings, reader.get());
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -92,7 +92,7 @@ public class MainTest {
 
         try (CsvReader<List<Integer>> reader = CsvReader.open(file, new IntegerListDeserializer())) {
             reader.skip(1);
-            List<Integer> second = reader.readLine();
+            List<Integer> second = reader.get();
             Assert.assertEquals(second, expected);
         } catch (IOException e) {
             e.printStackTrace();
@@ -115,7 +115,7 @@ public class MainTest {
             file = createTempFile();
 
             try (CsvWriter<Person> writer = CsvWriter.open(file, new PersonSerializer())) {
-                writer.writeLines(persons);
+                writer.putAll(persons);
             }
 
             try (Stream<Person> stream = CsvReader.stream(file, new PersonDeserializer())) {
@@ -146,11 +146,11 @@ public class MainTest {
             file = createTempFile();
 
             try (CsvWriter<Person> writer = CsvWriter.open(file, new PersonSerializer())) {
-                writer.writeLine(mneri);
+                writer.put(mneri);
             }
 
             try (CsvReader<Person> reader = CsvReader.open(file, new PersonDeserializer())) {
-                Person person = reader.readLine();
+                Person person = reader.get();
                 Assert.assertEquals(mneri, person);
             }
         } catch (IOException e) {

@@ -17,7 +17,7 @@ public final class CsvWriter<T> implements Closeable {
 
     private final CsvSerializer<T> serializer;
     private final List<String> line = new ArrayList<>();
-    private int state = OPENED;
+    private int status = OPENED;
     private final Writer writer;
 
     private CsvWriter(Writer writer, CsvSerializer<T> serializer) {
@@ -27,11 +27,11 @@ public final class CsvWriter<T> implements Closeable {
 
     @Override
     public void close() throws IOException {
-        if (state == CLOSED) {
+        if (status == CLOSED) {
             throw new IllegalStateException("The writer has already been closed.");
         }
 
-        state = CLOSED;
+        status = CLOSED;
         writer.close();
     }
 
@@ -47,7 +47,50 @@ public final class CsvWriter<T> implements Closeable {
         return new CsvWriter<>(writer, serializer);
     }
 
-    private void writeField(String string) throws IOException {
+    public void put(T object) throws CsvException, IOException {
+        if (status == CLOSED) {
+            throw new IllegalStateException("The writer has already been closed.");
+        }
+
+        try {
+            line.clear();
+            serializer.serialize(object, line);
+        } catch (Exception e) {
+            throw new CsvConversionException(line, e);
+        }
+
+        int fields = line.size();
+
+        for (int i = 0; i < fields; i++) {
+            putField(line.get(i));
+
+            if (i != fields - 1) {
+                writer.write(",");
+            }
+        }
+
+        writer.write("\r\n");
+    }
+
+    public void putAll(List<T> objects) throws CsvException, IOException {
+        for (T object : objects) {
+            put(object);
+        }
+    }
+
+    public void putAll(Stream<T> stream) {
+        stream.forEach(object -> {
+            try {
+                put(object);
+            } catch (CsvException e) {
+                throw new UncheckedCsvException(e);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        });
+    }
+
+    private void putField(String string) throws IOException {
         if (string == null) {
             return;
         }
@@ -85,48 +128,5 @@ public final class CsvWriter<T> implements Closeable {
         } else {
             writer.write(string);
         }
-    }
-
-    public void writeLine(T object) throws CsvException, IOException {
-        if (state == CLOSED) {
-            throw new IllegalStateException("The writer has already been closed.");
-        }
-
-        try {
-            line.clear();
-            serializer.serialize(object, line);
-        } catch (Exception e) {
-            throw new CsvConversionException(line, e);
-        }
-
-        int fields = line.size();
-
-        for (int i = 0; i < fields; i++) {
-            writeField(line.get(i));
-
-            if (i != fields - 1) {
-                writer.write(",");
-            }
-        }
-
-        writer.write("\r\n");
-    }
-
-    public void writeLines(List<T> objects) throws CsvException, IOException {
-        for (T object : objects) {
-            writeLine(object);
-        }
-    }
-
-    public void writeLines(Stream<T> stream) {
-        stream.forEach(object -> {
-            try {
-                writeLine(object);
-            } catch (CsvException e) {
-                throw new UncheckedCsvException(e);
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
-        });
     }
 }
