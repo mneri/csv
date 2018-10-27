@@ -24,7 +24,7 @@ public class MainTest {
 
         try (CsvReader<Void> reader = CsvReader.open(file, new ExceptionDeserializer())) {
             while (reader.hasNext()) {
-                reader.get();
+                reader.next();
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -74,7 +74,7 @@ public class MainTest {
             }
 
             try (CsvReader<List<String>> reader = CsvReader.open(file, new StringListDeserializer())) {
-                Assert.assertEquals(strings, reader.get());
+                Assert.assertEquals(strings, reader.next());
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -92,7 +92,7 @@ public class MainTest {
 
         try (CsvReader<List<Integer>> reader = CsvReader.open(file, new IntegerListDeserializer())) {
             reader.skip(1);
-            List<Integer> second = reader.get();
+            List<Integer> second = reader.next();
             Assert.assertEquals(second, expected);
         } catch (IOException e) {
             e.printStackTrace();
@@ -150,7 +150,7 @@ public class MainTest {
             }
 
             try (CsvReader<Person> reader = CsvReader.open(file, new PersonDeserializer())) {
-                Person person = reader.get();
+                Person person = reader.next();
                 Assert.assertEquals(mneri, person);
             }
         } catch (IOException e) {

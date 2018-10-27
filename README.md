@@ -56,7 +56,7 @@ To read from a CSV file you use `CsvReader` class.
 ```java
 try (CsvReader<Person> reader = CsvReader.open(new File("test.csv"), new PersonDeserializer())) {
     while (reader.hasNext())
-        System.out.println(reader.get());
+        System.out.println(reader.next());
 } catch (CsvException | IOException e) {
     e.printStackTrace();
 }
