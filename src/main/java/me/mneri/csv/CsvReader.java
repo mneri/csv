@@ -1,5 +1,10 @@
 package me.mneri.csv;
 
+import me.mneri.csv.exception.CsvConversionException;
+import me.mneri.csv.exception.CsvException;
+import me.mneri.csv.exception.UncheckedCsvException;
+import me.mneri.csv.exception.UnexpectedCharacterException;
+
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -119,24 +124,8 @@ public final class CsvReader<T> implements Closeable {
         };
     }
 
-    public static CsvReader<List<String>> open(File file) throws IOException {
-        return open(file, Charset.defaultCharset());
-    }
-
-    public static CsvReader<List<String>> open(File file, Charset charset) throws IOException {
-        return open(file, charset, new StringListDeserializer());
-    }
-
-    public static <T> CsvReader<T> open(File file, CsvDeserializer<T> deserializer) throws IOException {
-        return open(file, Charset.defaultCharset(), deserializer);
-    }
-
     public static <T> CsvReader<T> open(File file, Charset charset, CsvDeserializer<T> deserializer) throws IOException {
         return open(Files.newBufferedReader(file.toPath(), charset), deserializer);
-    }
-
-    public static CsvReader<List<String>> open(Reader reader) {
-        return open(reader, new StringListDeserializer());
     }
 
     public static <T> CsvReader<T> open(Reader reader, CsvDeserializer<T> deserializer) {
@@ -202,12 +191,8 @@ public final class CsvReader<T> implements Closeable {
         return Spliterators.spliteratorUnknownSize(iterator(), characteristics);
     }
 
-    public static Stream<List<String>> stream(File file) throws IOException {
-        return stream(file, new StringListDeserializer());
-    }
-
-    public static <T> Stream<T> stream(File file, CsvDeserializer<T> deserializer) throws IOException {
-        return stream(Files.newBufferedReader(file.toPath()), deserializer);
+    public static <T> Stream<T> stream(File file, Charset charset, CsvDeserializer<T> deserializer) throws IOException {
+        return stream(Files.newBufferedReader(file.toPath(), charset), deserializer);
     }
 
     public static <T> Stream<T> stream(Reader reader, CsvDeserializer<T> deserializer) {

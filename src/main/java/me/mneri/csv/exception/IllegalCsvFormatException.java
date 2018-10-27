@@ -1,4 +1,4 @@
-package me.mneri.csv;
+package me.mneri.csv.exception;
 
 public class IllegalCsvFormatException extends CsvException {
     IllegalCsvFormatException(int line, String message) {

@@ -12,7 +12,7 @@ public final class CharUtils {
     private CharUtils() {
     }
 
-    public static String toString(int c) {
+    public static String printable(int c) {
         //@formatter:off
         if      (c == -1) { return "{EOF}"; }
         else if (c < 32)  { return NON_PRINTABLE[c]; }

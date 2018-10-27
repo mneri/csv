@@ -1,9 +1,9 @@
-package me.mneri.csv;
+package me.mneri.csv.exception;
 
 import java.util.Objects;
 
 public class UncheckedCsvException extends RuntimeException {
-    UncheckedCsvException(CsvException cause) {
+    public UncheckedCsvException(CsvException cause) {
         super(cause.getMessage(), Objects.requireNonNull(cause));
     }
 }

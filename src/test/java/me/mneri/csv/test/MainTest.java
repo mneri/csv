@@ -1,16 +1,16 @@
 package me.mneri.csv.test;
 
 import me.mneri.csv.*;
+import me.mneri.csv.exception.CsvConversionException;
+import me.mneri.csv.exception.CsvException;
 import me.mneri.csv.test.model.Person;
-import me.mneri.csv.test.serialization.ExceptionDeserializer;
-import me.mneri.csv.test.serialization.ExceptionSerializer;
-import me.mneri.csv.test.serialization.PersonDeserializer;
-import me.mneri.csv.test.serialization.PersonSerializer;
+import me.mneri.csv.test.serialization.*;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -22,7 +22,7 @@ public class MainTest {
     public void conversionException1() throws CsvException {
         File file = getResourceFile("simple.csv");
 
-        try (CsvReader<Void> reader = CsvReader.open(file, new ExceptionDeserializer())) {
+        try (CsvReader<Void> reader = CsvReader.open(file, StandardCharsets.UTF_8, new ExceptionDeserializer())) {
             while (reader.readLine() != null) {
                 // Do nothing
             }
@@ -34,19 +34,19 @@ public class MainTest {
     @Test(expected = CsvConversionException.class)
     public void conversionException2() throws CsvException {
         CsvWriter<Void> writer = null;
-        File tempFile = null;
+        File file = null;
 
         try {
-            tempFile = createTempFile();
-            writer = CsvWriter.open(tempFile, new ExceptionSerializer());
+            file = createTempFile();
+            writer = CsvWriter.open(file, StandardCharsets.UTF_8, new ExceptionSerializer());
 
             writer.writeLine(null);
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
             //@formatter:off
-            if (writer != null)   { try { writer.close(); }    catch (Exception ignored) { } }
-            if (tempFile != null) { try { tempFile.delete(); } catch (Exception ignored) { } }
+            if (writer != null) { try { writer.close(); } catch (Exception ignored) { } }
+            if (file != null)   { try { file.delete(); }  catch (Exception ignored) { } }
             //@formatter:on
         }
     }
@@ -63,31 +63,31 @@ public class MainTest {
 
     @Test
     public void shouldQuote() throws CsvException {
-        File tempFile = null;
-
+        File file = null;
         List<String> strings = Arrays.asList("a", "\"b\"", "c", "d,e");
 
         try {
-            tempFile = createTempFile();
+            file = createTempFile();
 
-            try (CsvWriter<List<String>> writer = CsvWriter.open(tempFile, new StringListSerializer())) {
+            try (CsvWriter<List<String>> writer = CsvWriter.open(file, StandardCharsets.UTF_8, new StringListSerializer())) {
                 writer.writeLine(strings);
             }
 
-            try (CsvReader<List<String>> reader = CsvReader.open(tempFile, new StringListDeserializer())) {
+            try (CsvReader<List<String>> reader = CsvReader.open(file, StandardCharsets.UTF_8, new StringListDeserializer())) {
                 Assert.assertEquals(strings, reader.readLine());
             }
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
             //@formatter:off
-            if (tempFile != null) { try { tempFile.delete(); } catch (Exception ignored) { } }
+            if (file != null) { try { file.delete(); } catch (Exception ignored) { } }
             //@formatter:on
         }
     }
 
     @Test
     public void stream() {
+        File file = null;
         List<Person> persons = new ArrayList<>();
 
         for (int i = 0; i < 100; i++) {
@@ -97,16 +97,14 @@ public class MainTest {
             persons.add(person);
         }
 
-        File tempFile = null;
-
         try {
-            tempFile = createTempFile();
+            file = createTempFile();
 
-            try (CsvWriter<Person> writer = CsvWriter.open(tempFile, new PersonSerializer())) {
+            try (CsvWriter<Person> writer = CsvWriter.open(file, StandardCharsets.UTF_8, new PersonSerializer())) {
                 writer.writeLines(persons);
             }
 
-            try (Stream<Person> stream = CsvReader.stream(tempFile, new PersonDeserializer())) {
+            try (Stream<Person> stream = CsvReader.stream(file, StandardCharsets.UTF_8, new PersonDeserializer())) {
                 List<Person> collected = stream.collect(Collectors.toList());
                 Assert.assertEquals(persons, collected);
             }
@@ -114,13 +112,15 @@ public class MainTest {
             e.printStackTrace();
         } finally {
             //@formatter:off
-            if (tempFile != null) { try { tempFile.delete(); } catch (Exception ignored) { } }
+            if (file != null) { try { file.delete(); } catch (Exception ignored) { } }
             //@formatter:on
         }
     }
 
     @Test
     public void writeRead() throws CsvException {
+        File file = null;
+
         Person mneri = new Person();
         mneri.setFirstName("Massimo");
         mneri.setLastName("Neri");
@@ -128,16 +128,14 @@ public class MainTest {
         mneri.setAddress("Gambettola, Italy");
         mneri.setWebsite("http://mneri.me");
 
-        File tempFile = null;
-
         try {
-            tempFile = createTempFile();
+            file = createTempFile();
 
-            try (CsvWriter<Person> writer = CsvWriter.open(tempFile, new PersonSerializer())) {
+            try (CsvWriter<Person> writer = CsvWriter.open(file, StandardCharsets.UTF_8, new PersonSerializer())) {
                 writer.writeLine(mneri);
             }
 
-            try (CsvReader<Person> reader = CsvReader.open(tempFile, new PersonDeserializer())) {
+            try (CsvReader<Person> reader = CsvReader.open(file, StandardCharsets.UTF_8, new PersonDeserializer())) {
                 Person person = reader.readLine();
                 Assert.assertEquals(mneri, person);
             }
@@ -145,7 +143,7 @@ public class MainTest {
             e.printStackTrace();
         } finally {
             //@formatter:off
-            if (tempFile != null) { try { tempFile.delete(); } catch (Exception ignored) { } }
+            if (file != null) { try { file.delete(); } catch (Exception ignored) { } }
             //@formatter:on
         }
     }

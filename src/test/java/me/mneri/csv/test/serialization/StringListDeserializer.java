@@ -1,4 +1,6 @@
-package me.mneri.csv;
+package me.mneri.csv.test.serialization;
+
+import me.mneri.csv.CsvDeserializer;
 
 import java.util.ArrayList;
 import java.util.List;

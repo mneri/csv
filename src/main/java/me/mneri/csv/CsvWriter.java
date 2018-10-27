@@ -1,10 +1,15 @@
 package me.mneri.csv;
 
+import me.mneri.csv.exception.CsvConversionException;
+import me.mneri.csv.exception.CsvException;
+import me.mneri.csv.exception.UncheckedCsvException;
+
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 public final class CsvWriter<T> implements Closeable {
     private static final int OPENED = 0;
@@ -30,24 +35,8 @@ public final class CsvWriter<T> implements Closeable {
         writer.close();
     }
 
-    public static CsvWriter<List<String>> open(File file) throws IOException {
-        return open(file, Charset.defaultCharset());
-    }
-
-    public static CsvWriter<List<String>> open(File file, Charset charset) throws IOException {
-        return open(file, charset, new StringListSerializer());
-    }
-
-    public static <T> CsvWriter<T> open(File file, CsvSerializer<T> serializer) throws IOException {
-        return open(file, Charset.defaultCharset(), serializer);
-    }
-
     public static <T> CsvWriter<T> open(File file, Charset charset, CsvSerializer<T> serializer) throws IOException {
         return open(Files.newBufferedWriter(file.toPath(), charset), serializer);
-    }
-
-    public static CsvWriter<List<String>> open(Writer writer) {
-        return open(writer, new StringListSerializer());
     }
 
     public static <T> CsvWriter<T> open(Writer writer, CsvSerializer<T> serializer) {
@@ -123,5 +112,17 @@ public final class CsvWriter<T> implements Closeable {
         for (T object : objects) {
             writeLine(object);
         }
+    }
+
+    public void writeLines(Stream<T> stream) {
+        stream.forEach(object -> {
+            try {
+                writeLine(object);
+            } catch (CsvException e) {
+                throw new UncheckedCsvException(e);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        });
     }
 }
