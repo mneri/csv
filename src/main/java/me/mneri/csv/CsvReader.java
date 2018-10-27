@@ -60,34 +60,6 @@ public final class CsvReader<T> implements Closeable {
 
     private static final int DEFAULT_BUFFER_SIZE = 8192;
 
-    public static <T> CsvReader<T> open(File file, CsvDeserializer<T> deserializer) throws IOException {
-        return open(file, Charset.defaultCharset(), deserializer);
-    }
-
-    public static <T> CsvReader<T> open(File file, Charset charset, CsvDeserializer<T> deserializer) throws IOException {
-        return open(Files.newBufferedReader(file.toPath(), charset), deserializer);
-    }
-
-    public static <T> CsvReader<T> open(Reader reader, CsvDeserializer<T> deserializer) {
-        return new CsvReader<>(reader, deserializer);
-    }
-
-    public static <T> Stream<T> stream(File file, CsvDeserializer<T> deserializer) throws IOException {
-        return stream(file, Charset.defaultCharset(), deserializer);
-    }
-
-    public static <T> Stream<T> stream(File file, Charset charset, CsvDeserializer<T> deserializer) throws IOException {
-        return stream(Files.newBufferedReader(file.toPath(), charset), deserializer);
-    }
-
-    public static <T> Stream<T> stream(Reader reader, CsvDeserializer<T> deserializer) {
-        //@formatter:off
-        CsvReader<T> csvReader = CsvReader.open(reader, deserializer);
-        return StreamSupport.stream(csvReader.spliterator(), false)
-                            .onClose(() -> { try { csvReader.close(); } catch (Exception ignored) { } });
-        //@formatter:on
-    }
-
     private final StringBuilder buffer = new StringBuilder(DEFAULT_BUFFER_SIZE);
     private final CsvDeserializer<T> deserializer;
     private T element;
@@ -233,6 +205,18 @@ public final class CsvReader<T> implements Closeable {
         return result;
     }
 
+    public static <T> CsvReader<T> open(File file, CsvDeserializer<T> deserializer) throws IOException {
+        return open(file, Charset.defaultCharset(), deserializer);
+    }
+
+    public static <T> CsvReader<T> open(File file, Charset charset, CsvDeserializer<T> deserializer) throws IOException {
+        return open(Files.newBufferedReader(file.toPath(), charset), deserializer);
+    }
+
+    public static <T> CsvReader<T> open(Reader reader, CsvDeserializer<T> deserializer) {
+        return new CsvReader<>(reader, deserializer);
+    }
+
     public void skip(int skip) {
         checkClosedState();
         this.skip = skip;
@@ -241,5 +225,21 @@ public final class CsvReader<T> implements Closeable {
     private Spliterator<T> spliterator() {
         int characteristics = Spliterator.IMMUTABLE | Spliterator.ORDERED;
         return Spliterators.spliteratorUnknownSize(iterator(), characteristics);
+    }
+
+    public static <T> Stream<T> stream(File file, CsvDeserializer<T> deserializer) throws IOException {
+        return stream(file, Charset.defaultCharset(), deserializer);
+    }
+
+    public static <T> Stream<T> stream(File file, Charset charset, CsvDeserializer<T> deserializer) throws IOException {
+        return stream(Files.newBufferedReader(file.toPath(), charset), deserializer);
+    }
+
+    public static <T> Stream<T> stream(Reader reader, CsvDeserializer<T> deserializer) {
+        //@formatter:off
+        CsvReader<T> csvReader = CsvReader.open(reader, deserializer);
+        return StreamSupport.stream(csvReader.spliterator(), false)
+                            .onClose(() -> { try { csvReader.close(); } catch (Exception ignored) { } });
+        //@formatter:on
     }
 }

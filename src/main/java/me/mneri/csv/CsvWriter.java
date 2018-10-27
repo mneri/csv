@@ -15,18 +15,6 @@ public final class CsvWriter<T> implements Closeable {
     private static final int OPENED = 0;
     private static final int CLOSED = 1;
 
-    public static <T> CsvWriter<T> open(File file, Charset charset, CsvSerializer<T> serializer) throws IOException {
-        return open(Files.newBufferedWriter(file.toPath(), charset), serializer);
-    }
-
-    public static <T> CsvWriter<T> open(File file, CsvSerializer<T> serializer) throws IOException {
-        return open(file, Charset.defaultCharset(), serializer);
-    }
-
-    public static <T> CsvWriter<T> open(Writer writer, CsvSerializer<T> serializer) {
-        return new CsvWriter<>(writer, serializer);
-    }
-
     private final CsvSerializer<T> serializer;
     private final List<String> line = new ArrayList<>();
     private int state = OPENED;
@@ -48,6 +36,18 @@ public final class CsvWriter<T> implements Closeable {
         checkClosedState();
         state = CLOSED;
         writer.close();
+    }
+
+    public static <T> CsvWriter<T> open(File file, Charset charset, CsvSerializer<T> serializer) throws IOException {
+        return open(Files.newBufferedWriter(file.toPath(), charset), serializer);
+    }
+
+    public static <T> CsvWriter<T> open(File file, CsvSerializer<T> serializer) throws IOException {
+        return open(file, Charset.defaultCharset(), serializer);
+    }
+
+    public static <T> CsvWriter<T> open(Writer writer, CsvSerializer<T> serializer) {
+        return new CsvWriter<>(writer, serializer);
     }
 
     public void put(T object) throws CsvException, IOException {
