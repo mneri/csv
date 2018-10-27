@@ -60,6 +60,7 @@ public final class CsvReader<T> implements Closeable {
     private final List<String> line = new ArrayList<>();
     private int lines;
     private final Reader reader;
+    private int skip;
     private int state = OPENED;
     private final CsvDeserializer<T> deserializer;
 
@@ -102,7 +103,7 @@ public final class CsvReader<T> implements Closeable {
                 }
 
                 try {
-                    return (object = readLine()) != null;
+                    return (object = read()) != null;
                 } catch (CsvException e) {
                     throw new UncheckedCsvException(e);
                 } catch (IOException e) {
@@ -132,7 +133,7 @@ public final class CsvReader<T> implements Closeable {
         return new CsvReader<>(reader, deserializer);
     }
 
-    public T readLine() throws CsvException, IOException {
+    public T read() throws CsvException, IOException {
         if (state == CLOSED) {
             throw new IllegalStateException("The reader has already been closed.");
         }
@@ -166,13 +167,23 @@ public final class CsvReader<T> implements Closeable {
             if ((action & NLINE) != 0) {
                 lines++;
 
-                try {
-                    T object = deserializer.deserialize(line);
+                if (skip > 0) {
+                    skip--;
+
+                    dirty = false;
+                    state = START;
                     line.clear();
 
-                    return object;
-                } catch (Exception e) {
-                    throw new CsvConversionException(line, e);
+                    continue;
+                } else {
+                    try {
+                        T object = deserializer.deserialize(line);
+                        line.clear();
+
+                        return object;
+                    } catch (Exception e) {
+                        throw new CsvConversionException(line, e);
+                    }
                 }
             }
 
@@ -184,6 +195,10 @@ public final class CsvReader<T> implements Closeable {
                 throw new UnexpectedCharacterException(lines, charCode);
             }
         }
+    }
+
+    public void skip(int skip) {
+        this.skip = skip;
     }
 
     private Spliterator<T> spliterator() {
