@@ -349,7 +349,7 @@ public class MainTest {
         }
     }
 
-    @Test
+    //@Test
     public void worldcitiespop() throws IOException, CsvException {
         ZipInputStream zip = null;
         CsvReader<CityPop> reader = null;
