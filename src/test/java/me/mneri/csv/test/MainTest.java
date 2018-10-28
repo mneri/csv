@@ -126,6 +126,22 @@ public class MainTest {
         }
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void readAfterClose() throws CsvException, IOException {
+        File file = getResourceFile("simple.csv");
+        CsvReader<List<Integer>> reader = null;
+
+        try {
+            reader = CsvReader.open(file, new IntegerListDeserializer());
+            reader.close();
+            reader.next();
+        } finally {
+            //@formatter:off
+            if (reader != null) { try { reader.close(); } catch (Exception ignored) { } }
+            //@formatter:on
+        }
+    }
+
     @Test
     public void shouldQuote() throws CsvException, IOException {
         File file = null;
