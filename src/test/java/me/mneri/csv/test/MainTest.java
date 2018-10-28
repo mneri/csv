@@ -151,17 +151,6 @@ public class MainTest {
     @Test
     public void skip2() throws CsvException, IOException {
         File file = getResourceFile("simple.csv");
-
-        try (CsvReader<List<Integer>> reader = CsvReader.open(file, new IntegerListDeserializer())) {
-            reader.next();
-            reader.skip(1);
-            Assert.assertFalse(reader.hasNext());
-        }
-    }
-
-    @Test
-    public void skip3() throws CsvException, IOException {
-        File file = getResourceFile("simple.csv");
         List<Integer> expected = Arrays.asList(6, 7, 8, 9, 0);
 
         try (CsvReader<List<Integer>> reader = CsvReader.open(file, new IntegerListDeserializer())) {
@@ -171,6 +160,37 @@ public class MainTest {
 
             List<Integer> second = reader.next();
             Assert.assertEquals(second, expected);
+        }
+    }
+
+    @Test
+    public void skip3() throws CsvException, IOException {
+        File file = getResourceFile("simple.csv");
+
+        try (CsvReader<List<Integer>> reader = CsvReader.open(file, new IntegerListDeserializer())) {
+            reader.next();
+            reader.skip(1);
+            Assert.assertFalse(reader.hasNext());
+        }
+    }
+
+    @Test
+    public void skip4() throws CsvException, IOException {
+        File file = getResourceFile("simple.csv");
+
+        try (CsvReader<List<Integer>> reader = CsvReader.open(file, new IntegerListDeserializer())) {
+            reader.skip(2);
+            Assert.assertFalse(reader.hasNext());
+        }
+    }
+
+    @Test
+    public void skip5() throws CsvException, IOException {
+        File file = getResourceFile("simple.csv");
+
+        try (CsvReader<List<Integer>> reader = CsvReader.open(file, new IntegerListDeserializer())) {
+            reader.skip(999);
+            Assert.assertFalse(reader.hasNext());
         }
     }
 
