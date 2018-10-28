@@ -30,7 +30,6 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -306,7 +305,7 @@ public class MainTest {
     }
 
     @Test
-    public void stream2() throws CsvConversionException, IOException {
+    public void stream2() throws IOException {
         File file = null;
         List<Person> persons = Arrays.asList(createMneri(), createRms());
 
