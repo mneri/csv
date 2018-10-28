@@ -21,6 +21,7 @@ import me.mneri.csv.CsvReader;
 import me.mneri.csv.CsvWriter;
 import me.mneri.csv.exception.CsvConversionException;
 import me.mneri.csv.exception.CsvException;
+import me.mneri.csv.exception.UnexpectedCharacterException;
 import me.mneri.csv.test.model.Person;
 import me.mneri.csv.test.serialization.*;
 import org.junit.Assert;
@@ -83,11 +84,6 @@ public class MainTest {
         }
     }
 
-    private File getResourceFile(String name) {
-        ClassLoader classLoader = getClass().getClassLoader();
-        return new File(classLoader.getResource(name).getFile());
-    }
-
     @Test
     public void flush() throws CsvException, IOException {
         File file = null;
@@ -111,6 +107,22 @@ public class MainTest {
             if (reader != null) { try { reader.close(); } catch (Exception ignored) { } }
             if (file != null)   { try { file.delete(); }  catch (Exception ignored) { } }
             //@formatter:on
+        }
+    }
+
+    private File getResourceFile(String name) {
+        ClassLoader classLoader = getClass().getClassLoader();
+        return new File(classLoader.getResource(name).getFile());
+    }
+
+    @Test(expected = UnexpectedCharacterException.class)
+    public void illegal() throws CsvException, IOException {
+        File file = getResourceFile("illegal.csv");
+
+        try (CsvReader<List<String>> reader = CsvReader.open(file, new StringListDeserializer())) {
+            while (reader.hasNext()) {
+                reader.next();
+            }
         }
     }
 
@@ -191,6 +203,28 @@ public class MainTest {
         try (CsvReader<List<Integer>> reader = CsvReader.open(file, new IntegerListDeserializer())) {
             reader.skip(999);
             Assert.assertFalse(reader.hasNext());
+        }
+    }
+
+    @Test
+    public void skip6() throws CsvException, IOException {
+        File file = getResourceFile("simple.csv");
+
+        try (CsvReader<List<Integer>> reader = CsvReader.open(file, new IntegerListDeserializer())) {
+            while (reader.hasNext()) {
+                reader.next();
+            }
+
+            reader.skip(1);
+        }
+    }
+
+    @Test(expected = UnexpectedCharacterException.class)
+    public void skip7() throws CsvException, IOException {
+        File file = getResourceFile("illegal.csv");
+
+        try (CsvReader<List<String>> reader = CsvReader.open(file, new StringListDeserializer())) {
+            reader.skip(1);
         }
     }
 
