@@ -248,6 +248,7 @@ public class MainTest {
             }
 
             reader.skip(1);
+            Assert.assertFalse(reader.hasNext());
         }
     }
 
