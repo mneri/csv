@@ -21,6 +21,7 @@ import me.mneri.csv.CsvReader;
 import me.mneri.csv.CsvWriter;
 import me.mneri.csv.exception.CsvConversionException;
 import me.mneri.csv.exception.CsvException;
+import me.mneri.csv.exception.UncheckedCsvException;
 import me.mneri.csv.exception.UnexpectedCharacterException;
 import me.mneri.csv.test.model.Person;
 import me.mneri.csv.test.serialization.*;
@@ -116,12 +117,27 @@ public class MainTest {
     }
 
     @Test(expected = UnexpectedCharacterException.class)
-    public void illegal() throws CsvException, IOException {
+    public void illegal1() throws CsvException, IOException {
         File file = getResourceFile("illegal.csv");
 
         try (CsvReader<List<String>> reader = CsvReader.open(file, new StringListDeserializer())) {
             while (reader.hasNext()) {
                 reader.next();
+            }
+        }
+    }
+
+    @Test(expected = UnexpectedCharacterException.class)
+    public void illegal2() throws CsvException, IOException {
+        File file = getResourceFile("illegal.csv");
+
+        try (Stream<List<String>> stream = CsvReader.stream(file, new StringListDeserializer())) {
+            try {
+                //@formatter:off
+                stream.forEach(line -> { });
+                //@formatter:on
+            } catch (UncheckedCsvException e) {
+                throw (CsvException) e.getCause();
             }
         }
     }
