@@ -31,25 +31,24 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class MainTest {
     @Test(expected = CsvConversionException.class)
-    public void conversionException1() throws CsvException {
+    public void conversionException1() throws CsvException, IOException {
         File file = getResourceFile("simple.csv");
 
         try (CsvReader<Void> reader = CsvReader.open(file, new ExceptionDeserializer())) {
             while (reader.hasNext()) {
                 reader.next();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 
     @Test(expected = CsvConversionException.class)
-    public void conversionException2() throws CsvException {
+    public void conversionException2() throws CsvException, IOException {
         CsvWriter<Void> writer = null;
         File file = null;
 
@@ -58,8 +57,6 @@ public class MainTest {
             writer = CsvWriter.open(file, new ExceptionSerializer());
 
             writer.put(null);
-        } catch (IOException e) {
-            e.printStackTrace();
         } finally {
             //@formatter:off
             if (writer != null) { try { writer.close(); } catch (Exception ignored) { } }
@@ -73,13 +70,52 @@ public class MainTest {
         return File.createTempFile("junit_", ".csv", dir);
     }
 
+    @Test(expected = NoSuchElementException.class)
+    public void empty() throws CsvException, IOException {
+        File file = getResourceFile("empty.csv");
+
+        try (CsvReader<Void> reader = CsvReader.open(file, new VoidDeserializer())) {
+            reader.next();
+        } finally {
+            //@formatter:off
+            if (file != null)   { try { file.delete(); }  catch (Exception ignored) { } }
+            //@formatter:on
+        }
+    }
+
     private File getResourceFile(String name) {
         ClassLoader classLoader = getClass().getClassLoader();
         return new File(classLoader.getResource(name).getFile());
     }
 
     @Test
-    public void shouldQuote() throws CsvException {
+    public void flush() throws CsvException, IOException {
+        File file = null;
+
+        CsvReader<List<Integer>> reader = null;
+        CsvWriter<List<Integer>> writer = null;
+
+        try {
+            file = createTempFile();
+            List<Integer> line = Arrays.asList(0, 1, 2, 3);
+
+            writer = CsvWriter.open(file, new IntegerListSerializer());
+            writer.put(line);
+            writer.flush();
+
+            reader = CsvReader.open(file, new IntegerListDeserializer());
+            Assert.assertEquals(line, reader.next());
+        } finally {
+            //@formatter:off
+            if (writer != null) { try { writer.close(); } catch (Exception ignored) { } }
+            if (reader != null) { try { reader.close(); } catch (Exception ignored) { } }
+            if (file != null)   { try { file.delete(); }  catch (Exception ignored) { } }
+            //@formatter:on
+        }
+    }
+
+    @Test
+    public void shouldQuote() throws CsvException, IOException {
         File file = null;
         List<String> strings = Arrays.asList("a", "\"b\"", "c", "d,e");
 
@@ -93,8 +129,6 @@ public class MainTest {
             try (CsvReader<List<String>> reader = CsvReader.open(file, new StringListDeserializer())) {
                 Assert.assertEquals(strings, reader.next());
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         } finally {
             //@formatter:off
             if (file != null) { try { file.delete(); } catch (Exception ignored) { } }
@@ -103,7 +137,7 @@ public class MainTest {
     }
 
     @Test
-    public void skip() throws CsvException {
+    public void skip1() throws CsvException, IOException {
         File file = getResourceFile("simple.csv");
         List<Integer> expected = Arrays.asList(6, 7, 8, 9, 0);
 
@@ -111,13 +145,37 @@ public class MainTest {
             reader.skip(1);
             List<Integer> second = reader.next();
             Assert.assertEquals(second, expected);
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 
     @Test
-    public void stream() {
+    public void skip2() throws CsvException, IOException {
+        File file = getResourceFile("simple.csv");
+
+        try (CsvReader<List<Integer>> reader = CsvReader.open(file, new IntegerListDeserializer())) {
+            reader.next();
+            reader.skip(1);
+            Assert.assertFalse(reader.hasNext());
+        }
+    }
+
+    @Test
+    public void skip3() throws CsvException, IOException {
+        File file = getResourceFile("simple.csv");
+        List<Integer> expected = Arrays.asList(6, 7, 8, 9, 0);
+
+        try (CsvReader<List<Integer>> reader = CsvReader.open(file, new IntegerListDeserializer())) {
+            if (reader.hasNext()) {
+                reader.skip(1);
+            }
+
+            List<Integer> second = reader.next();
+            Assert.assertEquals(second, expected);
+        }
+    }
+
+    @Test
+    public void stream() throws CsvConversionException, IOException {
         File file = null;
         List<Person> persons = new ArrayList<>();
 
@@ -139,8 +197,6 @@ public class MainTest {
                 List<Person> collected = stream.collect(Collectors.toList());
                 Assert.assertEquals(persons, collected);
             }
-        } catch (CsvException | IOException e) {
-            e.printStackTrace();
         } finally {
             //@formatter:off
             if (file != null) { try { file.delete(); } catch (Exception ignored) { } }
@@ -149,7 +205,7 @@ public class MainTest {
     }
 
     @Test
-    public void writeRead() throws CsvException {
+    public void writeRead() throws CsvException, IOException {
         File file = null;
 
         Person mneri = new Person();
@@ -170,8 +226,6 @@ public class MainTest {
                 Person person = reader.next();
                 Assert.assertEquals(mneri, person);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         } finally {
             //@formatter:off
             if (file != null) { try { file.delete(); } catch (Exception ignored) { } }

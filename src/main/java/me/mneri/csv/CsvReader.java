@@ -299,7 +299,10 @@ public final class CsvReader<T> implements Closeable {
         if (state == ELEMENT_READ) {
             element = null;
             state = ELEMENT_NOT_READ;
-            toSkip--;
+
+            if (--toSkip == 0) {
+                return;
+            }
         }
 
         byte row = START;
