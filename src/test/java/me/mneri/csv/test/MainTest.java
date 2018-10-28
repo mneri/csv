@@ -161,7 +161,7 @@ public class MainTest {
     @Test
     public void shouldQuote() throws CsvException, IOException {
         File file = null;
-        List<String> strings = Arrays.asList("a", "\"b\"", "c", "d,e");
+        List<String> strings = Arrays.asList("a", "\"b\"", "", null, "c,d,e");
 
         try {
             file = createTempFile();
@@ -287,6 +287,26 @@ public class MainTest {
         } finally {
             //@formatter:off
             if (file != null) { try { file.delete(); } catch (Exception ignored) { } }
+            //@formatter:on
+        }
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void writeAfterClose() throws CsvException, IOException {
+        File file = null;
+        CsvWriter<List<Integer>> writer = null;
+
+        List<Integer> line = Arrays.asList(0, 1, 2, 3);
+
+        try {
+            file = createTempFile();
+            writer = CsvWriter.open(file, new IntegerListSerializer());
+            writer.close();
+            writer.put(line);
+        } finally {
+            //@formatter:off
+            if (writer != null) { try { writer.close(); } catch (Exception ignored) { } }
+            if (file != null)   { try { file.delete(); } catch (Exception ignored) { } }
             //@formatter:on
         }
     }
