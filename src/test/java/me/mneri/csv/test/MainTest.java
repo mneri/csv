@@ -23,18 +23,19 @@ import me.mneri.csv.exception.CsvConversionException;
 import me.mneri.csv.exception.CsvException;
 import me.mneri.csv.exception.UncheckedCsvException;
 import me.mneri.csv.exception.UnexpectedCharacterException;
+import me.mneri.csv.test.model.CityPop;
 import me.mneri.csv.test.model.Person;
 import me.mneri.csv.test.serialization.*;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.zip.ZipInputStream;
 
 public class MainTest {
     @Test(expected = CsvConversionException.class)
@@ -344,6 +345,37 @@ public class MainTest {
         } finally {
             //@formatter:off
             if (file != null) { try { file.delete(); } catch (Exception ignored) { } }
+            //@formatter:on
+        }
+    }
+
+    @Test
+    public void worldcitiespop() throws IOException, CsvException {
+        ZipInputStream zip = null;
+        CsvReader<CityPop> reader = null;
+        CsvWriter<CityPop> writer = null;
+
+        File input = getResourceFile("worldcitiespop.txt.zip");
+        File output = createTempFile();
+
+        try {
+            zip = new ZipInputStream(new FileInputStream(input));
+            zip.getNextEntry();
+
+            reader = CsvReader.open(new BufferedReader(new InputStreamReader(zip)), new CityPopDeserializer());
+            writer = CsvWriter.open(output, new CityPopSerializer());
+
+            reader.skip(1);
+
+            while (reader.hasNext()) {
+                writer.put(reader.next());
+            }
+        } finally {
+            //@formatter:off
+            if (reader != null) { try { reader.close(); }  catch (Exception ignored) { } }
+            if (writer != null) { try { writer.close(); }  catch (Exception ignored) { } }
+            try { output.delete(); } catch (Exception ignored) { }
+            if (zip != null)    { try { zip.close(); }     catch (Exception ignored) { } }
             //@formatter:on
         }
     }
