@@ -67,6 +67,27 @@ public class MainTest {
         }
     }
 
+    private Person createMneri() {
+        Person mneri = new Person();
+        mneri.setFirstName("Massimo");
+        mneri.setLastName("Neri");
+        mneri.setNickname("\"mneri\"");
+        mneri.setAddress("Gambettola, Italy");
+        mneri.setWebsite("http://mneri.me");
+        return mneri;
+    }
+
+    private Person createRms() {
+        Person rms = new Person();
+        rms.setFirstName("Richard");
+        rms.setMiddleName("Matthew");
+        rms.setLastName("Stallman");
+        rms.setNickname("\"rms\"");
+        rms.setAddress("Cambridge, Massachusetts");
+        rms.setWebsite("http://stallman.org/");
+        return rms;
+    }
+
     private File createTempFile() throws IOException {
         File dir = new File(System.getProperty("java.io.tmpdir"));
         return File.createTempFile("junit_", ".csv", dir);
@@ -262,22 +283,38 @@ public class MainTest {
     }
 
     @Test
-    public void stream() throws CsvConversionException, IOException {
+    public void stream1() throws CsvConversionException, IOException {
         File file = null;
-        List<Person> persons = new ArrayList<>();
-
-        for (int i = 0; i < 100; i++) {
-            Person person = new Person();
-            person.setFirstName("First name " + i);
-            person.setLastName("Last name " + i);
-            persons.add(person);
-        }
+        List<Person> persons = Arrays.asList(createMneri(), createRms());
 
         try {
             file = createTempFile();
 
             try (CsvWriter<Person> writer = CsvWriter.open(file, new PersonSerializer())) {
                 writer.putAll(persons);
+            }
+
+            try (Stream<Person> stream = CsvReader.stream(file, new PersonDeserializer())) {
+                List<Person> collected = stream.collect(Collectors.toList());
+                Assert.assertEquals(persons, collected);
+            }
+        } finally {
+            //@formatter:off
+            if (file != null) { try { file.delete(); } catch (Exception ignored) { } }
+            //@formatter:on
+        }
+    }
+
+    @Test
+    public void stream2() throws CsvConversionException, IOException {
+        File file = null;
+        List<Person> persons = Arrays.asList(createMneri(), createRms());
+
+        try {
+            file = createTempFile();
+
+            try (CsvWriter<Person> writer = CsvWriter.open(file, new PersonSerializer())) {
+                writer.putAll(persons.stream());
             }
 
             try (Stream<Person> stream = CsvReader.stream(file, new PersonDeserializer())) {
@@ -314,13 +351,7 @@ public class MainTest {
     @Test
     public void writeRead() throws CsvException, IOException {
         File file = null;
-
-        Person mneri = new Person();
-        mneri.setFirstName("Massimo");
-        mneri.setLastName("Neri");
-        mneri.setNickname("\"mneri\"");
-        mneri.setAddress("Gambettola, Italy");
-        mneri.setWebsite("http://mneri.me");
+        Person mneri = createMneri();
 
         try {
             file = createTempFile();
