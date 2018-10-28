@@ -327,6 +327,27 @@ public class MainTest {
         }
     }
 
+    @Test(expected = CsvConversionException.class)
+    public void stream3() throws CsvException, IOException {
+        File file = null;
+
+        try {
+            file = createTempFile();
+
+            try (CsvWriter<Void> writer = CsvWriter.open(file, new ExceptionSerializer())) {
+                try {
+                    writer.putAll(Stream.of((Void) null));
+                } catch (UncheckedCsvException e) {
+                    throw (CsvConversionException) e.getCause();
+                }
+            }
+        } finally {
+            //@formatter:off
+            if (file != null) { try { file.delete(); } catch (Exception ignored) { } }
+            //@formatter:on
+        }
+    }
+
     @Test(expected = IllegalStateException.class)
     public void writeAfterClose() throws CsvException, IOException {
         File file = null;
