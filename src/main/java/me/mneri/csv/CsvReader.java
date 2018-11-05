@@ -81,9 +81,7 @@ public final class CsvReader<T> implements Closeable {
     private static final int CLOSED           = 3;
     //@formatter:on
 
-    private static final int DEFAULT_BUFFER_SIZE = 8192;
-
-    private final StringBuilder buffer = new StringBuilder(DEFAULT_BUFFER_SIZE);
+    private final Accumulator accum = new Accumulator();
     private final CsvDeserializer<T> deserializer;
     private T element;
     private final List<String> line = new ArrayList<>();
@@ -149,17 +147,17 @@ public final class CsvReader<T> implements Closeable {
         byte row = START;
 
         while (true) {
-            int nextChar = reader.read();
-            int column = columnOf(nextChar);
+            int codePoint = reader.read();
+            int column = columnOf(codePoint);
             int action = ACTIONS[row][column];
 
             if ((action & ACCUM) != 0) {
-                buffer.append((char) nextChar);
+                accum.put(codePoint);
                 dirty = true;
             } else if ((action & FIELD) != 0) {
                 if (dirty) {
-                    line.add(buffer.toString());
-                    buffer.setLength(0);
+                    line.add(accum.toString());
+                    accum.clear();
                     dirty = false;
                 } else {
                     line.add(null);
@@ -190,7 +188,7 @@ public final class CsvReader<T> implements Closeable {
                 state = NO_SUCH_ELEMENT;
                 return false;
             } else if (row == ERROR) {
-                throw new UnexpectedCharacterException(lines, nextChar);
+                throw new UnexpectedCharacterException(lines, codePoint);
             }
         }
     }
