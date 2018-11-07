@@ -83,11 +83,16 @@ public final class CsvReader<T> implements Closeable {
     private static final int CLOSED           = 3;
     //@formatter:on
 
+    private static final int DEFAULT_BUFFER_SIZE = 8192;
+
+    private char[] buffer = new char[DEFAULT_BUFFER_SIZE];
     private CsvDeserializer<T> deserializer;
     private T element;
     private RecyclableCsvLine line = new RecyclableCsvLine();
     private int lines;
+    private int next;
     private Reader reader;
+    private int size;
     private int state = ELEMENT_NOT_READ;
 
     private CsvReader(Reader reader, CsvDeserializer<T> deserializer) {
@@ -118,6 +123,7 @@ public final class CsvReader<T> implements Closeable {
 
         Reader hold = reader;
 
+        buffer = null;
         deserializer = null;
         element = null;
         line = null;
@@ -158,7 +164,7 @@ public final class CsvReader<T> implements Closeable {
         byte row = START;
 
         while (true) {
-            int codePoint = reader.read();
+            int codePoint = read();
             int column = columnOf(codePoint);
             int action = ACTIONS[row][column];
 
@@ -280,6 +286,19 @@ public final class CsvReader<T> implements Closeable {
         return new CsvReader<>(reader, deserializer);
     }
 
+    private int read() throws IOException {
+        if (next >= size) {
+            size = reader.read(buffer, 0, buffer.length);
+            next = 0;
+
+            if (size < 0) {
+                return -1;
+            }
+        }
+
+        return buffer[next++];
+    }
+
     /**
      * Skip the next elements of the reader.
      *
@@ -308,8 +327,8 @@ public final class CsvReader<T> implements Closeable {
         byte row = START;
 
         while (true) {
-            int nextChar = reader.read();
-            int column = columnOf(nextChar);
+            int codePoint = read();
+            int column = columnOf(codePoint);
             int action = ACTIONS[row][column];
 
             if ((action & NLINE) != 0) {
@@ -328,7 +347,7 @@ public final class CsvReader<T> implements Closeable {
                 state = NO_SUCH_ELEMENT;
                 return;
             } else if (row == ERROR) {
-                throw new UnexpectedCharacterException(lines, nextChar);
+                throw new UnexpectedCharacterException(lines, codePoint);
             }
         }
     }
