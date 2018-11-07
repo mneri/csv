@@ -25,7 +25,10 @@ import me.mneri.csv.exception.UnexpectedCharacterException;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.util.*;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -49,8 +52,18 @@ public final class CsvReader<T> implements Closeable {
     private static final byte NO_OP = 0;
     private static final byte ACCUM = 1;
     private static final byte FIELD = 2;
-    private static final byte DIRTY = 4;
-    private static final byte NLINE = 8;
+    private static final byte NLINE = 4;
+
+    //@formatter:off
+    private static final byte[][] ACTIONS = {
+    //       *              "              ,              \r             \n             eof
+            { ACCUM        , NO_OP        , FIELD        , FIELD        , FIELD | NLINE, NO_OP         },  // START
+            { ACCUM        , NO_OP        , ACCUM        , ACCUM        , ACCUM        , NO_OP         },  // QUOTE
+            { NO_OP        , ACCUM        , FIELD        , FIELD        , FIELD | NLINE, FIELD | NLINE },  // ESCAP
+            { ACCUM        , ACCUM        , FIELD        , FIELD        , FIELD | NLINE, FIELD | NLINE },  // STRNG
+            { NO_OP        , NO_OP        , NO_OP        , NO_OP        , NLINE        , NO_OP         },  // CARRG
+            { NO_OP        , NO_OP        , NO_OP        , NO_OP        , NO_OP        , NO_OP         }}; // FINSH
+    //@formatter:on
 
     //@formatter:off
     private static final byte[][] TRANSITIONS = {
@@ -64,29 +77,17 @@ public final class CsvReader<T> implements Closeable {
     //@formatter:on
 
     //@formatter:off
-    private static final byte[][] ACTIONS = {
-    //       *              "              ,              \r             \n             eof
-            { ACCUM        , DIRTY        , FIELD        , FIELD        , FIELD | NLINE, NO_OP         },  // START
-            { ACCUM        , NO_OP        , ACCUM        , ACCUM        , ACCUM        , NO_OP         },  // QUOTE
-            { NO_OP        , ACCUM        , FIELD        , FIELD        , FIELD | NLINE, FIELD | NLINE },  // ESCAP
-            { ACCUM        , ACCUM        , FIELD        , FIELD        , FIELD | NLINE, FIELD | NLINE },  // STRNG
-            { NO_OP        , NO_OP        , NO_OP        , NO_OP        , NLINE        , NO_OP         },  // CARRG
-            { NO_OP        , NO_OP        , NO_OP        , NO_OP        , NO_OP        , NO_OP         }}; // FINSH
-    //@formatter:on
-
-    //@formatter:off
     private static final int ELEMENT_NOT_READ = 0;
     private static final int ELEMENT_READ     = 1;
     private static final int NO_SUCH_ELEMENT  = 2;
     private static final int CLOSED           = 3;
     //@formatter:on
 
-    private final Accumulator accum = new Accumulator();
-    private final CsvDeserializer<T> deserializer;
+    private CsvDeserializer<T> deserializer;
     private T element;
-    private final List<String> line = new ArrayList<>();
+    private RecyclableCsvLine line = new RecyclableCsvLine();
     private int lines;
-    private final Reader reader;
+    private Reader reader;
     private int state = ELEMENT_NOT_READ;
 
     private CsvReader(Reader reader, CsvDeserializer<T> deserializer) {
@@ -109,9 +110,20 @@ public final class CsvReader<T> implements Closeable {
      */
     @Override
     public void close() throws IOException {
+        if (state == CLOSED) {
+            return;
+        }
+
         state = CLOSED;
+
+        Reader hold = reader;
+
+        deserializer = null;
         element = null;
-        reader.close();
+        line = null;
+        reader = null;
+
+        hold.close();
     }
 
     private int columnOf(int charCode) {
@@ -143,7 +155,6 @@ public final class CsvReader<T> implements Closeable {
         else if (state == NO_SUCH_ELEMENT) { return false; }
         //@formatter:on
 
-        boolean dirty = false;
         byte row = START;
 
         while (true) {
@@ -152,18 +163,9 @@ public final class CsvReader<T> implements Closeable {
             int action = ACTIONS[row][column];
 
             if ((action & ACCUM) != 0) {
-                accum.put(codePoint);
-                dirty = true;
+                line.put(codePoint);
             } else if ((action & FIELD) != 0) {
-                if (dirty) {
-                    line.add(accum.toString());
-                    accum.clear();
-                    dirty = false;
-                } else {
-                    line.add(null);
-                }
-            } else if ((action & DIRTY) != 0) {
-                dirty = true;
+                line.markField();
             }
 
             if ((action & NLINE) != 0) {

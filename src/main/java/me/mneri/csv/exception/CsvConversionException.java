@@ -17,10 +17,16 @@
 
 package me.mneri.csv.exception;
 
+import me.mneri.csv.RecyclableCsvLine;
+
 import java.util.List;
 
 public class CsvConversionException extends CsvException {
-    public CsvConversionException(List<String> fields, Throwable cause) {
-        super(String.format("Error while converting values: %s", fields.toString()), cause);
+    public CsvConversionException(RecyclableCsvLine line, Throwable cause) {
+        super(String.format("Error while converting values: %s", line.toString()), cause);
+    }
+
+    public CsvConversionException(List<String> line, Throwable cause) {
+        super(String.format("Error while converting values: %s", line.toString()), cause);
     }
 }

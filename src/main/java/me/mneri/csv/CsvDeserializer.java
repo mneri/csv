@@ -28,12 +28,11 @@ import java.util.List;
  */
 public interface CsvDeserializer<T> {
     /**
-     * Deserialize an object starting from a list of strings. The order of the strings is the same order as found in the
-     * csv.
+     * Deserialize an object starting from csv line. The order of the strings is the same as found in the csv.
      *
-     * @param line the list of strings.
+     * @param line the csv line.
      * @return An object.
      * @throws Exception if anything goes wrong.
      */
-    T deserialize(List<String> line) throws Exception;
+    T deserialize(RecyclableCsvLine line) throws Exception;
 }

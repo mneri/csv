@@ -18,13 +18,20 @@
 package me.mneri.csv.test.serialization;
 
 import me.mneri.csv.CsvDeserializer;
+import me.mneri.csv.RecyclableCsvLine;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class StringListDeserializer implements CsvDeserializer<List<String>> {
     @Override
-    public List<String> deserialize(List<String> line) {
-        return new ArrayList<>(line);
+    public List<String> deserialize(RecyclableCsvLine line) {
+        List<String> strings = new ArrayList<>(line.getFieldCount());
+
+        for (int i = 0; i < line.getFieldCount(); i++) {
+            strings.add(line.getString(i));
+        }
+
+        return strings;
     }
 }

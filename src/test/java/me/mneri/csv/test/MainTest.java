@@ -33,6 +33,7 @@ import java.io.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipInputStream;
@@ -61,8 +62,8 @@ public class MainTest {
             writer.put(null);
         } finally {
             //@formatter:off
-            if (writer != null) { try { writer.close(); } catch (Exception ignored) { } }
-            if (file != null)   { try { file.delete(); }  catch (Exception ignored) { } }
+            if (writer != null) { try { writer.close(); } catch (IOException ignored) { } }
+            if (file != null)   { try { file.delete(); }  catch (SecurityException ignored) { } }
             //@formatter:on
         }
     }
@@ -101,7 +102,7 @@ public class MainTest {
             reader.next();
         } finally {
             //@formatter:off
-            if (file != null)   { try { file.delete(); }  catch (Exception ignored) { } }
+            try { file.delete(); } catch (SecurityException ignored) { }
             //@formatter:on
         }
     }
@@ -125,16 +126,16 @@ public class MainTest {
             Assert.assertEquals(line, reader.next());
         } finally {
             //@formatter:off
-            if (writer != null) { try { writer.close(); } catch (Exception ignored) { } }
-            if (reader != null) { try { reader.close(); } catch (Exception ignored) { } }
-            if (file != null)   { try { file.delete(); }  catch (Exception ignored) { } }
+            if (writer != null) { try { writer.close(); } catch (IOException ignored) { } }
+            if (reader != null) { try { reader.close(); } catch (IOException ignored) { } }
+            if (file != null)   { try { file.delete(); }  catch (SecurityException ignored) { } }
             //@formatter:on
         }
     }
 
     private File getResourceFile(String name) {
         ClassLoader classLoader = getClass().getClassLoader();
-        return new File(classLoader.getResource(name).getFile());
+        return new File(Objects.requireNonNull(classLoader.getResource(name)).getFile());
     }
 
     @Test(expected = UnexpectedCharacterException.class)
@@ -166,16 +167,10 @@ public class MainTest {
     @Test(expected = IllegalStateException.class)
     public void readAfterClose() throws CsvException, IOException {
         File file = getResourceFile("simple.csv");
-        CsvReader<List<Integer>> reader = null;
 
-        try {
-            reader = CsvReader.open(file, new IntegerListDeserializer());
+        try (CsvReader<List<Integer>> reader = CsvReader.open(file, new IntegerListDeserializer())) {
             reader.close();
             reader.next();
-        } finally {
-            //@formatter:off
-            if (reader != null) { try { reader.close(); } catch (Exception ignored) { } }
-            //@formatter:on
         }
     }
 
@@ -183,6 +178,7 @@ public class MainTest {
     public void shouldQuote() throws CsvException, IOException {
         File file = null;
         List<String> strings = Arrays.asList("a", "\"b\"", "", null, "c,d,e");
+        List<String> expected = Arrays.asList("a", "\"b\"", null, null, "c,d,e");
 
         try {
             file = createTempFile();
@@ -192,11 +188,11 @@ public class MainTest {
             }
 
             try (CsvReader<List<String>> reader = CsvReader.open(file, new StringListDeserializer())) {
-                Assert.assertEquals(strings, reader.next());
+                Assert.assertEquals(expected, reader.next());
             }
         } finally {
             //@formatter:off
-            if (file != null) { try { file.delete(); } catch (Exception ignored) { } }
+            if (file != null) { try { file.delete(); } catch (SecurityException ignored) { } }
             //@formatter:on
         }
     }
@@ -300,7 +296,7 @@ public class MainTest {
             }
         } finally {
             //@formatter:off
-            if (file != null) { try { file.delete(); } catch (Exception ignored) { } }
+            if (file != null) { try { file.delete(); } catch (SecurityException ignored) { } }
             //@formatter:on
         }
     }
@@ -323,7 +319,7 @@ public class MainTest {
             }
         } finally {
             //@formatter:off
-            if (file != null) { try { file.delete(); } catch (Exception ignored) { } }
+            if (file != null) { try { file.delete(); } catch (SecurityException ignored) { } }
             //@formatter:on
         }
     }
@@ -344,7 +340,7 @@ public class MainTest {
             }
         } finally {
             //@formatter:off
-            if (file != null) { try { file.delete(); } catch (Exception ignored) { } }
+            if (file != null) { try { file.delete(); } catch (SecurityException ignored) { } }
             //@formatter:on
         }
     }
@@ -372,10 +368,10 @@ public class MainTest {
             }
         } finally {
             //@formatter:off
-            if (reader != null) { try { reader.close(); }  catch (Exception ignored) { } }
-            if (writer != null) { try { writer.close(); }  catch (Exception ignored) { } }
-            try { output.delete(); } catch (Exception ignored) { }
-            if (zip != null)    { try { zip.close(); }     catch (Exception ignored) { } }
+            if (reader != null) { try { reader.close(); }  catch (IOException ignored) { } }
+            if (writer != null) { try { writer.close(); }  catch (IOException ignored) { } }
+            try { output.delete(); } catch (SecurityException ignored) { }
+            if (zip != null)    { try { zip.close(); }     catch (IOException ignored) { } }
             //@formatter:on
         }
     }
@@ -394,8 +390,8 @@ public class MainTest {
             writer.put(line);
         } finally {
             //@formatter:off
-            if (writer != null) { try { writer.close(); } catch (Exception ignored) { } }
-            if (file != null)   { try { file.delete(); } catch (Exception ignored) { } }
+            if (writer != null) { try { writer.close(); } catch (IOException ignored) { } }
+            if (file != null)   { try { file.delete(); }  catch (SecurityException ignored) { } }
             //@formatter:on
         }
     }
@@ -418,7 +414,7 @@ public class MainTest {
             }
         } finally {
             //@formatter:off
-            if (file != null) { try { file.delete(); } catch (Exception ignored) { } }
+            if (file != null) { try { file.delete(); } catch (SecurityException ignored) { } }
             //@formatter:on
         }
     }

@@ -18,16 +18,18 @@
 package me.mneri.csv.test.serialization;
 
 import me.mneri.csv.CsvDeserializer;
+import me.mneri.csv.RecyclableCsvLine;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class IntegerListDeserializer implements CsvDeserializer<List<Integer>> {
     @Override
-    public List<Integer> deserialize(List<String> line) {
-        List<Integer> integers = new ArrayList<>(line.size());
+    public List<Integer> deserialize(RecyclableCsvLine line) {
+        List<Integer> integers = new ArrayList<>(line.getFieldCount());
 
-        for (String value : line) {
+        for (int i = 0; i < line.getFieldCount(); i++) {
+            String value = line.getString(i);
             integers.add(value == null ? null : Integer.parseInt(value));
         }
 
