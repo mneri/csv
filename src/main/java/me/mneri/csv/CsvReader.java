@@ -57,11 +57,11 @@ public final class CsvReader<T> implements Closeable {
     //@formatter:off
     private static final byte[][] ACTIONS = {
     //       *              "              ,              \r             \n             eof
-            { ACCUM        , NO_OP        , FIELD        , FIELD        , FIELD | NLINE, NO_OP         },  // START
+            { ACCUM        , NO_OP        , FIELD        , NO_OP        , FIELD | NLINE, NO_OP         },  // START
             { ACCUM        , NO_OP        , ACCUM        , ACCUM        , ACCUM        , NO_OP         },  // QUOTE
             { NO_OP        , ACCUM        , FIELD        , FIELD        , FIELD | NLINE, FIELD | NLINE },  // ESCAP
-            { ACCUM        , ACCUM        , FIELD        , FIELD        , FIELD | NLINE, FIELD | NLINE },  // STRNG
-            { NO_OP        , NO_OP        , NO_OP        , NO_OP        , NLINE        , NO_OP         },  // CARRG
+            { ACCUM        , ACCUM        , FIELD        , NO_OP        , FIELD | NLINE, FIELD | NLINE },  // STRNG
+            { NO_OP        , NO_OP        , NO_OP        , NO_OP        , FIELD | NLINE, NO_OP         },  // CARRG
             { NO_OP        , NO_OP        , NO_OP        , NO_OP        , NO_OP        , NO_OP         }}; // FINSH
     //@formatter:on
 
@@ -85,7 +85,7 @@ public final class CsvReader<T> implements Closeable {
 
     private static final int DEFAULT_BUFFER_SIZE = 8192;
 
-    private char[] buffer = new char[DEFAULT_BUFFER_SIZE];
+    private char[] buffer;
     private CsvDeserializer<T> deserializer;
     private T element;
     private RecyclableCsvLine line = new RecyclableCsvLine();
@@ -98,6 +98,8 @@ public final class CsvReader<T> implements Closeable {
     private CsvReader(Reader reader, CsvDeserializer<T> deserializer) {
         this.reader = reader;
         this.deserializer = deserializer;
+
+        buffer = new char[DEFAULT_BUFFER_SIZE];
     }
 
     private void checkClosedState() {
@@ -121,15 +123,12 @@ public final class CsvReader<T> implements Closeable {
 
         state = CLOSED;
 
-        Reader hold = reader;
-
         buffer = null;
         deserializer = null;
         element = null;
         line = null;
+        reader.close();
         reader = null;
-
-        hold.close();
     }
 
     private int columnOf(int charCode) {
@@ -154,39 +153,39 @@ public final class CsvReader<T> implements Closeable {
      * @throws IOException  if an I/O error occurs.
      */
     public boolean hasNext() throws CsvException, IOException {
-        checkClosedState();
-
         //@formatter:off
         if      (state == ELEMENT_READ)    { return true; }
         else if (state == NO_SUCH_ELEMENT) { return false; }
         //@formatter:on
 
+        checkClosedState();
+
         byte row = START;
 
         while (true) {
-            int codePoint = read();
-            int column = columnOf(codePoint);
+            int nextChar = read();
+            int column = columnOf(nextChar);
             int action = ACTIONS[row][column];
 
             if ((action & ACCUM) != 0) {
-                line.put(codePoint);
+                line.put((char) nextChar);
             } else if ((action & FIELD) != 0) {
                 line.markField();
-            }
 
-            if ((action & NLINE) != 0) {
-                lines++;
+                if ((action & NLINE) != 0) {
+                    lines++;
 
-                try {
-                    T object = deserializer.deserialize(line);
-                    line.clear();
+                    try {
+                        T object = deserializer.deserialize(line);
+                        line.clear();
 
-                    element = object;
-                    state = ELEMENT_READ;
+                        element = object;
+                        state = ELEMENT_READ;
 
-                    return true;
-                } catch (Exception e) {
-                    throw new CsvConversionException(line, e);
+                        return true;
+                    } catch (Exception e) {
+                        throw new CsvConversionException(line, e);
+                    }
                 }
             }
 
@@ -196,7 +195,7 @@ public final class CsvReader<T> implements Closeable {
                 state = NO_SUCH_ELEMENT;
                 return false;
             } else if (row == ERROR) {
-                throw new UnexpectedCharacterException(lines, codePoint);
+                throw new UnexpectedCharacterException(lines, nextChar);
             }
         }
     }
@@ -231,15 +230,14 @@ public final class CsvReader<T> implements Closeable {
      * @throws IOException  if an I/O error occurs.
      */
     public T next() throws CsvException, IOException {
-        checkClosedState();
-
         if (!hasNext()) {
             throw new NoSuchElementException();
         }
 
+        state = ELEMENT_NOT_READ;
+
         T result = element;
         element = null;
-        state = ELEMENT_NOT_READ;
 
         return result;
     }
@@ -327,27 +325,27 @@ public final class CsvReader<T> implements Closeable {
         byte row = START;
 
         while (true) {
-            int codePoint = read();
-            int column = columnOf(codePoint);
+            int nextChar = read();
+            int column = columnOf(nextChar);
             int action = ACTIONS[row][column];
 
             if ((action & NLINE) != 0) {
                 lines++;
 
-                if (--toSkip > 0) {
-                    row = START;
-                } else {
+                if (--toSkip == 0) {
                     return;
                 }
+
+                row = START;
             } else {
                 row = TRANSITIONS[row][column];
-            }
 
-            if (row == FINSH) {
-                state = NO_SUCH_ELEMENT;
-                return;
-            } else if (row == ERROR) {
-                throw new UnexpectedCharacterException(lines, codePoint);
+                if (row == FINSH) {
+                    state = NO_SUCH_ELEMENT;
+                    return;
+                } else if (row == ERROR) {
+                    throw new UnexpectedCharacterException(lines, nextChar);
+                }
             }
         }
     }
