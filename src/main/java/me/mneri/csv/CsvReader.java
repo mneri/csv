@@ -285,12 +285,11 @@ public final class CsvReader<T> implements Closeable {
 
     private int read() throws IOException {
         if (next >= size) {
-            size = reader.read(buffer, 0, buffer.length);
-            next = 0;
-
-            if (size < 0) {
+            if ((size = reader.read(buffer, 0, buffer.length)) < 0) {
                 return -1;
             }
+
+            next = 0;
         }
 
         return buffer[next++];
