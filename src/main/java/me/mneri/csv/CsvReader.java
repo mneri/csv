@@ -56,7 +56,7 @@ public final class CsvReader<T> implements Closeable {
 
     //@formatter:off
     private static final byte[][] ACTIONS = {
-    //       *              "              ,              \r             \n             eof
+    //       *              "              ,              \r             \n              eof
             { ACCUM        , NO_OP        , FIELD        , NO_OP        , FIELD | NLINE, NO_OP         },  // START
             { ACCUM        , NO_OP        , ACCUM        , ACCUM        , ACCUM        , NO_OP         },  // QUOTE
             { NO_OP        , ACCUM        , FIELD        , NO_OP        , FIELD | NLINE, FIELD | NLINE },  // ESCAP
@@ -234,10 +234,9 @@ public final class CsvReader<T> implements Closeable {
             throw new NoSuchElementException();
         }
 
-        state = ELEMENT_NOT_READ;
-
         T result = element;
         element = null;
+        state = ELEMENT_NOT_READ;
 
         return result;
     }
