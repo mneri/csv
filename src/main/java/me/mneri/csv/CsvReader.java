@@ -67,13 +67,13 @@ public final class CsvReader<T> implements Closeable {
 
     //@formatter:off
     private static final byte[][] TRANSITIONS = {
-    //       *       "      ,      \r     \n     eof
-            { STRNG, QUOTE, START, CARRG, FINSH, FINSH },  // START
-            { QUOTE, ESCAP, QUOTE, QUOTE, QUOTE, ERROR },  // QUOTE
-            { ERROR, QUOTE, START, CARRG, FINSH, FINSH },  // ESCAP
-            { STRNG, STRNG, START, CARRG, FINSH, FINSH },  // STRNG
-            { ERROR, ERROR, ERROR, ERROR, FINSH, ERROR },  // CARRG
-            { ERROR, ERROR, ERROR, ERROR, ERROR, ERROR }}; // FINSH
+    //       *               "              ,              \r             \n             eof
+            { STRNG        , QUOTE        , START        , CARRG        , FINSH        , FINSH         },  // START
+            { QUOTE        , ESCAP        , QUOTE        , QUOTE        , QUOTE        , ERROR         },  // QUOTE
+            { ERROR        , QUOTE        , START        , CARRG        , FINSH        , FINSH         },  // ESCAP
+            { STRNG        , STRNG        , START        , CARRG        , FINSH        , FINSH         },  // STRNG
+            { ERROR        , ERROR        , ERROR        , ERROR        , FINSH        , ERROR         },  // CARRG
+            { ERROR        , ERROR        , ERROR        , ERROR        , ERROR        , ERROR         }}; // FINSH
     //@formatter:on
 
     //@formatter:off
