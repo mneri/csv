@@ -59,7 +59,7 @@ public final class CsvReader<T> implements Closeable {
     //       *              "              ,              \r             \n             eof
             { ACCUM        , NO_OP        , FIELD        , NO_OP        , FIELD | NLINE, NO_OP         },  // START
             { ACCUM        , NO_OP        , ACCUM        , ACCUM        , ACCUM        , NO_OP         },  // QUOTE
-            { NO_OP        , ACCUM        , FIELD        , FIELD        , FIELD | NLINE, FIELD | NLINE },  // ESCAP
+            { NO_OP        , ACCUM        , FIELD        , NO_OP        , FIELD | NLINE, FIELD | NLINE },  // ESCAP
             { ACCUM        , ACCUM        , FIELD        , NO_OP        , FIELD | NLINE, FIELD | NLINE },  // STRNG
             { NO_OP        , NO_OP        , NO_OP        , NO_OP        , FIELD | NLINE, NO_OP         },  // CARRG
             { NO_OP        , NO_OP        , NO_OP        , NO_OP        , NO_OP        , NO_OP         }}; // FINSH
@@ -67,7 +67,7 @@ public final class CsvReader<T> implements Closeable {
 
     //@formatter:off
     private static final byte[][] TRANSITIONS = {
-    //       *      "      ,      \r     \n     eof
+    //       *       "      ,      \r     \n     eof
             { STRNG, QUOTE, START, CARRG, FINSH, FINSH },  // START
             { QUOTE, ESCAP, QUOTE, QUOTE, QUOTE, ERROR },  // QUOTE
             { ERROR, QUOTE, START, CARRG, FINSH, FINSH },  // ESCAP
