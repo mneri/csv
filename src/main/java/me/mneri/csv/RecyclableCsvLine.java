@@ -18,8 +18,6 @@
 
 package me.mneri.csv;
 
-import me.mneri.csv.exception.CsvConversionException;
-
 import java.io.IOException;
 import java.io.StringWriter;
 import java.math.BigDecimal;

@@ -16,18 +16,14 @@
  * limitations under the License.
  */
 
-package me.mneri.csv.exception;
+package me.mneri.csv;
 
-import me.mneri.csv.RecyclableCsvLine;
-
-import java.util.List;
-
-public class CsvConversionException extends CsvException {
-    public CsvConversionException(RecyclableCsvLine line, Throwable cause) {
-        super(String.format("Error while converting values: %s", line.toString()), cause);
+public class CsvException extends Exception {
+    CsvException(String message, Throwable cause) {
+        super(message, cause);
     }
 
-    public CsvConversionException(List<String> line, Throwable cause) {
-        super(String.format("Error while converting values: %s", line.toString()), cause);
+    CsvException(String message) {
+        super(message);
     }
 }

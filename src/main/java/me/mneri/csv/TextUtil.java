@@ -16,9 +16,9 @@
  * limitations under the License.
  */
 
-package me.mneri.csv.util;
+package me.mneri.csv;
 
-public final class CharUtils {
+final class TextUtil {
     //@formatter:off
     private static final String[] NON_PRINTABLE =
             { "{NUL}", "{SOH}", "{STX}", "{ETX}", "{EOT}", "{ENQ}", "{ACK}", "{BEL}",
@@ -27,10 +27,10 @@ public final class CharUtils {
               "{CAN}", "{EM}" , "{SUB}", "{ESC}", "{FS}" , "{GS}" , "{RS}" , "{US}"   };
     //@formatter:on
 
-    private CharUtils() {
+    private TextUtil() {
     }
 
-    public static String printable(int c) {
+    static String printable(int c) {
         //@formatter:off
         if      (c == -1) { return "{EOF}"; }
         else if (c < 32)  { return NON_PRINTABLE[c]; }

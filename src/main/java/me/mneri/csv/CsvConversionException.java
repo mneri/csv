@@ -16,12 +16,16 @@
  * limitations under the License.
  */
 
-package me.mneri.csv.exception;
+package me.mneri.csv;
 
-import me.mneri.csv.util.CharUtils;
+import java.util.List;
 
-public class UnexpectedCharacterException extends IllegalCsvFormatException {
-    public UnexpectedCharacterException(int line, int c) {
-        super(line, String.format("unexpected character '%s'.", CharUtils.printable(c)));
+public class CsvConversionException extends CsvException {
+    CsvConversionException(RecyclableCsvLine line, Throwable cause) {
+        super(String.format("Error while converting values: %s", line.toString()), cause);
+    }
+
+    CsvConversionException(List<String> line, Throwable cause) {
+        super(String.format("Error while converting values: %s", line.toString()), cause);
     }
 }

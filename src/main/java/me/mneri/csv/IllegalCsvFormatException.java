@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package me.mneri.csv.exception;
+package me.mneri.csv;
 
 public class IllegalCsvFormatException extends CsvException {
     IllegalCsvFormatException(int line, String message) {

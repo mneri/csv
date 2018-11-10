@@ -16,14 +16,10 @@
  * limitations under the License.
  */
 
-package me.mneri.csv.exception;
+package me.mneri.csv;
 
-public class CsvException extends Exception {
-    CsvException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    CsvException(String message) {
-        super(message);
+public class UnexpectedCharacterException extends IllegalCsvFormatException {
+    UnexpectedCharacterException(int line, int c) {
+        super(line, String.format("unexpected character '%s'.", TextUtil.printable(c)));
     }
 }
