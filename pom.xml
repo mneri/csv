@@ -1,0 +1,54 @@
+<!--
+    Copyright 2018 Massimo Neri <hello@mneri.me>
+
+    This file is part of mneri/csv.
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+
+<project>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.apache.maven</groupId>
+    <artifactId>maven</artifactId>
+    <version>2.0</version>
+    <packaging>jar</packaging>
+
+    <name>mneri/csv</name>
+    <description>Fast CSV Reader and Writer</description>
+    <url>https://github.com/mneri/csv</url>
+
+    <issueManagement>
+        <system>GitHub Issues</system>
+        <url>https://github.com/mneri/csv/issues</url>
+    </issueManagement>
+
+    <scm>
+        <url>https://github.com/mneri/csv</url>
+    </scm>
+
+    <developers>
+        <developer>
+            <id>mneri</id>
+            <name>Massimo Neri</name>
+            <email>hello@mneri.me</email>
+        </developer>
+    </developers>
+
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+</project>
