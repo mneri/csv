@@ -35,7 +35,7 @@ import java.util.stream.StreamSupport;
  * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
  */
 public final class CsvReader<T> implements Closeable {
-    // States
+    //@formatter:off
     private static final byte ERROR = -1;
     private static final byte START = 0;
     private static final byte QUOTE = 1;
@@ -44,24 +44,6 @@ public final class CsvReader<T> implements Closeable {
     private static final byte CARRG = 4;
     private static final byte FINSH = 5;
 
-    // Actions
-    private static final byte NO_OP = 0;
-    private static final byte ACCUM = 1;
-    private static final byte FIELD = 2;
-    private static final byte NLINE = 4;
-
-    //@formatter:off
-    private static final byte[][] ACTIONS = {
-    //       *              "              ,              \r             \n              eof
-            { ACCUM        , NO_OP        , FIELD        , NO_OP        , FIELD | NLINE, NO_OP         },  // START
-            { ACCUM        , NO_OP        , ACCUM        , ACCUM        , ACCUM        , NO_OP         },  // QUOTE
-            { NO_OP        , ACCUM        , FIELD        , NO_OP        , FIELD | NLINE, FIELD | NLINE },  // ESCAP
-            { ACCUM        , ACCUM        , FIELD        , NO_OP        , FIELD | NLINE, FIELD | NLINE },  // STRNG
-            { NO_OP        , NO_OP        , NO_OP        , NO_OP        , FIELD | NLINE, NO_OP         },  // CARRG
-            { NO_OP        , NO_OP        , NO_OP        , NO_OP        , NO_OP        , NO_OP         }}; // FINSH
-    //@formatter:on
-
-    //@formatter:off
     private static final byte[][] TRANSITIONS = {
     //       *               "              ,              \r             \n             eof
             { STRNG        , QUOTE        , START        , CARRG        , FINSH        , FINSH         },  // START
@@ -70,6 +52,20 @@ public final class CsvReader<T> implements Closeable {
             { STRNG        , STRNG        , START        , CARRG        , FINSH        , FINSH         },  // STRNG
             { ERROR        , ERROR        , ERROR        , ERROR        , FINSH        , ERROR         },  // CARRG
             { ERROR        , ERROR        , ERROR        , ERROR        , ERROR        , ERROR         }}; // FINSH
+
+    private static final byte NO_OP = 0;
+    private static final byte ACCUM = 1;
+    private static final byte FIELD = 2;
+    private static final byte NLINE = 4;
+
+    private static final byte[][] ACTIONS = {
+    //       *              "              ,              \r             \n              eof
+            { ACCUM        , NO_OP        , FIELD        , NO_OP        , FIELD | NLINE, NO_OP         },  // START
+            { ACCUM        , NO_OP        , ACCUM        , ACCUM        , ACCUM        , NO_OP         },  // QUOTE
+            { NO_OP        , ACCUM        , FIELD        , NO_OP        , FIELD | NLINE, FIELD | NLINE },  // ESCAP
+            { ACCUM        , ACCUM        , FIELD        , NO_OP        , FIELD | NLINE, FIELD | NLINE },  // STRNG
+            { NO_OP        , NO_OP        , NO_OP        , NO_OP        , FIELD | NLINE, NO_OP         },  // CARRG
+            { NO_OP        , NO_OP        , NO_OP        , NO_OP        , NO_OP        , NO_OP         }}; // FINSH
     //@formatter:on
 
     //@formatter:off
