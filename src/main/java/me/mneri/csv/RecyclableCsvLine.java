@@ -93,7 +93,12 @@ public final class RecyclableCsvLine {
     }
 
     public BigInteger getBigInteger(int i) {
-        throw new UnsupportedOperationException("Not yet implemented.");
+        return getBigInteger(i, 10);
+    }
+
+    public BigInteger getBigInteger(int i, int radix) {
+        String value = getString(i);
+        return value == null ? null : new BigInteger(value, radix);
     }
 
     /**
@@ -103,7 +108,8 @@ public final class RecyclableCsvLine {
      * @return The value of the field.
      */
     public Boolean getBoolean(int i) {
-        throw new UnsupportedOperationException("Not yet implemented.");
+        String value = getString(i);
+        return value == null ? null : Boolean.parseBoolean(value);
     }
 
     /**
@@ -113,20 +119,8 @@ public final class RecyclableCsvLine {
      * @return The value of the field.
      */
     public Double getDouble(int i) {
-        return getDouble(i, 10);
-    }
-
-    /**
-     * Return the value of the field at the specified index as {@link Double} in the radix specified by the second
-     * argument. The characters in the string must all be digits of the specified radix, except that the first character
-     * may be an ASCII minus sign {@code '-'} an ASCII plus sign {@code '+'}.
-     *
-     * @param i     The index of the field.
-     * @param radix The radix to be used.
-     * @return The value of the field.
-     */
-    public Double getDouble(int i, int radix) {
-        throw new UnsupportedOperationException("Not yet implemented.");
+        String value = getString(i);
+        return value == null ? null : Double.parseDouble(value);
     }
 
     /**
@@ -153,20 +147,8 @@ public final class RecyclableCsvLine {
      * @return The value of the field.
      */
     public Float getFloat(int i) {
-        return getFloat(i, 10);
-    }
-
-    /**
-     * Return the value of the field at the specified index as {@link Float} in the radix specified by the second
-     * argument. The characters in the string must all be digits of the specified radix, except that the first character
-     * may be an ASCII minus sign {@code '-'} an ASCII plus sign {@code '+'}.
-     *
-     * @param i     The index of the field.
-     * @param radix The radix to be used.
-     * @return The value of the field.
-     */
-    public Float getFloat(int i, int radix) {
-        throw new UnsupportedOperationException("Not yet implemented.");
+        String value = getString(i);
+        return value == null ? null : Float.parseFloat(value);
     }
 
     /**
@@ -189,7 +171,8 @@ public final class RecyclableCsvLine {
      * @return The value of the field.
      */
     public Integer getInteger(int i, int radix) {
-        throw new UnsupportedOperationException("Not yet implemented.");
+        String value = getString(i);
+        return value == null ? null : Integer.parseInt(value, radix);
     }
 
     /**
@@ -212,7 +195,8 @@ public final class RecyclableCsvLine {
      * @return The value of the field.
      */
     public Long getLong(int i, int radix) {
-        throw new UnsupportedOperationException("Not yet implemented.");
+        String value = getString(i);
+        return value == null ? null : Long.parseLong(value, radix);
     }
 
     /**
@@ -222,7 +206,7 @@ public final class RecyclableCsvLine {
      * @return The value of the field.
      */
     public Short getShort(int i) {
-        throw new UnsupportedOperationException("Not yet implemented.");
+        return getShort(i, 10);
     }
 
     /**
@@ -235,7 +219,8 @@ public final class RecyclableCsvLine {
      * @return The value of the field.
      */
     public Short getShort(int i, int radix) {
-        throw new UnsupportedOperationException("Not yet implemented.");
+        String value = getString(i);
+        return value == null ? null : Short.parseShort(value, radix);
     }
 
     /**
