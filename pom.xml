@@ -18,23 +18,28 @@
 
 <project>
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.apache.maven</groupId>
-    <artifactId>maven</artifactId>
-    <version>2.0</version>
+
+    <groupId>me.mneri</groupId>
+    <artifactId>csv</artifactId>
+    <version>1.1</version>
     <packaging>jar</packaging>
 
-    <name>mneri/csv</name>
-    <description>Fast CSV Reader and Writer</description>
+    <name>${project.groupId}:${project.artifactId}</name>
+    <description>Fast CSV Reader and Writer.</description>
     <url>https://github.com/mneri/csv</url>
 
-    <issueManagement>
-        <system>GitHub Issues</system>
-        <url>https://github.com/mneri/csv/issues</url>
-    </issueManagement>
+    <properties>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+    </properties>
 
-    <scm>
-        <url>https://github.com/mneri/csv</url>
-    </scm>
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
 
     <developers>
         <developer>
@@ -44,11 +49,23 @@
         </developer>
     </developers>
 
-    <licenses>
-        <license>
-            <name>Apache License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-            <distribution>repo</distribution>
-        </license>
-    </licenses>
+    <scm>
+        <connection>scm:git:git://github.com/mneri/csv.git</connection>
+        <developerConnection>scm:git:ssh://github.com:mneri/csv.git</developerConnection>
+        <url>http://github.com/mneri/csv/tree/master</url>
+    </scm>
+
+    <issueManagement>
+        <system>GitHub Issues</system>
+        <url>https://github.com/mneri/csv/issues</url>
+    </issueManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 </project>
