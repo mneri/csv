@@ -17,6 +17,10 @@
 
 package me.mneri.csv;
 
+import me.mneri.csv.exception.CsvConversionException;
+
+import java.io.IOException;
+import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -264,14 +268,20 @@ public final class RecyclableCsvLine {
 
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder();
-        int count = getFieldCount();
+        StringWriter buffer = new StringWriter();
+        CsvSerializer<RecyclableCsvLine> serializer = (line, out) -> {
+            int count = line.getFieldCount();
 
-        for (int i = 0; i < count; i++) {
-            builder.append(getString(i));
-            builder.append(i < count - 1 ? "," : "");
+            for (int i = 0; i < count; i++) {
+                out.add(line.getString(i));
+            }
+        };
+
+        try (CsvWriter<RecyclableCsvLine> writer = CsvWriter.open(buffer, serializer)) {
+            writer.put(this);
+            return buffer.toString();
+        } catch (CsvConversionException | IOException ignored) {
+            return null;
         }
-
-        return builder.toString();
     }
 }
