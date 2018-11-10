@@ -39,8 +39,8 @@ public final class CsvWriter<T> implements Closeable, Flushable {
     private static final int OPENED = 0;
     private static final int CLOSED = 1;
 
-    private final CsvSerializer<T> serializer;
     private final List<String> line = new ArrayList<>();
+    private final CsvSerializer<T> serializer;
     private int state = OPENED;
     private final Writer writer;
 

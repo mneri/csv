@@ -168,7 +168,7 @@ public final class CsvReader<T> implements Closeable {
             int action = ACTIONS[row][column];
 
             if ((action & ACCUM) != 0) {
-                line.put((char) nextChar);
+                line.put(nextChar);
             } else if ((action & FIELD) != 0) {
                 line.markField();
 
