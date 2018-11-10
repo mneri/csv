@@ -31,10 +31,10 @@ public class PersonSerializer implements CsvSerializer<Person> {
 
 public class PersonDeserializer implements CsvDeserializer<Person> {
     @Override
-    public Person deserialize(List<String> line) {
+    public Person deserialize(RecyclableCsvLine line) {
         Person person = new Person();
-        person.setFirstName(line.get(0));
-        person.setLastName(line.get(1));
+        person.setFirstName(line.getString(0));
+        person.setLastName(line.getString(1));
         return person;
     }
 }
