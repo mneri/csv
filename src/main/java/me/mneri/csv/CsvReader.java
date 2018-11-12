@@ -35,7 +35,6 @@ import java.util.stream.StreamSupport;
  * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
  */
 public final class CsvReader<T> implements Closeable {
-
     //@formatter:off
     private static final byte ERROR = -1;
     private static final byte START = 0;
@@ -82,7 +81,7 @@ public final class CsvReader<T> implements Closeable {
     private final char delimiter;
     private CsvDeserializer<T> deserializer;
     private T element;
-    private RecyclableCsvLine line = new RecyclableCsvLine();
+    private RecyclableCsvLine line;
     private int lines;
     private int next;
     private final char quotation;
@@ -95,6 +94,7 @@ public final class CsvReader<T> implements Closeable {
         this.deserializer = deserializer;
 
         buffer = new char[DEFAULT_BUFFER_SIZE];
+        line = new RecyclableCsvLine();
 
         delimiter = options.getDelimiter();
         quotation = options.getQuotation();
