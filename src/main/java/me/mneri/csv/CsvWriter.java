@@ -36,14 +36,19 @@ public final class CsvWriter<T> implements Closeable, Flushable {
     private static final int OPENED = 0;
     private static final int CLOSED = 1;
 
+    private final char delimiter;
     private final List<String> line = new ArrayList<>();
+    private final char quotation;
     private final CsvSerializer<T> serializer;
     private int state = OPENED;
     private final Writer writer;
 
-    private CsvWriter(Writer writer, CsvSerializer<T> serializer) {
+    private CsvWriter(Writer writer, CsvOptions options, CsvSerializer<T> serializer) {
         this.writer = writer;
         this.serializer = serializer;
+
+        delimiter = options.getDelimiter();
+        quotation = options.getQuotation();
     }
 
     private void checkClosedState() {
@@ -64,6 +69,10 @@ public final class CsvWriter<T> implements Closeable, Flushable {
         state = CLOSED;
         writer.flush();
         writer.close();
+    }
+
+    private static CsvOptions defaultOptions() {
+        return new CsvOptions();
     }
 
     /**
@@ -91,7 +100,26 @@ public final class CsvWriter<T> implements Closeable, Flushable {
      * @throws IOException if an I/O error occurs.
      */
     public static <T> CsvWriter<T> open(File file, Charset charset, CsvSerializer<T> serializer) throws IOException {
-        return open(Files.newBufferedWriter(file.toPath(), charset), serializer);
+        return open(file, charset, defaultOptions(), serializer);
+    }
+
+    /**
+     * Opens or creates a file for writing, returning a {@code CsvWriter} that may be used to write object to the file
+     * in csv format. The file is opened for writing, created if it doesn't exist or initially truncated to a size of 0
+     * if it exists. Characters are encoded using the specified charset. Objects are serialized using the specified
+     * serializer.
+     *
+     * @param file       the file to open.
+     * @param charset    the charset to use for encoding.
+     * @param options    writing options.
+     * @param serializer the serializer used to convert objects into csv lines.
+     * @param <T>        the type of the objects to serialize.
+     * @return A new {@code CsvWriter} to write into the specified file.
+     * @throws IOException if an I/O error occurs.
+     */
+    public static <T> CsvWriter<T> open(File file, Charset charset, CsvOptions options, CsvSerializer<T> serializer)
+            throws IOException {
+        return open(Files.newBufferedWriter(file.toPath(), charset), options, serializer);
     }
 
     /**
@@ -107,7 +135,24 @@ public final class CsvWriter<T> implements Closeable, Flushable {
      * @throws IOException if an I/O error occurs.
      */
     public static <T> CsvWriter<T> open(File file, CsvSerializer<T> serializer) throws IOException {
-        return open(file, Charset.defaultCharset(), serializer);
+        return open(file, defaultOptions(), serializer);
+    }
+
+    /**
+     * Opens or creates a file for writing, returning a {@code CsvWriter} that may be used to write object to the file
+     * in csv format. The file is opened for writing, created if it doesn't exist or initially truncated to a size of 0
+     * if it exists. Characters are encoded using the default JVM charset. Objects are serialized using the specified
+     * serializer.
+     *
+     * @param file       the file to open.
+     * @param options    writing options.
+     * @param serializer the serializer used to convert objects into csv lines.
+     * @param <T>        the type of the objects to serialize.
+     * @return A new {@code CsvWriter} to write into the specified file.
+     * @throws IOException if an I/O error occurs.
+     */
+    public static <T> CsvWriter<T> open(File file, CsvOptions options, CsvSerializer<T> serializer) throws IOException {
+        return open(file, Charset.defaultCharset(), options, serializer);
     }
 
     /**
@@ -120,7 +165,21 @@ public final class CsvWriter<T> implements Closeable, Flushable {
      * @return A new {@code CsvWriter} to write into the specified file.
      */
     public static <T> CsvWriter<T> open(Writer writer, CsvSerializer<T> serializer) {
-        return new CsvWriter<>(writer, serializer);
+        return open(writer, defaultOptions(), serializer);
+    }
+
+    /**
+     * Return a new {@code CsvWriter} using the specified {@link Writer} for writing. Bytes file are encoded into
+     * characters using the writer's charset. Writing commences at the point specified by the reader.
+     *
+     * @param writer     the {@link Writer} used to write.
+     * @param options    writing options.
+     * @param serializer the serializer used to convert objects into csv lines.
+     * @param <T>        the type of the objects to serialize.
+     * @return A new {@code CsvWriter} to write into the specified file.
+     */
+    public static <T> CsvWriter<T> open(Writer writer, CsvOptions options, CsvSerializer<T> serializer) {
+        return new CsvWriter<>(writer, options, serializer);
     }
 
     /**
@@ -146,7 +205,7 @@ public final class CsvWriter<T> implements Closeable, Flushable {
             putField(line.get(i));
 
             if (i != fields - 1) {
-                writer.write(",");
+                writer.write(delimiter);
             }
         }
 
@@ -201,7 +260,7 @@ public final class CsvWriter<T> implements Closeable, Flushable {
             for (int i = 0; i < length; i++) {
                 int c = string.charAt(i);
 
-                if (c == ',' || c == '"') {
+                if (c == delimiter || c == quotation) {
                     quote = true;
                     break;
                 }
@@ -209,19 +268,20 @@ public final class CsvWriter<T> implements Closeable, Flushable {
         }
 
         if (quote) {
-            writer.write('"');
+            writer.write(quotation);
 
             for (int i = 0; i < length; i++) {
                 int c = string.charAt(i);
 
-                if (c == '"') {
-                    writer.write("\"\"");
+                if (c == quotation) {
+                    writer.write(quotation);
+                    writer.write(quotation);
                 } else {
                     writer.write(c);
                 }
             }
 
-            writer.write('"');
+            writer.write(quotation);
         } else {
             writer.write(string);
         }
