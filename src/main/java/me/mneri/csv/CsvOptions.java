@@ -18,6 +18,11 @@
 
 package me.mneri.csv;
 
+/**
+ * Options for {@link CsvReader} and {@link CsvWriter}.
+ *
+ * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
+ */
 public class CsvOptions {
     private static final char DEFAULT_DELIMITER = ',';
     private static final char DEFAULT_QUOTATION = '"';
