@@ -37,15 +37,17 @@ public final class CsvWriter<T> implements Closeable, Flushable {
     private static final int CLOSED = 1;
 
     private final char delimiter;
-    private final List<String> line = new ArrayList<>();
+    private List<String> line;
     private final char quotation;
-    private final CsvSerializer<T> serializer;
+    private CsvSerializer<T> serializer;
     private int state = OPENED;
-    private final Writer writer;
+    private Writer writer;
 
     private CsvWriter(Writer writer, CsvOptions options, CsvSerializer<T> serializer) {
         this.writer = writer;
         this.serializer = serializer;
+
+        line = new ArrayList<>();
 
         delimiter = options.getDelimiter();
         quotation = options.getQuotation();
@@ -67,8 +69,12 @@ public final class CsvWriter<T> implements Closeable, Flushable {
     @Override
     public void close() throws IOException {
         state = CLOSED;
+
+        line = null;
+        serializer = null;
         writer.flush();
         writer.close();
+        writer = null;
     }
 
     private static CsvOptions defaultOptions() {
