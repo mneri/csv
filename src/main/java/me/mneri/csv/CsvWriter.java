@@ -68,6 +68,10 @@ public final class CsvWriter<T> implements Closeable, Flushable {
      */
     @Override
     public void close() throws IOException {
+        if (state == CLOSED) {
+            return;
+        }
+
         state = CLOSED;
 
         line = null;
