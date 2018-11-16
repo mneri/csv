@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 /**
- * Write Java object as csv lines.
+ * Write Java objects as csv lines.
  *
  * @param <T> The type of the Java objects to write.
  * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
