@@ -51,8 +51,6 @@ try (CsvWriter<Person> writer = CsvWriter.open(new File("people.csv"), new Perso
     for (Person person : persons) {
         writer.put(person);
     }
-} catch (CsvException | IOException e) {
-    e.printStackTrace();
 }
 ```
 
@@ -73,7 +71,5 @@ You can get a Java 8 `Stream` from a CSV file you using `CsvReader#stream()` sta
 ```java
 try (Stream<Person> stream = CsvReader.stream(new File("test.csv"), new PersonDeserializer())) {
    stream.forEach(System.out::println);
-} catch (IOException e) {
-    e.printStackTrace();
 }
 ```
