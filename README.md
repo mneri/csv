@@ -18,7 +18,7 @@ It is fast. My preliminary tests show that the speed of `mneri/csv` is comparabl
 [pull request](https://github.com/uniVocity/csv-parsers-comparison/pull/23) to their
 [benchmark](https://github.com/uniVocity/csv-parsers-comparison), yet to be approved.
 
-Memory consumption is also low. You can run uniVocity benchmark with a 1MB JVM (`-Xmx1m`).
+Memory consumption is also low. You can run `mneri/csv` on uniVocity benchmark with a 1MB JVM (`-Xmx1m`).
 
 ## Example
 Let `Person` be a POJO.
