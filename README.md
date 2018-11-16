@@ -15,8 +15,7 @@ clean and easy to understand. The algorithm of `mneri/csv` is less than
 ## Performances
 It is fast. My preliminary tests show that the speed of `mneri/csv` is comparable to the speed of
 [uniVocity](https://github.com/uniVocity/univocity-parsers), one of the fastest csv parsers. I submitted a
-[pull request](https://github.com/uniVocity/csv-parsers-comparison/pull/23) to their
-[benchmark](https://github.com/uniVocity/csv-parsers-comparison), yet to be approved.
+[pull request](https://github.com/uniVocity/csv-parsers-comparison/pull/23) to their benchmark, yet to be approved.
 
 Memory consumption is also low. You can run `mneri/csv` on uniVocity benchmark with a 1MB JVM (`-Xmx1m`).
 
