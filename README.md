@@ -7,6 +7,20 @@
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/mneri/csv.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/mneri/csv/alerts/)
 [![Coverage Status](https://coveralls.io/repos/github/mneri/csv/badge.svg?branch=master)](https://coveralls.io/github/mneri/csv?branch=master)
 
+## Motivation
+The code of most of the parsers you can find online is bloated and complicated. I wanted make a parsers that was brief,
+clean and easy to understand.
+
+The parsing algorithm of `mneri/csv` is less than
+[30 lines of code](https://github.com/mneri/csv/blob/master/src/main/java/me/mneri/csv/CsvReader.java#L169).
+
+## Performances
+It is fast. My preliminary tests show that the speed of `mneri/csv` is comparable to the speed of
+[uniVocity](https://github.com/uniVocity/univocity-parsers), one of the fastest csv parsers.
+
+I submitted a pull request to their [benchmark](https://github.com/uniVocity/csv-parsers-comparison), yet to be
+approved.
+
 ## Example
 Let `Person` be a POJO.
 
