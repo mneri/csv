@@ -8,7 +8,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/mneri/csv/badge.svg?branch=master)](https://coveralls.io/github/mneri/csv?branch=master)
 
 ## Motivation
-The code of most of the parsers you can find online is bloated and complicated. I wanted make a parsers that was brief,
+The code of most of the parsers you can find online is bloated and complicated. I wanted make a parser that was brief,
 clean and easy to understand. The algorithm of `mneri/csv` is less than
 [50 lines of code](https://github.com/mneri/csv/blob/master/src/main/java/me/mneri/csv/CsvReader.java#L169).
 
