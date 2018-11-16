@@ -18,6 +18,11 @@
 
 package me.mneri.csv;
 
+/**
+ * This exception is thrown when {@link CsvReader} reads an invalid character.
+ *
+ * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
+ */
 public class UnexpectedCharacterException extends IllegalCsvFormatException {
     UnexpectedCharacterException(int line, int c) {
         super(line, String.format("unexpected character '%s'.", TextUtil.printable(c)));

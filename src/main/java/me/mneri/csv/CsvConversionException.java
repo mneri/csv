@@ -20,6 +20,11 @@ package me.mneri.csv;
 
 import java.util.List;
 
+/**
+ * This exception is thrown when an error occurs during the conversion process.
+ *
+ * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
+ */
 public class CsvConversionException extends CsvException {
     CsvConversionException(RecyclableCsvLine line, Throwable cause) {
         super(String.format("Error while converting values: %s", line.toString()), cause);

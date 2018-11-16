@@ -18,6 +18,11 @@
 
 package me.mneri.csv;
 
+/**
+ * This is the parent exception of all exceptions thrown for parsing errors.
+ *
+ * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
+ */
 public class IllegalCsvFormatException extends CsvException {
     IllegalCsvFormatException(int line, String message) {
         super(String.format("Error at line %d: %s", line, message));

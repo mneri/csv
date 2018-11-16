@@ -18,6 +18,11 @@
 
 package me.mneri.csv;
 
+/**
+ * Base class for all the exceptions thrown by {@link CsvReader} and {@link CsvWriter}.
+ *
+ * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
+ */
 public class CsvException extends Exception {
     CsvException(String message, Throwable cause) {
         super(message, cause);

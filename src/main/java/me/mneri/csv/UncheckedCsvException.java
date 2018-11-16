@@ -20,6 +20,11 @@ package me.mneri.csv;
 
 import java.util.Objects;
 
+/**
+ * Wraps a {@link CsvException} with an unchecked exception.
+ *
+ * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
+ */
 public class UncheckedCsvException extends RuntimeException {
     UncheckedCsvException(CsvException cause) {
         super(cause.getMessage(), Objects.requireNonNull(cause));
