@@ -13,34 +13,26 @@ clean and easy to understand. The algorithm of `mneri/csv` is less than
 [30 lines of code](https://github.com/mneri/csv/blob/master/src/main/java/me/mneri/csv/CsvReader.java#L169).
 
 ## Performances
-It is fast. My preliminary tests show that the speed of `mneri/csv` is comparable to the speed of
+It is fast. My preliminary tests show that the speed of `CsvReader` is comparable to the speed of
 [uniVocity](https://github.com/uniVocity/univocity-parsers), one of the fastest csv parsers. I submitted a
 [pull request](https://github.com/uniVocity/csv-parsers-comparison/pull/23) to their benchmark, yet to be approved.
 
 Memory consumption is also low. You can run `mneri/csv` on uniVocity benchmark with a 1MB JVM (`-Xmx1m`).
 
 ## Example
-Let `Person` be a POJO.
+To read a CSV file you use `CsvReader` class.
 
 ```java
-public class Person {
-    private String firstName;
-    private String lastName;
-    // Getters and setters
+try (CsvReader<Person> reader = CsvReader.open(new File("people.csv"), new PersonDeserializer())) {
+    while (reader.hasNext()) {
+        doSomething(reader.next());
+    }
 }
 ```
 
-We first need to define a `CsvSerializer` and `CsvDeserializer`.
+Where `PersonDeserializer` is:
 
 ```java
-public class PersonSerializer implements CsvSerializer<Person> {
-    @Override
-    public void serialize(Person person, List<String> out) {
-        out.add(person.getFirstName());
-        out.add(person.getLastName());
-    }
-}
-
 public class PersonDeserializer implements CsvDeserializer<Person> {
     @Override
     public Person deserialize(RecyclableCsvLine line) {
@@ -52,10 +44,10 @@ public class PersonDeserializer implements CsvDeserializer<Person> {
 }
 ```
 
-To write a CSV file you use `CsvWriter` class.
+Writing to a csv file is easy, too.
 
 ```java
-try (CsvWriter<Person> writer = CsvWriter.open(new File("test.csv"), new PersonSerializer())) {
+try (CsvWriter<Person> writer = CsvWriter.open(new File("people.csv"), new PersonSerializer())) {
     for (Person person : persons)
         writer.put(person);
 } catch (CsvException | IOException e) {
@@ -63,18 +55,19 @@ try (CsvWriter<Person> writer = CsvWriter.open(new File("test.csv"), new PersonS
 }
 ```
 
-To read from a CSV file you use `CsvReader` class.
+Where `PersonSerializer` is:
 
 ```java
-try (CsvReader<Person> reader = CsvReader.open(new File("test.csv"), new PersonDeserializer())) {
-    while (reader.hasNext())
-        System.out.println(reader.next());
-} catch (CsvException | IOException e) {
-    e.printStackTrace();
+public class PersonSerializer implements CsvSerializer<Person> {
+    @Override
+    public void serialize(Person person, List<String> out) {
+        out.add(person.getFirstName());
+        out.add(person.getLastName());
+    }
 }
 ```
 
-To get a Java 8 `Stream` from a CSV file you use `CsvReader#stream()` static method.
+You can get a Java 8 `Stream` from a CSV file you using `CsvReader#stream()` static method.
 
 ```java
 try (Stream<Person> stream = CsvReader.stream(new File("test.csv"), new PersonDeserializer())) {
