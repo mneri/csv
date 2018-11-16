@@ -48,8 +48,9 @@ Writing to a csv file is easy, too.
 
 ```java
 try (CsvWriter<Person> writer = CsvWriter.open(new File("people.csv"), new PersonSerializer())) {
-    for (Person person : persons)
+    for (Person person : persons) {
         writer.put(person);
+    }
 } catch (CsvException | IOException e) {
     e.printStackTrace();
 }
