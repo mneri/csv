@@ -9,17 +9,15 @@
 
 ## Motivation
 The code of most of the parsers you can find online is bloated and complicated. I wanted make a parsers that was brief,
-clean and easy to understand.
-
-The parsing algorithm of `mneri/csv` is less than
+clean and easy to understand. The algorithm of `mneri/csv` is less than
 [30 lines of code](https://github.com/mneri/csv/blob/master/src/main/java/me/mneri/csv/CsvReader.java#L169).
 
 ## Performances
 It is fast. My preliminary tests show that the speed of `mneri/csv` is comparable to the speed of
-[uniVocity](https://github.com/uniVocity/univocity-parsers), one of the fastest csv parsers.
+[uniVocity](https://github.com/uniVocity/univocity-parsers), one of the fastest csv parsers. I submitted a pull request
+to their [benchmark](https://github.com/uniVocity/csv-parsers-comparison), yet to be approved.
 
-I submitted a pull request to their [benchmark](https://github.com/uniVocity/csv-parsers-comparison), yet to be
-approved.
+Memory consumption is also low. You can run uniVocity benchmark with a 1MB JVM (`-Xmx1m`).
 
 ## Example
 Let `Person` be a POJO.
