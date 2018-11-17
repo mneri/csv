@@ -59,7 +59,7 @@ public final class CsvReader<T> implements Closeable {
     private static final byte NLINE = 4;
 
     private static final byte[][] ACTIONS = {
-    //       *              "              ,              \r             \n              eof
+            //        *              "              ,              \r             \n             eof
             { ACCUM        , NO_OP        , FIELD        , NO_OP        , FIELD | NLINE, NO_OP         },  // START
             { ACCUM        , NO_OP        , ACCUM        , ACCUM        , ACCUM        , NO_OP         },  // QUOTE
             { NO_OP        , ACCUM        , FIELD        , NO_OP        , FIELD | NLINE, FIELD | NLINE },  // ESCAP
