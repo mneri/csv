@@ -162,7 +162,7 @@ public final class CsvWriter<T> implements Closeable, Flushable {
      * @throws IOException if an I/O error occurs.
      */
     public static <T> CsvWriter<T> open(File file, CsvOptions options, CsvSerializer<T> serializer) throws IOException {
-        return open(file, Charset.defaultCharset(), options, serializer);
+        return open(file, TextUtil.defaultCharset(), options, serializer);
     }
 
     /**

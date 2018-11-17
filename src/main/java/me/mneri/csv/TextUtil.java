@@ -18,6 +18,8 @@
 
 package me.mneri.csv;
 
+import java.nio.charset.Charset;
+
 final class TextUtil {
     //@formatter:off
     private static final String[] NON_PRINTABLE =
@@ -28,6 +30,10 @@ final class TextUtil {
     //@formatter:on
 
     private TextUtil() {
+    }
+
+    static Charset defaultCharset() {
+        return Charset.defaultCharset();
     }
 
     static String printable(int c) {

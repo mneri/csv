@@ -129,10 +129,6 @@ public final class CsvReader<T> implements Closeable {
         reader = null;
     }
 
-    private static CsvOptions defaultOptions() {
-        return new CsvOptions();
-    }
-
     private int columnOf(int charCode) {
         switch (charCode) {
             //@formatter:off
@@ -146,6 +142,10 @@ public final class CsvReader<T> implements Closeable {
                 return 0;
             //@formatter:on
         }
+    }
+
+    private static CsvOptions defaultOptions() {
+        return new CsvOptions();
     }
 
     /**
@@ -272,7 +272,7 @@ public final class CsvReader<T> implements Closeable {
      */
     public static <T> CsvReader<T> open(File file, CsvOptions options, CsvDeserializer<T> deserializer)
             throws IOException {
-        return open(file, Charset.defaultCharset(), options, deserializer);
+        return open(file, TextUtil.defaultCharset(), options, deserializer);
     }
 
     /**
@@ -304,7 +304,7 @@ public final class CsvReader<T> implements Closeable {
      */
     public static <T> CsvReader<T> open(File file, Charset charset, CsvOptions options, CsvDeserializer<T> deserializer)
             throws IOException {
-        return open(Files.newBufferedReader(file.toPath(), charset), options, deserializer);
+        return open(new InputStreamReader(new FileInputStream(file), charset), options, deserializer);
     }
 
     /**
@@ -431,7 +431,7 @@ public final class CsvReader<T> implements Closeable {
      */
     public static <T> Stream<T> stream(File file, CsvOptions options, CsvDeserializer<T> deserializer)
             throws IOException {
-        return stream(file, Charset.defaultCharset(), options, deserializer);
+        return stream(file, TextUtil.defaultCharset(), options, deserializer);
     }
 
     /**
