@@ -38,18 +38,20 @@ public final class CsvReader<T> implements Closeable {
     //@formatter:off
     private static final byte ERROR = -2;
     private static final byte ENDLN = -1;
-    private static final byte START =  0;
-    private static final byte QUOTE =  1;
-    private static final byte ESCAP =  2;
-    private static final byte STRNG =  3;
-    private static final byte CARRG =  4;
+    private static final byte STRLN =  0;
+    private static final byte STRFL =  1;
+    private static final byte QUOTE =  2;
+    private static final byte ESCAP =  3;
+    private static final byte STRNG =  4;
+    private static final byte CARRG =  5;
 
     private static final byte[][] TRANSITIONS = {
     //        *              "              ,              \r             \n             EOF
-            { STRNG        , QUOTE        , START        , CARRG        , ENDLN        , ENDLN         },  // START
+            { STRNG        , QUOTE        , STRFL        , CARRG        , ENDLN        , ENDLN         },  // STRLN
+            { STRNG        , QUOTE        , STRFL        , CARRG        , ENDLN        , ENDLN         },  // STRFL
             { QUOTE        , ESCAP        , QUOTE        , QUOTE        , QUOTE        , ERROR         },  // QUOTE
-            { ERROR        , QUOTE        , START        , CARRG        , ENDLN        , ENDLN         },  // ESCAP
-            { STRNG        , STRNG        , START        , CARRG        , ENDLN        , ENDLN         },  // STRNG
+            { ERROR        , QUOTE        , STRFL        , CARRG        , ENDLN        , ENDLN         },  // ESCAP
+            { STRNG        , STRNG        , STRFL        , CARRG        , ENDLN        , ENDLN         },  // STRNG
             { ERROR        , ERROR        , ERROR        , ERROR        , ENDLN        , ERROR         }}; // CARRG
 
     private static final byte NO_OP = 0;
@@ -59,7 +61,8 @@ public final class CsvReader<T> implements Closeable {
 
     private static final byte[][] ACTIONS = {
     //        *              "              ,              \r             \n             EOF
-            { ACCUM        , NO_OP        , FIELD        , NO_OP        , FIELD | NLINE, NO_OP         },  // START
+            { ACCUM        , NO_OP        , FIELD        , NO_OP        , FIELD | NLINE, NO_OP         },  // STRLN
+            { ACCUM        , NO_OP        , FIELD        , NO_OP        , FIELD | NLINE, FIELD | NLINE },  // STRFL
             { ACCUM        , NO_OP        , ACCUM        , ACCUM        , ACCUM        , NO_OP         },  // QUOTE
             { NO_OP        , ACCUM        , FIELD        , NO_OP        , FIELD | NLINE, FIELD | NLINE },  // ESCAP
             { ACCUM        , ACCUM        , FIELD        , NO_OP        , FIELD | NLINE, FIELD | NLINE },  // STRNG
@@ -161,7 +164,7 @@ public final class CsvReader<T> implements Closeable {
 
         checkClosedState();
 
-        byte row = START;
+        byte row = STRLN;
         int nextChar;
 
         do {
@@ -369,7 +372,7 @@ public final class CsvReader<T> implements Closeable {
             }
         }
 
-        byte row = START;
+        byte row = STRFL;
 
         while (true) {
             int nextChar = read();
@@ -383,7 +386,7 @@ public final class CsvReader<T> implements Closeable {
                     return;
                 }
 
-                row = START;
+                row = STRFL;
             } else {
                 row = TRANSITIONS[row][column];
 
