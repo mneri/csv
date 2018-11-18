@@ -373,10 +373,11 @@ public final class CsvReader<T> implements Closeable {
             }
         }
 
-        byte row = STRFL;
+        byte row = STRLN;
+        int nextChar;
 
-        while (true) {
-            int nextChar = read();
+        do {
+            nextChar = read();
             int column = columnOf(nextChar);
             int action = ACTIONS[row][column];
 
@@ -390,15 +391,15 @@ public final class CsvReader<T> implements Closeable {
                 row = STRFL;
             } else {
                 row = TRANSITIONS[row][column];
-
-                if (row == ENDLN) {
-                    state = NO_SUCH_ELEMENT;
-                    return;
-                } else if (row == ERR) {
-                    throw new UnexpectedCharacterException(lines, nextChar);
-                }
             }
+        } while (row >= 0);
+
+        if (row == EOF) {
+            state = NO_SUCH_ELEMENT;
+            return;
         }
+
+        throw new UnexpectedCharacterException(lines, nextChar);
     }
 
     private Spliterator<T> spliterator() {
