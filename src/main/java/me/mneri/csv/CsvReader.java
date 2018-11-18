@@ -36,22 +36,21 @@ import java.util.stream.StreamSupport;
  */
 public final class CsvReader<T> implements Closeable {
     //@formatter:off
-    private static final byte ERROR = -1;
-    private static final byte START = 0;
-    private static final byte QUOTE = 1;
-    private static final byte ESCAP = 2;
-    private static final byte STRNG = 3;
-    private static final byte CARRG = 4;
-    private static final byte FINSH = 5;
+    private static final byte ERROR = -2;
+    private static final byte ENDLN = -1;
+    private static final byte START =  0;
+    private static final byte QUOTE =  1;
+    private static final byte ESCAP =  2;
+    private static final byte STRNG =  3;
+    private static final byte CARRG =  4;
 
     private static final byte[][] TRANSITIONS = {
-    //       *               "              ,              \r             \n             eof
-            { STRNG        , QUOTE        , START        , CARRG        , FINSH        , FINSH         },  // START
+    //        *              "              ,              \r             \n             EOF
+            { STRNG        , QUOTE        , START        , CARRG        , ENDLN        , ENDLN         },  // START
             { QUOTE        , ESCAP        , QUOTE        , QUOTE        , QUOTE        , ERROR         },  // QUOTE
-            { ERROR        , QUOTE        , START        , CARRG        , FINSH        , FINSH         },  // ESCAP
-            { STRNG        , STRNG        , START        , CARRG        , FINSH        , FINSH         },  // STRNG
-            { ERROR        , ERROR        , ERROR        , ERROR        , FINSH        , ERROR         },  // CARRG
-            { ERROR        , ERROR        , ERROR        , ERROR        , ERROR        , ERROR         }}; // FINSH
+            { ERROR        , QUOTE        , START        , CARRG        , ENDLN        , ENDLN         },  // ESCAP
+            { STRNG        , STRNG        , START        , CARRG        , ENDLN        , ENDLN         },  // STRNG
+            { ERROR        , ERROR        , ERROR        , ERROR        , ENDLN        , ERROR         }}; // CARRG
 
     private static final byte NO_OP = 0;
     private static final byte ACCUM = 1;
@@ -59,14 +58,12 @@ public final class CsvReader<T> implements Closeable {
     private static final byte NLINE = 4;
 
     private static final byte[][] ACTIONS = {
-            //        *              "              ,              \r             \n             eof
+    //        *              "              ,              \r             \n             EOF
             { ACCUM        , NO_OP        , FIELD        , NO_OP        , FIELD | NLINE, NO_OP         },  // START
             { ACCUM        , NO_OP        , ACCUM        , ACCUM        , ACCUM        , NO_OP         },  // QUOTE
             { NO_OP        , ACCUM        , FIELD        , NO_OP        , FIELD | NLINE, FIELD | NLINE },  // ESCAP
             { ACCUM        , ACCUM        , FIELD        , NO_OP        , FIELD | NLINE, FIELD | NLINE },  // STRNG
-            { NO_OP        , NO_OP        , NO_OP        , NO_OP        , FIELD | NLINE, NO_OP         },  // CARRG
-            { NO_OP        , NO_OP        , NO_OP        , NO_OP        , NO_OP        , NO_OP         }}; // FINSH
-    //@formatter:on
+            { NO_OP        , NO_OP        , NO_OP        , NO_OP        , FIELD | NLINE, NO_OP         }}; // CARRG
 
     //@formatter:off
     private static final int ELEMENT_NOT_READ = 0;
@@ -165,9 +162,10 @@ public final class CsvReader<T> implements Closeable {
         checkClosedState();
 
         byte row = START;
+        int nextChar;
 
-        while (true) {
-            int nextChar = read();
+        do {
+            nextChar = read();
             int column = columnOf(nextChar);
             int action = ACTIONS[row][column];
 
@@ -194,14 +192,15 @@ public final class CsvReader<T> implements Closeable {
             }
 
             row = TRANSITIONS[row][column];
+        } while (row >= 0);
 
-            if (row == FINSH) {
-                state = NO_SUCH_ELEMENT;
-                return false;
-            } else if (row == ERROR) {
-                throw new UnexpectedCharacterException(lines, nextChar);
-            }
+        if (row == ERROR) {
+            throw new UnexpectedCharacterException(lines, nextChar);
         }
+
+        state = NO_SUCH_ELEMENT;
+
+        return false;
     }
 
     private Iterator<T> iterator() {
@@ -389,7 +388,7 @@ public final class CsvReader<T> implements Closeable {
             } else {
                 row = TRANSITIONS[row][column];
 
-                if (row == FINSH) {
+                if (row == ENDLN) {
                     state = NO_SUCH_ELEMENT;
                     return;
                 } else if (row == ERROR) {
