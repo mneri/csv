@@ -194,13 +194,12 @@ public final class CsvReader<T> implements Closeable {
             row = TRANSITIONS[row][column];
         } while (row >= 0);
 
-        if (row == ERROR) {
-            throw new UnexpectedCharacterException(lines, nextChar);
+        if (row == ENDLN) {
+            state = NO_SUCH_ELEMENT;
+            return false;
         }
 
-        state = NO_SUCH_ELEMENT;
-
-        return false;
+        throw new UnexpectedCharacterException(lines, nextChar);
     }
 
     private Iterator<T> iterator() {
