@@ -182,12 +182,9 @@ public final class CsvReader<T> implements Closeable {
                     lines++;
 
                     try {
-                        T object = deserializer.deserialize(line);
+                        element = deserializer.deserialize(line);
                         line.clear();
-
-                        element = object;
                         state = ELEMENT_READ;
-
                         return true;
                     } catch (Exception e) {
                         throw new CsvConversionException(line, e);
@@ -388,7 +385,7 @@ public final class CsvReader<T> implements Closeable {
                     return;
                 }
 
-                row = STRFL;
+                row = STRLN;
             } else {
                 row = TRANSITIONS[row][column];
             }
