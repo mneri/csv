@@ -56,18 +56,19 @@ public final class CsvReader<T> implements Closeable {
             { ERR          , ERR          , ERR          , ERR          , ENDLN        , ERR           }}; // CARRG
 
     private static final byte NO_OP = 0;
-    private static final byte ACCUM = 1;
+    private static final byte APPND = 1;
     private static final byte FIELD = 2;
     private static final byte NLINE = 4;
 
     private static final byte[][] ACTIONS = {
     //        *              "              ,              \r             \n             EOF
-            { ACCUM        , NO_OP        , FIELD        , NO_OP        , FIELD | NLINE, NO_OP         },  // STRTL
-            { ACCUM        , NO_OP        , FIELD        , NO_OP        , FIELD | NLINE, FIELD | NLINE },  // STRTF
-            { ACCUM        , NO_OP        , ACCUM        , ACCUM        , ACCUM        , NO_OP         },  // QUOTE
-            { NO_OP        , ACCUM        , FIELD        , NO_OP        , FIELD | NLINE, FIELD | NLINE },  // ESCAP
-            { ACCUM        , ACCUM        , FIELD        , NO_OP        , FIELD | NLINE, FIELD | NLINE },  // STRNG
+            {APPND, NO_OP, FIELD, NO_OP, FIELD | NLINE, NO_OP},  // STRTL
+            {APPND, NO_OP, FIELD, NO_OP, FIELD | NLINE, FIELD | NLINE},  // STRTF
+            {APPND, NO_OP, APPND, APPND, APPND, NO_OP},  // QUOTE
+            {NO_OP, APPND, FIELD, NO_OP, FIELD | NLINE, FIELD | NLINE},  // ESCAP
+            {APPND, APPND, FIELD, NO_OP, FIELD | NLINE, FIELD | NLINE},  // STRNG
             { NO_OP        , NO_OP        , NO_OP        , NO_OP        , FIELD | NLINE, NO_OP         }}; // CARRG
+    //@formatter:on
 
     //@formatter:off
     private static final int ELEMENT_NOT_READ = 0;
@@ -173,8 +174,8 @@ public final class CsvReader<T> implements Closeable {
             int column = columnOf(nextChar);
             int action = ACTIONS[row][column];
 
-            if ((action & ACCUM) != 0) {
-                line.put(nextChar);
+            if ((action & APPND) != 0) {
+                line.append((char) nextChar);
             } else if ((action & FIELD) != 0) {
                 line.markField();
 

@@ -63,7 +63,7 @@ public final class RecyclableCsvLine {
             return;
         }
 
-        int newCapacity = oldCapacity * 2 + 2;
+        int newCapacity = oldCapacity * 2;
 
         if (newCapacity < 0) {
             newCapacity = Integer.MAX_VALUE;
@@ -241,13 +241,14 @@ public final class RecyclableCsvLine {
     }
 
     void markField() {
+        ensureCapacity(nextEnd + 1);
         ends[nextEnd++] = nextChar;
         fieldCount++;
     }
 
-    void put(int codePoint) {
-        ensureCapacity(nextChar + 2);
-        nextChar += Character.toChars(codePoint, chars, nextChar);
+    void append(char charCode) {
+        ensureCapacity(nextChar + 1);
+        chars[nextChar++] = charCode;
     }
 
     @Override
