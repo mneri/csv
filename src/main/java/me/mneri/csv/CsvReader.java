@@ -62,11 +62,11 @@ public final class CsvReader<T> implements Closeable {
 
     private static final byte[][] ACTIONS = {
     //        *              "              ,              \r             \n             EOF
-            {APPND, NO_OP, FIELD, NO_OP, FIELD | NLINE, NO_OP},  // STRTL
-            {APPND, NO_OP, FIELD, NO_OP, FIELD | NLINE, FIELD | NLINE},  // STRTF
-            {APPND, NO_OP, APPND, APPND, APPND, NO_OP},  // QUOTE
-            {NO_OP, APPND, FIELD, NO_OP, FIELD | NLINE, FIELD | NLINE},  // ESCAP
-            {APPND, APPND, FIELD, NO_OP, FIELD | NLINE, FIELD | NLINE},  // STRNG
+            { APPND        , NO_OP        , FIELD        , NO_OP        , FIELD | NLINE, NO_OP         },  // STRTL
+            { APPND        , NO_OP        , FIELD        , NO_OP        , FIELD | NLINE, FIELD | NLINE },  // STRTF
+            { APPND        , NO_OP        , APPND        , APPND        , APPND        , NO_OP         },  // QUOTE
+            { NO_OP        , APPND        , FIELD        , NO_OP        , FIELD | NLINE, FIELD | NLINE },  // ESCAP
+            { APPND        , APPND        , FIELD        , NO_OP        , FIELD | NLINE, FIELD | NLINE },  // STRNG
             { NO_OP        , NO_OP        , NO_OP        , NO_OP        , FIELD | NLINE, NO_OP         }}; // CARRG
     //@formatter:on
 
