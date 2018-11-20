@@ -46,6 +46,11 @@ public final class RecyclableCsvLine {
         ends = new int[DEFAULT_BUFFER_SIZE];
     }
 
+    void append(char charCode) {
+        ensureCapacity(nextChar + 1);
+        chars[nextChar++] = charCode;
+    }
+
     private void checkField(int i) {
         if (i >= fieldCount) {
             throw new ArrayIndexOutOfBoundsException(i);
@@ -57,20 +62,9 @@ public final class RecyclableCsvLine {
     }
 
     private void ensureCapacity(int minimumCapacity) {
-        int oldCapacity = chars.length;
-
-        if (minimumCapacity - oldCapacity <= 0) {
-            return;
+        if (minimumCapacity - chars.length > 0) {
+            grow();
         }
-
-        int newCapacity = oldCapacity * 2;
-
-        if (newCapacity < 0) {
-            newCapacity = Integer.MAX_VALUE;
-        }
-
-        chars = Arrays.copyOf(chars, newCapacity);
-        ends = Arrays.copyOf(ends, newCapacity);
     }
 
     /**
@@ -240,15 +234,21 @@ public final class RecyclableCsvLine {
         return new String(chars, getFieldStart(i), length);
     }
 
+    private void grow() {
+        int newCapacity = chars.length * 2 + 2;
+
+        if (newCapacity < 0) {
+            newCapacity = Integer.MAX_VALUE;
+        }
+
+        chars = Arrays.copyOf(chars, newCapacity);
+        ends = Arrays.copyOf(ends, newCapacity);
+    }
+
     void markField() {
         ensureCapacity(nextEnd + 1);
         ends[nextEnd++] = nextChar;
         fieldCount++;
-    }
-
-    void append(char charCode) {
-        ensureCapacity(nextChar + 1);
-        chars[nextChar++] = charCode;
     }
 
     @Override
