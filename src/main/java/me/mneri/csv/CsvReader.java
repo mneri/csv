@@ -82,7 +82,6 @@ public final class CsvReader<T> implements Closeable {
     private char[] buffer;
     private final char delimiter;
     private CsvDeserializer<T> deserializer;
-    private T element;
     private RecyclableCsvLine line;
     private int lines;
     private int next;
@@ -125,7 +124,6 @@ public final class CsvReader<T> implements Closeable {
 
         buffer = null;
         deserializer = null;
-        element = null;
         line = null;
         reader.close();
         reader = null;
@@ -181,15 +179,8 @@ public final class CsvReader<T> implements Closeable {
 
                 if ((action & NLINE) != 0) {
                     lines++;
-
-                    try {
-                        element = deserializer.deserialize(line);
-                        line.clear();
-                        state = ELEMENT_READ;
-                        return true;
-                    } catch (Exception e) {
-                        throw new CsvConversionException(line, e);
-                    }
+                    state = ELEMENT_READ;
+                    return true;
                 }
             }
 
@@ -238,11 +229,16 @@ public final class CsvReader<T> implements Closeable {
             throw new NoSuchElementException();
         }
 
-        T result = element;
-        element = null;
-        state = ELEMENT_NOT_READ;
+        try {
+            T element = deserializer.deserialize(line);
 
-        return result;
+            state = ELEMENT_NOT_READ;
+            line.clear();
+
+            return element;
+        } catch (Exception e) {
+            throw new CsvConversionException(line, e);
+        }
     }
 
     /**
@@ -363,8 +359,8 @@ public final class CsvReader<T> implements Closeable {
         int toSkip = n;
 
         if (state == ELEMENT_READ) {
-            element = null;
             state = ELEMENT_NOT_READ;
+            line.clear();
 
             if (--toSkip == 0) {
                 return;
