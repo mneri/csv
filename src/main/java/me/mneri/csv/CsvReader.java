@@ -225,7 +225,7 @@ public final class CsvReader<T> implements Closeable {
      * @throws IOException  if an I/O error occurs.
      */
     public T next() throws CsvException, IOException {
-        if (state != ELEMENT_READ && !hasNext()) {
+        if (!hasNext()) {
             throw new NoSuchElementException();
         }
 
