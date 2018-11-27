@@ -20,13 +20,7 @@ package me.mneri.csv;
 
 import java.io.*;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.Spliterator;
-import java.util.Spliterators;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 /**
  * Read csv streams and automatically transform lines into Java objects.
@@ -193,28 +187,6 @@ public final class CsvReader<T> implements Closeable {
         }
 
         throw new UnexpectedCharacterException(lines, nextChar);
-    }
-
-    private Iterator<T> iterator() {
-        return new Iterator<T>() {
-            @Override
-            public boolean hasNext() {
-                //@formatter:off
-                try                    { return CsvReader.this.hasNext(); }
-                catch (CsvException e) { throw new UncheckedCsvException(e); }
-                catch (IOException e)  { throw new UncheckedIOException(e); }
-                //@formatter:on
-            }
-
-            @Override
-            public T next() {
-                //@formatter:off
-                try                    { return CsvReader.this.next(); }
-                catch (CsvException e) { throw new UncheckedCsvException(e); }
-                catch (IOException e)  { throw new UncheckedIOException(e); }
-                //@formatter:on
-            }
-        };
     }
 
     /**
@@ -394,103 +366,5 @@ public final class CsvReader<T> implements Closeable {
         }
 
         throw new UnexpectedCharacterException(lines, nextChar);
-    }
-
-    private Spliterator<T> spliterator() {
-        int characteristics = Spliterator.IMMUTABLE | Spliterator.ORDERED;
-        return Spliterators.spliteratorUnknownSize(iterator(), characteristics);
-    }
-
-    /**
-     * Opens a file for reading, returning a {@link Stream}. Bytes from the file are decoded into characters using
-     * the default JVM charset. Reading commences at the beginning of the file.
-     *
-     * @param file         the file to open.
-     * @param deserializer the deserializer used to convert csv lines into objects.
-     * @param <T>          the type of the objects to read.
-     * @return A new {@link Stream} of objects read from the specified file.
-     * @throws IOException if an I/O error occurs.
-     */
-    public static <T> Stream<T> stream(File file, CsvDeserializer<T> deserializer) throws IOException {
-        return stream(file, defaultOptions(), deserializer);
-    }
-
-    /**
-     * Opens a file for reading, returning a {@link Stream}. Bytes from the file are decoded into characters using
-     * the default JVM charset. Reading commences at the beginning of the file.
-     *
-     * @param file         the file to open.
-     * @param options      reading options.
-     * @param deserializer the deserializer used to convert csv lines into objects.
-     * @param <T>          the type of the objects to read.
-     * @return A new {@link Stream} of objects read from the specified file.
-     * @throws IOException if an I/O error occurs.
-     */
-    public static <T> Stream<T> stream(File file, CsvOptions options, CsvDeserializer<T> deserializer)
-            throws IOException {
-        return stream(file, TextUtil.defaultCharset(), options, deserializer);
-    }
-
-    /**
-     * Opens a file for reading, returning a {@link Stream}. Bytes from the file are decoded into characters using
-     * the specified charset. Reading commences at the beginning of the file.
-     *
-     * @param file         the file to open.
-     * @param charset      the charset of the file.
-     * @param deserializer the deserializer used to convert csv lines into objects.
-     * @param <T>          the type of the objects to read.
-     * @return A new {@link Stream} of objects read from the specified file.
-     * @throws IOException if an I/O error occurs.
-     */
-    public static <T> Stream<T> stream(File file, Charset charset, CsvDeserializer<T> deserializer) throws IOException {
-        return stream(file, charset, defaultOptions(), deserializer);
-    }
-
-    /**
-     * Opens a file for reading, returning a {@link Stream}. Bytes from the file are decoded into characters using
-     * the specified charset. Reading commences at the beginning of the file.
-     *
-     * @param file         the file to open.
-     * @param charset      the charset of the file.
-     * @param options      reading options.
-     * @param deserializer the deserializer used to convert csv lines into objects.
-     * @param <T>          the type of the objects to read.
-     * @return A new {@link Stream} of objects read from the specified file.
-     * @throws IOException if an I/O error occurs.
-     */
-    public static <T> Stream<T> stream(File file, Charset charset, CsvOptions options, CsvDeserializer<T> deserializer)
-            throws IOException {
-        return stream(Files.newBufferedReader(file.toPath(), charset), options, deserializer);
-    }
-
-    /**
-     * Return a new {@link Stream} of objects using the specified {@link Reader} for reading. Bytes from the file are
-     * decoded into characters using the reader's charset. Reading commences at the point specified by the reader.
-     *
-     * @param reader       the {@link Reader} to read from.
-     * @param deserializer the deserializer used to convert csv lines into objects.
-     * @param <T>          the type of the objects to read.
-     * @return A new {@code CsvReader} to read the specified file.
-     */
-    public static <T> Stream<T> stream(Reader reader, CsvDeserializer<T> deserializer) {
-        return stream(reader, defaultOptions(), deserializer);
-    }
-
-    /**
-     * Return a new {@link Stream} of objects using the specified {@link Reader} for reading. Bytes from the file are
-     * decoded into characters using the reader's charset. Reading commences at the point specified by the reader.
-     *
-     * @param reader       the {@link Reader} to read from.
-     * @param options      reading options.
-     * @param deserializer the deserializer used to convert csv lines into objects.
-     * @param <T>          the type of the objects to read.
-     * @return A new {@code CsvReader} to read the specified file.
-     */
-    public static <T> Stream<T> stream(Reader reader, CsvOptions options, CsvDeserializer<T> deserializer) {
-        //@formatter:off
-        CsvReader<T> csvReader = CsvReader.open(reader, options, deserializer);
-        return StreamSupport.stream(csvReader.spliterator(), false)
-                            .onClose(() -> { try { csvReader.close(); } catch (Exception ignored) { } });
-        //@formatter:on
     }
 }

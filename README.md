@@ -10,7 +10,7 @@
 ## Motivation
 The code of most of the parsers you can find online is bloated and complicated. I wanted make a parser that was brief,
 clean and easy to understand. The algorithm of `CsvReader` is less than
-[50 lines of code](https://github.com/mneri/csv/blob/master/src/main/java/me/mneri/csv/CsvReader.java#L159).
+[50 lines of code](https://github.com/mneri/csv/blob/master/src/main/java/me/mneri/csv/CsvReader.java#L153).
 
 ## Performances
 It is fast. My preliminary tests show that the speed of `CsvReader` is comparable to the speed of
@@ -66,10 +66,10 @@ public class PersonSerializer implements CsvSerializer<Person> {
 }
 ```
 
-You can get a Java 8 `Stream` from a CSV file you using `CsvReader#stream()` static method.
+You can get a Java 8 `Stream` from a CSV file using `CsvStreamSupport#stream()` static method.
 
 ```java
-try (Stream<Person> stream = CsvReader.stream(new File("test.csv"), new PersonDeserializer())) {
+try (Stream<Person> stream = CsvStreamSupport.stream(CsvReader.open(new File("test.csv"), new PersonDeserializer()), false)) {
    stream.forEach(System.out::println);
 }
 ```

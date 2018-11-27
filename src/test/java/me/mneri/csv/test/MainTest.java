@@ -149,7 +149,7 @@ public class MainTest {
     public void illegal2() throws CsvException, IOException {
         File file = getResourceFile("illegal.csv");
 
-        try (Stream<List<String>> stream = CsvReader.stream(file, new StringListDeserializer())) {
+        try (Stream<List<String>> stream = CsvStreamSupport.stream(CsvReader.open(file, new StringListDeserializer()), false)) {
             try {
                 //@formatter:off
                 stream.forEach(line -> { });
@@ -286,30 +286,7 @@ public class MainTest {
                 writer.putAll(persons);
             }
 
-            try (Stream<Person> stream = CsvReader.stream(file, new PersonDeserializer())) {
-                List<Person> collected = stream.collect(Collectors.toList());
-                Assert.assertEquals(persons, collected);
-            }
-        } finally {
-            //@formatter:off
-            if (file != null) { try { file.delete(); } catch (SecurityException ignored) { } }
-            //@formatter:on
-        }
-    }
-
-    @Test
-    public void stream2() throws IOException {
-        File file = null;
-        List<Person> persons = Arrays.asList(createMneri(), createRms());
-
-        try {
-            file = createTempFile();
-
-            try (CsvWriter<Person> writer = CsvWriter.open(file, new PersonSerializer())) {
-                writer.putAll(persons.stream());
-            }
-
-            try (Stream<Person> stream = CsvReader.stream(file, new PersonDeserializer())) {
+            try (Stream<Person> stream = CsvStreamSupport.stream(CsvReader.open(file, new PersonDeserializer()), false)) {
                 List<Person> collected = stream.collect(Collectors.toList());
                 Assert.assertEquals(persons, collected);
             }
@@ -321,7 +298,7 @@ public class MainTest {
     }
 
     @Test(expected = CsvConversionException.class)
-    public void stream3() throws CsvException, IOException {
+    public void stream2() throws CsvException, IOException {
         File file = null;
 
         try {
