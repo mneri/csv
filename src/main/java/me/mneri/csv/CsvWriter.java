@@ -81,10 +81,6 @@ public final class CsvWriter<T> implements Closeable, Flushable {
         writer = null;
     }
 
-    private static CsvOptions defaultOptions() {
-        return new CsvOptions();
-    }
-
     /**
      * Flushes this stream by writing any buffered output to the underlying stream.
      *
@@ -110,7 +106,7 @@ public final class CsvWriter<T> implements Closeable, Flushable {
      * @throws IOException if an I/O error occurs.
      */
     public static <T> CsvWriter<T> open(File file, Charset charset, CsvSerializer<T> serializer) throws IOException {
-        return open(file, charset, defaultOptions(), serializer);
+        return open(file, charset, CsvOptions.defaultOptions(), serializer);
     }
 
     /**
@@ -145,7 +141,7 @@ public final class CsvWriter<T> implements Closeable, Flushable {
      * @throws IOException if an I/O error occurs.
      */
     public static <T> CsvWriter<T> open(File file, CsvSerializer<T> serializer) throws IOException {
-        return open(file, defaultOptions(), serializer);
+        return open(file, CsvOptions.defaultOptions(), serializer);
     }
 
     /**
@@ -175,7 +171,7 @@ public final class CsvWriter<T> implements Closeable, Flushable {
      * @return A new {@code CsvWriter} to write into the specified file.
      */
     public static <T> CsvWriter<T> open(Writer writer, CsvSerializer<T> serializer) {
-        return open(writer, defaultOptions(), serializer);
+        return open(writer, CsvOptions.defaultOptions(), serializer);
     }
 
     /**

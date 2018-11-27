@@ -30,6 +30,15 @@ public class CsvOptions {
     private char delimiter = DEFAULT_DELIMITER;
     private char quotation = DEFAULT_QUOTATION;
 
+    /**
+     * Get default options.
+     *
+     * @return A {@code CsvOptions} object initialized with default values.
+     */
+    public static CsvOptions defaultOptions() {
+        return new CsvOptions();
+    }
+
     char getDelimiter() {
         return delimiter;
     }

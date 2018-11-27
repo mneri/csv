@@ -138,10 +138,6 @@ public final class CsvReader<T> implements Closeable {
         }
     }
 
-    private static CsvOptions defaultOptions() {
-        return new CsvOptions();
-    }
-
     /**
      * Returns {@code true} if the reader has more elements. (In other words, returns {@code true} if
      * {@link CsvReader#next()} would return an element rather than throwing an exception).
@@ -224,7 +220,7 @@ public final class CsvReader<T> implements Closeable {
      * @throws IOException if an I/O error occurs.
      */
     public static <T> CsvReader<T> open(File file, CsvDeserializer<T> deserializer) throws IOException {
-        return open(file, defaultOptions(), deserializer);
+        return open(file, CsvOptions.defaultOptions(), deserializer);
     }
 
     /**
@@ -255,7 +251,7 @@ public final class CsvReader<T> implements Closeable {
      * @throws IOException if an I/O error occurs.
      */
     public static <T> CsvReader<T> open(File file, Charset charset, CsvDeserializer<T> deserializer) throws IOException {
-        return open(file, charset, defaultOptions(), deserializer);
+        return open(file, charset, CsvOptions.defaultOptions(), deserializer);
     }
 
     /**
@@ -285,7 +281,7 @@ public final class CsvReader<T> implements Closeable {
      * @return A new {@code CsvReader} to read the specified file.
      */
     public static <T> CsvReader<T> open(Reader reader, CsvDeserializer<T> deserializer) {
-        return open(reader, defaultOptions(), deserializer);
+        return open(reader, CsvOptions.defaultOptions(), deserializer);
     }
 
     /**
