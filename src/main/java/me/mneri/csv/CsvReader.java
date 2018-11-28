@@ -30,38 +30,38 @@ import java.util.NoSuchElementException;
  */
 public final class CsvReader<T> implements Closeable {
     //@formatter:off
-    private static final byte ERR   = -2;
-    private static final byte EOF   = -1;
-    private static final byte STRTL =  0;
-    private static final byte STRTF =  1;
-    private static final byte QUOTE =  2;
-    private static final byte ESCAP =  3;
-    private static final byte STRNG =  4;
-    private static final byte CARRG =  5;
-    private static final byte ENDLN =  6;
+    private static final byte ERR = -2; // Error
+    private static final byte EOF = -1; // End of file
+    private static final byte SOL =  0; // Start of line
+    private static final byte SOF =  1; // Start of field
+    private static final byte QOT =  2; // Quotation
+    private static final byte ESC =  3; // Escape
+    private static final byte TXT =  4; // Text
+    private static final byte CAR =  5; // Carriage return
+    private static final byte EOL =  6; // End of line
 
     private static final byte[][] TRANSITIONS = {
-    //        *              "              ,              \r             \n             EOF
-            { STRNG        , QUOTE        , STRTF        , CARRG        , ENDLN        , EOF           },  // STRTL
-            { STRNG        , QUOTE        , STRTF        , CARRG        , ENDLN        , EOF           },  // STRTF
-            { QUOTE        , ESCAP        , QUOTE        , QUOTE        , QUOTE        , ERR           },  // QUOTE
-            { ERR          , QUOTE        , STRTF        , CARRG        , ENDLN        , EOF           },  // ESCAP
-            { STRNG        , STRNG        , STRTF        , CARRG        , ENDLN        , EOF           },  // STRNG
-            { ERR          , ERR          , ERR          , ERR          , ENDLN        , ERR           }}; // CARRG
+    //        *          "          ,          \r         \n         EOF
+            { TXT      , QOT      , SOF      , CAR      , EOL      , EOF       },  // SOL
+            { TXT      , QOT      , SOF      , CAR      , EOL      , EOF       },  // SOF
+            { QOT      , ESC      , QOT      , QOT      , QOT      , ERR       },  // QOT
+            { ERR      , QOT      , SOF      , CAR      , EOL      , EOF       },  // ESC
+            { TXT      , TXT      , SOF      , CAR      , EOL      , EOF       },  // TXT
+            { ERR      , ERR      , ERR      , ERR      , EOL      , ERR       }}; // CAR
 
-    private static final byte NO_OP = 0;
-    private static final byte APPND = 1;
-    private static final byte FIELD = 2;
-    private static final byte NLINE = 4;
+    private static final byte NOP = 0; // No operation
+    private static final byte APP = 1; // Append
+    private static final byte MKF = 2; // Make field
+    private static final byte MKL = 4; // Make line
 
     private static final byte[][] ACTIONS = {
-    //        *              "              ,              \r             \n             EOF
-            { APPND        , NO_OP        , FIELD        , NO_OP        , FIELD | NLINE, NO_OP         },  // STRTL
-            { APPND        , NO_OP        , FIELD        , NO_OP        , FIELD | NLINE, FIELD | NLINE },  // STRTF
-            { APPND        , NO_OP        , APPND        , APPND        , APPND        , NO_OP         },  // QUOTE
-            { NO_OP        , APPND        , FIELD        , NO_OP        , FIELD | NLINE, FIELD | NLINE },  // ESCAP
-            { APPND        , APPND        , FIELD        , NO_OP        , FIELD | NLINE, FIELD | NLINE },  // STRNG
-            { NO_OP        , NO_OP        , NO_OP        , NO_OP        , FIELD | NLINE, NO_OP         }}; // CARRG
+    //        *          "          ,          \r         \n         EOF
+            { APP      , NOP      , MKF      , NOP      , MKF | MKL, NOP       },  // SOL
+            { APP      , NOP      , MKF      , NOP      , MKF | MKL, MKF | MKL },  // SOF
+            { APP      , NOP      , APP      , APP      , APP      , NOP       },  // QOT
+            { NOP      , APP      , MKF      , NOP      , MKF | MKL, MKF | MKL },  // ESC
+            { APP      , APP      , MKF      , NOP      , MKF | MKL, MKF | MKL },  // TXT
+            { NOP      , NOP      , NOP      , NOP      , MKF | MKL, NOP       }}; // CAR
     //@formatter:on
 
     //@formatter:off
@@ -154,7 +154,7 @@ public final class CsvReader<T> implements Closeable {
 
         checkClosedState();
 
-        byte row = STRTL;
+        byte row = SOL;
         int nextChar;
 
         do {
@@ -162,12 +162,12 @@ public final class CsvReader<T> implements Closeable {
             int column = columnOf(nextChar);
             int action = ACTIONS[row][column];
 
-            if ((action & APPND) != 0) {
+            if ((action & APP) != 0) {
                 line.append((char) nextChar);
-            } else if ((action & FIELD) != 0) {
+            } else if ((action & MKF) != 0) {
                 line.markField();
 
-                if ((action & NLINE) != 0) {
+                if ((action & MKL) != 0) {
                     lines++;
                     state = ELEMENT_READ;
                     return true;
@@ -335,7 +335,7 @@ public final class CsvReader<T> implements Closeable {
             }
         }
 
-        byte row = STRTL;
+        byte row = SOL;
         int nextChar;
 
         do {
@@ -343,14 +343,14 @@ public final class CsvReader<T> implements Closeable {
             int column = columnOf(nextChar);
             int action = ACTIONS[row][column];
 
-            if ((action & NLINE) != 0) {
+            if ((action & MKL) != 0) {
                 lines++;
 
                 if (--toSkip == 0) {
                     return;
                 }
 
-                row = STRTL;
+                row = SOL;
             } else {
                 row = TRANSITIONS[row][column];
             }
