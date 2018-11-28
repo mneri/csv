@@ -41,13 +41,13 @@ public final class CsvReader<T> implements Closeable {
     private static final byte EOL =  6; // End of line
 
     private static final byte[][] TRANSITIONS = {
-    //        *          "          ,          \r         \n         EOF
-            { TXT      , QOT      , SOF      , CAR      , EOL      , EOF       },  // SOL
-            { TXT      , QOT      , SOF      , CAR      , EOL      , EOF       },  // SOF
-            { QOT      , ESC      , QOT      , QOT      , QOT      , ERR       },  // QOT
-            { ERR      , QOT      , SOF      , CAR      , EOL      , EOF       },  // ESC
-            { TXT      , TXT      , SOF      , CAR      , EOL      , EOF       },  // TXT
-            { ERR      , ERR      , ERR      , ERR      , EOL      , ERR       }}; // CAR
+    //        *           "           ,           \r          \n          EOF
+            { TXT       , QOT       , SOF       , CAR       , EOL       , EOF       },  // SOL
+            { TXT       , QOT       , SOF       , CAR       , EOL       , EOF       },  // SOF
+            { QOT       , ESC       , QOT       , QOT       , QOT       , ERR       },  // QOT
+            { ERR       , QOT       , SOF       , CAR       , EOL       , EOF       },  // ESC
+            { TXT       , TXT       , SOF       , CAR       , EOL       , EOF       },  // TXT
+            { ERR       , ERR       , ERR       , ERR       , EOL       , ERR       }}; // CAR
 
     private static final byte NOP = 0; // No operation
     private static final byte APP = 1; // Append
@@ -55,13 +55,13 @@ public final class CsvReader<T> implements Closeable {
     private static final byte MKL = 4; // Make line
 
     private static final byte[][] ACTIONS = {
-    //        *          "          ,          \r         \n         EOF
-            { APP      , NOP      , MKF      , NOP      , MKF | MKL, NOP       },  // SOL
-            { APP      , NOP      , MKF      , NOP      , MKF | MKL, MKF | MKL },  // SOF
-            { APP      , NOP      , APP      , APP      , APP      , NOP       },  // QOT
-            { NOP      , APP      , MKF      , NOP      , MKF | MKL, MKF | MKL },  // ESC
-            { APP      , APP      , MKF      , NOP      , MKF | MKL, MKF | MKL },  // TXT
-            { NOP      , NOP      , NOP      , NOP      , MKF | MKL, NOP       }}; // CAR
+    //        *           "           ,           \r          \n          EOF
+            { APP       , NOP       , MKF       , NOP       , MKF | MKL , NOP       },  // SOL
+            { APP       , NOP       , MKF       , NOP       , MKF | MKL , MKF | MKL },  // SOF
+            { APP       , NOP       , APP       , APP       , APP       , NOP       },  // QOT
+            { NOP       , APP       , MKF       , NOP       , MKF | MKL , MKF | MKL },  // ESC
+            { APP       , APP       , MKF       , NOP       , MKF | MKL , MKF | MKL },  // TXT
+            { NOP       , NOP       , NOP       , NOP       , MKF | MKL , NOP       }}; // CAR
     //@formatter:on
 
     //@formatter:off
