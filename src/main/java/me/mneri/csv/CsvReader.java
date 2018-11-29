@@ -30,15 +30,16 @@ import java.util.NoSuchElementException;
  */
 public final class CsvReader<T> implements Closeable {
     //@formatter:off
-    private static final byte ERR = -2; // Error
-    private static final byte EOF = -1; // End of file
-    private static final byte SOL =  0; // Start of line
-    private static final byte SOF =  1; // Start of field
-    private static final byte QOT =  2; // Quotation
-    private static final byte ESC =  3; // Escape
-    private static final byte TXT =  4; // Text
-    private static final byte CAR =  5; // Carriage return
-    private static final byte EOL =  6; // End of line
+    private static final byte SOL = 0; // Start of line
+    private static final byte SOF = 1; // Start of field
+    private static final byte QOT = 2; // Quotation
+    private static final byte ESC = 3; // Escape
+    private static final byte TXT = 4; // Text
+    private static final byte CAR = 5; // Carriage return
+    private static final byte EOL = 6; // End of line
+    private static final byte EOF = 7; // End of file
+    private static final byte ERR = 8; // Error
+
 
     private static final byte[][] TRANSITIONS = {
     //        *           "           ,           \r          \n          EOF
@@ -175,7 +176,7 @@ public final class CsvReader<T> implements Closeable {
             }
 
             row = TRANSITIONS[row][column];
-        } while (row >= 0);
+        } while (row < EOF);
 
         if (row == EOF) {
             state = NO_SUCH_ELEMENT;
@@ -354,7 +355,7 @@ public final class CsvReader<T> implements Closeable {
             } else {
                 row = TRANSITIONS[row][column];
             }
-        } while (row >= 0);
+        } while (row < EOF);
 
         if (row == EOF) {
             state = NO_SUCH_ELEMENT;
