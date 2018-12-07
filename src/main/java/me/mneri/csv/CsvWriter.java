@@ -127,6 +127,24 @@ public final class CsvWriter<T> implements Closeable, Flushable {
             throws IOException {
         return open(Files.newBufferedWriter(file.toPath(), charset), options, serializer);
     }
+    
+	/**
+	 * Opens or creates a file for writing, returning a {@code CsvWriter} that may be used to write object to the file in
+	 * csv format. The file is opened for writing, created if it doesn't exist or initially truncated to a size of 0 if it
+	 * exists. Characters are encoded using the specified charset. Objects are serialized using
+	 * {@link DefaultCsvSerializer}.
+	 *
+	 * @param file       the file to open.
+	 * @param charset    the charset to use for encoding.
+	 * @param options    writing options.
+	 * @param clazz   The class of the objects.
+	 * @param            <T> the type of the objects to serialize.
+	 * @return A new {@code CsvWriter} to write into the specified file.
+	 * @throws IOException if an I/O error occurs.
+	 */
+	public static <T> CsvWriter<T> open(File file, Charset charset, CsvOptions options, Class<T> clazz) throws IOException {
+		return open(Files.newBufferedWriter(file.toPath(), charset), options, new DefaultCsvSerializer<T>(clazz));
+	}
 
     /**
      * Opens or creates a file for writing, returning a {@code CsvWriter} that may be used to write object to the file
@@ -142,21 +160,71 @@ public final class CsvWriter<T> implements Closeable, Flushable {
      */
     public static <T> CsvWriter<T> open(File file, CsvSerializer<T> serializer) throws IOException {
         return open(file, CsvOptions.defaultOptions(), serializer);
-    }
-
-    /**
-     * Opens or creates a file for writing, returning a {@code CsvWriter} that may be used to write object to the file
-     * in csv format. The file is opened for writing, created if it doesn't exist or initially truncated to a size of 0
-     * if it exists. Characters are encoded using the default JVM charset. Objects are serialized using the specified
-     * serializer.
-     *
-     * @param file       the file to open.
-     * @param options    writing options.
-     * @param serializer the serializer used to convert objects into csv lines.
-     * @param <T>        the type of the objects to serialize.
-     * @return A new {@code CsvWriter} to write into the specified file.
-     * @throws IOException if an I/O error occurs.
-     */
+	}
+    
+	/**
+	 * Opens or creates a file for writing, returning a {@code CsvWriter} that may be used to write object to the file in
+	 * csv format. The file is opened for writing, created if it doesn't exist or initially truncated to a size of 0 if it
+	 * exists. Characters are encoded using the default JVM charset. Objects are serialized using
+	 * {@link DefaultCsvSerializer}.
+	 *
+	 * @param file       the file to open.
+	 * @param clazz		The class of the objects.
+	 * @param            <T> the type of the objects to serialize.
+	 * @return A new {@code CsvWriter} to write into the specified file.
+	 * @throws IOException if an I/O error occurs.
+	 */
+	public static <T> CsvWriter<T> open(File file, Class<T> clazz) throws IOException {
+		return open(file, new DefaultCsvSerializer<T>(clazz));
+	}
+	
+	/**
+	 * Opens or creates a file for writing, returning a {@code CsvWriter} that may be used to write object to the file in
+	 * csv format. The file is opened for writing, created if it doesn't exist or initially truncated to a size of 0 if it
+	 * exists. Characters are encoded using the default JVM charset. Objects are serialized using
+	 * {@link DefaultCsvSerializer}.
+	 * 
+	 *
+	 * @param file    the file to open.
+	 * @param options writing options.
+	 * @param clazz   The class of the objects.
+	 * @param         <T> the type of the objects to serialize.
+	 * @return A new {@code CsvWriter} to write into the specified file.
+	 * @throws IOException if an I/O error occurs.
+	 */
+	public static <T> CsvWriter<T> open(File file, CsvOptions options, Class<T> clazz) throws IOException {
+		return open(file, TextUtil.defaultCharset(), options, new DefaultCsvSerializer<T>(clazz));
+	}
+    
+	/**
+	 * Return a new {@code CsvWriter} using the specified {@link Writer} for writing and a {@link DefaultCsvSerializer} to
+	 * serialize. Bytes file are encoded into characters using the writer's charset. Writing commences at the point
+	 * specified by the reader.
+	 *
+	 * @param writer the {@link Writer} used to write.
+	 * @param clazz  The class of the objects.
+	 * @param        <T> the type of the objects to serialize.
+	 * @return A new {@code CsvWriter} to write into the specified file.
+	 */
+	public static <T> CsvWriter<T> open(Writer writer, Class<T> clazz) {
+		return open(writer, CsvOptions.defaultOptions(), new DefaultCsvSerializer<T>(clazz));
+	}
+	
+    
+	/**
+	 * Opens or creates a file for writing, returning a {@code CsvWriter} that may
+	 * be used to write object to the file in csv format. The file is opened for
+	 * writing, created if it doesn't exist or initially truncated to a size of 0 if
+	 * it exists. Characters are encoded using the default JVM charset. Objects are
+	 * serialized using the specified serializer.
+	 *
+	 * @param file       the file to open.
+	 * @param options    writing options.
+	 * @param serializer the serializer used to convert objects into csv lines.
+	 * @param            <T> the type of the objects to serialize.
+	 * @return A new {@code CsvWriter} to write into the specified file.
+	 * @throws IOException if an I/O error occurs.
+	 */
     public static <T> CsvWriter<T> open(File file, CsvOptions options, CsvSerializer<T> serializer) throws IOException {
         return open(file, TextUtil.defaultCharset(), options, serializer);
     }
