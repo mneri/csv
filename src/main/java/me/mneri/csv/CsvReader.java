@@ -222,8 +222,52 @@ public final class CsvReader<T> implements Closeable {
      */
     public static <T> CsvReader<T> open(File file, CsvDeserializer<T> deserializer) throws IOException {
         return open(file, CsvOptions.defaultOptions(), deserializer);
-    }
+	}
 
+	/**
+	 * Opens a file for reading using {@link DefaultCsvDeserializer}, returning a {@code CsvReader}. Bytes from the file are
+	 * decoded into characters using the default JVM charset. Reading commences at the beginning of the file.
+	 * 
+	 * @param file  the file to open.
+	 * @param clazz The class of the objects.
+	 * @param       <T> the type of the objects to read.
+	 * @return A new {@code CsvReader} to read the specified file.
+	 * @throws IOException if an I/O error occurs.
+	 */
+	public static <T> CsvReader<T> open(File file, Class<T> clazz) throws IOException {
+		return open(file, CsvOptions.defaultOptions(), new DefaultCsvDeserializer<T>(clazz));
+	}
+
+	/**
+	 * Opens a file for reading using {@link DefaultCsvDeserializer}, returning a {@code CsvReader}. Bytes from the file are
+	 * decoded into characters using the default JVM charset. Reading commences at the beginning of the file.
+	 *
+	 * @param file    the file to open.
+	 * @param options reading options.
+	 * @param clazz   The class of the objects.
+	 * @param         <T> the type of the objects to read.
+	 * @return A new {@code CsvReader} to read the specified file.
+	 * @throws IOException if an I/O error occurs.
+	 */
+	public static <T> CsvReader<T> open(File file, CsvOptions options, Class<T> clazz) throws IOException {
+		return open(file, TextUtil.defaultCharset(), options, new DefaultCsvDeserializer<T>(clazz));
+	}
+
+	/**
+	 * Opens a file for reading using {@link DefaultCsvDeserializer}, returning a {@code CsvReader}. Bytes from the file are
+	 * decoded into characters using the specified charset. Reading commences at the beginning of the file.
+	 *
+	 * @param file    the file to open.
+	 * @param charset the charset of the file.
+	 * @param clazz   The class of the objects.
+	 * @param         <T> the type of the objects to read.
+	 * @return A new {@code CsvReader} to read the specified file.
+	 * @throws IOException if an I/O error occurs.
+	 */
+	public static <T> CsvReader<T> open(File file, Charset charset, Class<T> clazz) throws IOException {
+		return open(file, charset, CsvOptions.defaultOptions(), new DefaultCsvDeserializer<T>(clazz));
+	}
+	
     /**
      * Opens a file for reading, returning a {@code CsvReader}. Bytes from the file are decoded into characters using
      * the default JVM charset. Reading commences at the beginning of the file.
