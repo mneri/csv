@@ -434,4 +434,18 @@ public class MainTest {
 			writer.put(mneri);
 		}
 	}
+	
+	@Test
+	public void defaultDeserialize() throws CsvException, IOException {
+		Person mneri = createMneri();
+		Person rms = createRms();
+		//Websites must be null since it is a transient field.
+		rms.setWebsite(null);
+		mneri.setWebsite(null);
+		File f = getResourceFile("default.csv");
+		try (CsvReader<Person> reader = CsvReader.open(f, Person.class)) {
+			Assert.assertEquals(rms, reader.next());
+			Assert.assertEquals(mneri, reader.next());
+		}
+	}
 }
