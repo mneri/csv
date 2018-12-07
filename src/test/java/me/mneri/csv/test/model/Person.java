@@ -28,8 +28,9 @@ public class Person implements Cloneable {
     private String lastName;
     private String middleName;
     private String nickname;
-    private String website;
-
+    private transient String website;
+    private int age;
+    
     @Override
     public Person clone() {
         try {
@@ -42,7 +43,7 @@ public class Person implements Cloneable {
             clone.middleName = middleName;
             clone.nickname = nickname;
             clone.website = website;
-
+            clone.age = age;
             return clone;
         } catch (CloneNotSupportedException ignored) {
             return null;
@@ -62,7 +63,6 @@ public class Person implements Cloneable {
         if (!(object instanceof Person)) {
             return false;
         }
-
         Person other = (Person) object;
 
         //@formatter:off
@@ -72,7 +72,8 @@ public class Person implements Cloneable {
                Objects.equals(getLastName(),   other.getLastName())   &&
                Objects.equals(getMiddleName(), other.getMiddleName()) &&
                Objects.equals(getNickname(),   other.getNickname())   &&
-               Objects.equals(getWebsite(),    other.getWebsite());
+               Objects.equals(getWebsite(),    other.getWebsite()) &&
+               Objects.equals(getAge(),    other.getAge());
         //@formatter:on
     }
 
@@ -103,7 +104,11 @@ public class Person implements Cloneable {
     public String getWebsite() {
         return website;
     }
-
+    
+    public int getAge() {
+    	return age;
+    }
+    
     @Override
     public int hashCode() {
         //@formatter:off
@@ -113,7 +118,8 @@ public class Person implements Cloneable {
                             getLastName(),
                             getMiddleName(),
                             getNickname(),
-                            getWebsite());
+                            getWebsite(),
+                            getAge());
         //@formatter:on
     }
 
@@ -145,17 +151,21 @@ public class Person implements Cloneable {
         this.website = website;
     }
 
+	public void setAge(int age) {
+		this.age = age;
+	}
     @Override
     public String toString() {
         //@formatter:off
-        return String.format("['%s', '%s', '%s', '%s', '%s', '%s', '%s']",
+        return String.format("['%s', '%s', '%s', '%s', '%s', '%s', '%s','%d']",
                              getFirstName(),
                              getMiddleName(),
                              getLastName(),
                              getNickname(),
                              getBirthDate(),
                              getAddress(),
-                             getWebsite());
+                             getWebsite(),
+                             getAge());
         //@formatter:on
     }
 }

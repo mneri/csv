@@ -18,21 +18,43 @@
 
 package me.mneri.csv.test;
 
-import me.mneri.csv.*;
-import me.mneri.csv.test.model.CityPop;
-import me.mneri.csv.test.model.Person;
-import me.mneri.csv.test.serialization.*;
-import org.junit.Assert;
-import org.junit.Test;
-
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipInputStream;
+
+import org.junit.Assert;
+import org.junit.Test;
+
+import me.mneri.csv.CsvConversionException;
+import me.mneri.csv.CsvException;
+import me.mneri.csv.CsvReader;
+import me.mneri.csv.CsvStreamSupport;
+import me.mneri.csv.CsvWriter;
+import me.mneri.csv.UncheckedCsvException;
+import me.mneri.csv.UnexpectedCharacterException;
+import me.mneri.csv.test.model.CityPop;
+import me.mneri.csv.test.model.Person;
+import me.mneri.csv.test.serialization.CityPopDeserializer;
+import me.mneri.csv.test.serialization.CityPopSerializer;
+import me.mneri.csv.test.serialization.ExceptionDeserializer;
+import me.mneri.csv.test.serialization.ExceptionSerializer;
+import me.mneri.csv.test.serialization.IntegerListDeserializer;
+import me.mneri.csv.test.serialization.IntegerListSerializer;
+import me.mneri.csv.test.serialization.PersonDeserializer;
+import me.mneri.csv.test.serialization.PersonSerializer;
+import me.mneri.csv.test.serialization.StringListDeserializer;
+import me.mneri.csv.test.serialization.StringListSerializer;
+import me.mneri.csv.test.serialization.VoidDeserializer;
 
 public class MainTest {
     @Test(expected = CsvConversionException.class)
@@ -71,19 +93,29 @@ public class MainTest {
         mneri.setNickname("\"mneri\"");
         mneri.setAddress("Gambettola, Italy");
         mneri.setWebsite("http://mneri.me");
+        mneri.setAge(30);
         return mneri;
     }
 
     private Person createRms() {
-        Person rms = new Person();
-        rms.setFirstName("Richard");
-        rms.setMiddleName("Matthew");
-        rms.setLastName("Stallman");
-        rms.setNickname("\"rms\"");
-        rms.setAddress("Cambridge, Massachusetts");
-        rms.setWebsite("http://stallman.org/");
-        return rms;
-    }
+		Person rms = new Person();
+		rms.setFirstName("Richard");
+		rms.setMiddleName("Matthew");
+		rms.setLastName("Stallman");
+		rms.setNickname("\"rms\"");
+		rms.setAddress("Cambridge, Massachusetts");
+		rms.setWebsite("http://stallman.org/");
+		Calendar c = Calendar.getInstance();
+		c.set(Calendar.MONTH, Calendar.JANUARY);
+		c.set(Calendar.YEAR, 1975);
+		c.set(Calendar.DAY_OF_MONTH, 0);
+		c.set(Calendar.MINUTE,0);
+		c.set(Calendar.HOUR_OF_DAY,0);
+		c.set(Calendar.SECOND,0);
+		c.set(Calendar.MILLISECOND,0);
+		rms.setBirthDate(c.getTime());
+		return rms;
+	}
 
     private File createTempFile() throws IOException {
         File dir = new File(System.getProperty("java.io.tmpdir"));
@@ -391,4 +423,15 @@ public class MainTest {
             //@formatter:on
         }
     }
+
+	@Test
+	public void defaultSerialize() throws IOException, CsvConversionException {
+		Person mneri = createMneri();
+		Person rms = createRms();
+		File f = getResourceFile("default.csv");
+		try (CsvWriter<Person> writer = CsvWriter.open(f, Person.class)) {
+			writer.put(rms);
+			writer.put(mneri);
+		}
+	}
 }

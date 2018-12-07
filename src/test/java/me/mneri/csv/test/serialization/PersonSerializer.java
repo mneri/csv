@@ -42,5 +42,6 @@ public class PersonSerializer implements CsvSerializer<Person> {
 
         out.add(person.getAddress());
         out.add(person.getWebsite());
+        out.add(String.valueOf(person.getAge()));
     }
 }
