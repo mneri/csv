@@ -48,7 +48,7 @@ public final class CsvReader<T> implements Closeable {
     private static final byte MKL = 1 << 6; // Make line
 
     private static final byte[] TRANSACT = {
-    //  *                "                 ,                 \r                \n          EOF
+    //  *                "                 ,                 \r                \n               EOF              unused
         TXT | APP      , QOT | NOP       , SOF | MKF       , CAR | NOP       , EOL | MKF | MKL, EOF | NOP      , 0, 0,  // SOL
         TXT | APP      , QOT | NOP       , SOF | MKF       , CAR | NOP       , EOL | MKF | MKL, EOF | MKF | MKL, 0, 0,  // SOF
         QOT | APP      , ESC | NOP       , QOT | APP       , QOT | APP       , QOT | APP      , ERR | NOP      , 0, 0,  // QOT
