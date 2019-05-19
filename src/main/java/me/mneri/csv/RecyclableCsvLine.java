@@ -35,20 +35,20 @@ import java.util.Arrays;
 public final class RecyclableCsvLine {
     private static final int DEFAULT_BUFFER_SIZE = 1024;
 
-    private char[] chars;
+    private int[] codePoints;
     private int[] ends;
     private int fieldCount;
-    private int nextChar;
+    private int nextCodePoint;
     private int nextEnd;
 
     RecyclableCsvLine() {
-        chars = new char[DEFAULT_BUFFER_SIZE];
+        codePoints = new int[DEFAULT_BUFFER_SIZE];
         ends = new int[DEFAULT_BUFFER_SIZE];
     }
 
-    void append(char charCode) {
-        ensureCapacity(nextChar + 1);
-        chars[nextChar++] = charCode;
+    void append(int codePoint) {
+        ensureCapacity(nextCodePoint + 1);
+        codePoints[nextCodePoint++] = codePoint;
     }
 
     private void checkField(int i) {
@@ -58,11 +58,11 @@ public final class RecyclableCsvLine {
     }
 
     void clear() {
-        fieldCount = nextChar = nextEnd = 0;
+        fieldCount = nextCodePoint = nextEnd = 0;
     }
 
     private void ensureCapacity(int minimumCapacity) {
-        if (minimumCapacity - chars.length > 0) {
+        if (minimumCapacity - codePoints.length > 0) {
             grow();
         }
     }
@@ -74,15 +74,8 @@ public final class RecyclableCsvLine {
      * @return The value of the field.
      */
     public BigDecimal getBigDecimal(int i) {
-        checkField(i);
-
-        int length = getFieldLength(i);
-
-        if (length == 0) {
-            return null;
-        }
-
-        return new BigDecimal(chars, getFieldStart(i), length);
+        String value = getString(i);
+        return value == null ? null : new BigDecimal(value);
     }
 
     public BigInteger getBigInteger(int i) {
@@ -231,23 +224,23 @@ public final class RecyclableCsvLine {
             return null;
         }
 
-        return new String(chars, getFieldStart(i), length);
+        return new String(codePoints, getFieldStart(i), length);
     }
 
     private void grow() {
-        int newCapacity = chars.length * 2 + 2;
+        int newCapacity = codePoints.length * 2 + 2;
 
         if (newCapacity < 0) {
             newCapacity = Integer.MAX_VALUE;
         }
 
-        chars = Arrays.copyOf(chars, newCapacity);
+        codePoints = Arrays.copyOf(codePoints, newCapacity);
         ends = Arrays.copyOf(ends, newCapacity);
     }
 
     void markField() {
         ensureCapacity(nextEnd + 1);
-        ends[nextEnd++] = nextChar;
+        ends[nextEnd++] = nextCodePoint;
         fieldCount++;
     }
 
