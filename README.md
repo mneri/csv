@@ -9,8 +9,8 @@
 
 ## Motivation
 The code of most of the parsers you can find online is bloated and complicated. I wanted make a parser that was brief,
-clean and easy to understand. The algorithm of `CsvReader` is less than
-[50 lines of code](https://github.com/mneri/csv/blob/master/src/main/java/me/mneri/csv/CsvReader.java#L149).
+clean and easy to understand. The algorithm of `CsvReader` is
+[30 lines of code](https://github.com/mneri/csv/blob/master/src/main/java/me/mneri/csv/CsvReader.java#L259).
 
 ## Performances
 It is fast. My preliminary tests show that the speed of `CsvReader` is comparable to the speed of

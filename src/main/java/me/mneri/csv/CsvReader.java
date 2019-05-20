@@ -140,35 +140,7 @@ public final class CsvReader<T> implements Closeable {
 
         checkClosedState();
 
-        int row = SOL;
-        int nextChar;
-
-        do {
-            nextChar = read();
-            int column = columnOf(nextChar);
-            int transact = TRANSACT[row + column];
-
-            if ((transact & APP) != 0) {
-                line.append(nextChar);
-            } else if ((transact & MKF) != 0) {
-                line.markField();
-
-                if ((transact & MKL) != 0) {
-                    lines++;
-                    state = ELEMENT_READ;
-                    return true;
-                }
-            }
-
-            row = transact & STATE_MASK;
-        } while (row < EOF);
-
-        if (row == EOF) {
-            state = NO_SUCH_ELEMENT;
-            return false;
-        }
-
-        throw new UnexpectedCharacterException(lines, nextChar);
+        return parseLine();
     }
 
     /**
@@ -282,6 +254,38 @@ public final class CsvReader<T> implements Closeable {
      */
     public static <T> CsvReader<T> open(Reader reader, CsvOptions options, CsvDeserializer<T> deserializer) {
         return new CsvReader<>(reader, options, deserializer);
+    }
+
+    private boolean parseLine() throws CsvException, IOException {
+        int row = SOL;
+        int nextChar;
+
+        do {
+            nextChar = read();
+            int column = columnOf(nextChar);
+            int transact = TRANSACT[row + column];
+
+            if ((transact & APP) != 0) {
+                line.append(nextChar);
+            } else if ((transact & MKF) != 0) {
+                line.markField();
+
+                if ((transact & MKL) != 0) {
+                    lines++;
+                    state = ELEMENT_READ;
+                    return true;
+                }
+            }
+
+            row = transact & STATE_MASK;
+        } while (row < EOF);
+
+        if (row == EOF) {
+            state = NO_SUCH_ELEMENT;
+            return false;
+        }
+
+        throw new UnexpectedCharacterException(lines, nextChar);
     }
 
     private int read() throws IOException {
