@@ -35,34 +35,28 @@ import java.util.Arrays;
 public final class RecyclableCsvLine {
     private static final int DEFAULT_BUFFER_SIZE = 1024;
 
-    private int[] codePoints;
+    private char[] chars;
     private int[] ends;
     private int fieldCount;
-    private int nextCodePoint;
+    private int nextChar;
     private int nextEnd;
 
     RecyclableCsvLine() {
-        codePoints = new int[DEFAULT_BUFFER_SIZE];
+        chars = new char[DEFAULT_BUFFER_SIZE];
         ends = new int[DEFAULT_BUFFER_SIZE];
     }
 
     void append(int codePoint) {
-        ensureCapacity(nextCodePoint + 1);
-        codePoints[nextCodePoint++] = codePoint;
-    }
-
-    private void checkField(int i) {
-        if (i >= fieldCount) {
-            throw new ArrayIndexOutOfBoundsException(i);
-        }
+        ensureCapacity(nextChar + 2);
+        nextChar += Character.toChars(codePoint, chars, nextChar);
     }
 
     void clear() {
-        fieldCount = nextCodePoint = nextEnd = 0;
+        fieldCount = nextChar = nextEnd = 0;
     }
 
     private void ensureCapacity(int minimumCapacity) {
-        if (minimumCapacity - codePoints.length > 0) {
+        if (minimumCapacity - chars.length > 0) {
             grow();
         }
     }
@@ -216,31 +210,29 @@ public final class RecyclableCsvLine {
      * @return The value of the field.
      */
     public String getString(int i) {
-        checkField(i);
-
         int length = getFieldLength(i);
 
         if (length == 0) {
             return null;
         }
 
-        return new String(codePoints, getFieldStart(i), length);
+        return new String(chars, getFieldStart(i), length);
     }
 
     private void grow() {
-        int newCapacity = codePoints.length * 2 + 2;
+        int newCapacity = chars.length * 2 + 2;
 
         if (newCapacity < 0) {
             newCapacity = Integer.MAX_VALUE;
         }
 
-        codePoints = Arrays.copyOf(codePoints, newCapacity);
+        chars = Arrays.copyOf(chars, newCapacity);
         ends = Arrays.copyOf(ends, newCapacity);
     }
 
     void markField() {
         ensureCapacity(nextEnd + 1);
-        ends[nextEnd++] = nextCodePoint;
+        ends[nextEnd++] = nextChar;
         fieldCount++;
     }
 
