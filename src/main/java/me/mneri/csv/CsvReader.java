@@ -66,14 +66,14 @@ public final class CsvReader<T> implements Closeable {
 
     private static final int DEFAULT_BUFFER_SIZE = 8192;
 
-    private char[] buffer;
+    private final char[] buffer;
     private final char delimiter;
-    private CsvDeserializer<T> deserializer;
-    private RecyclableCsvLine line;
+    private final CsvDeserializer<T> deserializer;
+    private final RecyclableCsvLine line;
     private int lines;
     private int next;
     private final char quotation;
-    private Reader reader;
+    private final Reader reader;
     private int size;
     private int state = ELEMENT_NOT_READ;
 
@@ -108,12 +108,7 @@ public final class CsvReader<T> implements Closeable {
         }
 
         state = CLOSED;
-
-        buffer = null;
-        deserializer = null;
-        line = null;
         reader.close();
-        reader = null;
     }
 
     private int columnOf(int charCode) {
