@@ -42,7 +42,7 @@ public class PersonDeserializer implements CsvDeserializer<Person> {
 
         person.setAddress(line.getString(5));
         person.setWebsite(line.getString(6));
-
+        person.setAge(line.getInteger(7));
         return person;
     }
 }
