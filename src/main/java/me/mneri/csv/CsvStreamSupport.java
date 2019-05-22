@@ -73,13 +73,7 @@ public class CsvStreamSupport {
     public static <T> Stream<T> stream(CsvReader<T> reader, boolean parallel) {
         //@formatter:off
         return StreamSupport.stream(spliterator(reader), parallel)
-                            .onClose(() -> {
-                                try {
-                                    reader.close();
-                                } catch (IOException e) {
-                                    throw new UncheckedIOException(e);
-                                }
-                            });
+                            .onClose(() -> { try { reader.close(); } catch (IOException e) { throw new UncheckedIOException(e); } });
         //@formatter:on
     }
 }

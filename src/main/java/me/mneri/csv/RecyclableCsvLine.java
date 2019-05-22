@@ -38,10 +38,13 @@ public final class RecyclableCsvLine {
     private char[] chars;
     private int[] ends;
     private int fieldCount;
+    private int maxLineLength;
     private int nextChar;
     private int nextEnd;
 
-    RecyclableCsvLine() {
+    RecyclableCsvLine(int maxLineLength) {
+        this.maxLineLength = maxLineLength;
+
         chars = new char[DEFAULT_BUFFER_SIZE];
         ends = new int[DEFAULT_BUFFER_SIZE];
     }
@@ -52,11 +55,17 @@ public final class RecyclableCsvLine {
     }
 
     void clear() {
-        fieldCount = nextChar = nextEnd = 0;
+        fieldCount = 0;
+        nextChar = 0;
+        nextEnd = 0;
     }
 
     private void ensureCapacity(int minimumCapacity) {
         if (minimumCapacity - chars.length > 0) {
+            if (minimumCapacity > maxLineLength) {
+                throw new LineTooBigException();
+            }
+
             grow();
         }
     }

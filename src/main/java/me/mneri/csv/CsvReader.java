@@ -67,12 +67,12 @@ public final class CsvReader<T> implements Closeable {
     private static final int DEFAULT_BUFFER_SIZE = 8192;
 
     private final char[] buffer;
-    private final char delimiter;
+    private final int delimiter;
     private final CsvDeserializer<T> deserializer;
     private final RecyclableCsvLine line;
     private int lines;
     private int next;
-    private final char quotation;
+    private final int quotation;
     private final Reader reader;
     private int size;
     private int state = ELEMENT_NOT_READ;
@@ -82,8 +82,9 @@ public final class CsvReader<T> implements Closeable {
         this.deserializer = deserializer;
 
         buffer = new char[DEFAULT_BUFFER_SIZE];
-        line = new RecyclableCsvLine();
 
+        options.check();
+        line = new RecyclableCsvLine(options.getMaxLineLength());
         delimiter = options.getDelimiter();
         quotation = options.getQuotation();
     }
@@ -133,12 +134,12 @@ public final class CsvReader<T> implements Closeable {
      * @throws IOException  if an I/O error occurs.
      */
     public boolean hasNext() throws CsvException, IOException {
+        checkClosedState();
+
         //@formatter:off
         if      (state == ELEMENT_READ)    { return true; }
         else if (state == NO_SUCH_ELEMENT) { return false; }
         //@formatter:on
-
-        checkClosedState();
 
         return parseLine();
     }
@@ -325,8 +326,13 @@ public final class CsvReader<T> implements Closeable {
             }
         }
 
+        skipLines(toSkip);
+    }
+
+    private void skipLines(int n) throws CsvException, IOException {
         int row = SOL;
         int nextChar;
+        int toSkip = n;
 
         do {
             nextChar = read();

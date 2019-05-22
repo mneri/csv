@@ -36,19 +36,19 @@ public final class CsvWriter<T> implements Closeable, Flushable {
     private static final int OPENED = 0;
     private static final int CLOSED = 1;
 
-    private final char delimiter;
-    private List<String> line;
-    private final char quotation;
-    private CsvSerializer<T> serializer;
+    private final int delimiter;
+    private final List<String> line;
+    private final int quotation;
+    private final CsvSerializer<T> serializer;
     private int state = OPENED;
-    private Writer writer;
+    private final Writer writer;
 
     private CsvWriter(Writer writer, CsvOptions options, CsvSerializer<T> serializer) {
         this.writer = writer;
         this.serializer = serializer;
 
+        options.check();
         line = new ArrayList<>();
-
         delimiter = options.getDelimiter();
         quotation = options.getQuotation();
     }
@@ -73,12 +73,9 @@ public final class CsvWriter<T> implements Closeable, Flushable {
         }
 
         state = CLOSED;
-
-        line = null;
-        serializer = null;
+        line.clear();
         writer.flush();
         writer.close();
-        writer = null;
     }
 
     /**
@@ -90,6 +87,18 @@ public final class CsvWriter<T> implements Closeable, Flushable {
     public void flush() throws IOException {
         checkClosedState();
         writer.flush();
+    }
+
+    private boolean isQuotingNeeded(String string) {
+        for (int i = 0; i < string.length(); i++) {
+            int c = string.charAt(i);
+
+            if (c == delimiter || c == quotation) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -205,17 +214,7 @@ public final class CsvWriter<T> implements Closeable, Flushable {
             throw new CsvConversionException(line, e);
         }
 
-        int fields = line.size();
-
-        for (int i = 0; i < fields; i++) {
-            putField(line.get(i));
-
-            if (i != fields - 1) {
-                writer.write(delimiter);
-            }
-        }
-
-        writer.write("\r\n");
+        putLine();
     }
 
     /**
@@ -257,26 +256,10 @@ public final class CsvWriter<T> implements Closeable, Flushable {
             return;
         }
 
-        int length = string.length();
-        boolean quote = false;
-
-        if (string.length() == 0) {
-            quote = true;
-        } else {
-            for (int i = 0; i < length; i++) {
-                int c = string.charAt(i);
-
-                if (c == delimiter || c == quotation) {
-                    quote = true;
-                    break;
-                }
-            }
-        }
-
-        if (quote) {
+        if (isQuotingNeeded(string)) {
             writer.write(quotation);
 
-            for (int i = 0; i < length; i++) {
+            for (int i = 0; i < string.length(); i++) {
                 int c = string.charAt(i);
 
                 if (c == quotation) {
@@ -291,5 +274,17 @@ public final class CsvWriter<T> implements Closeable, Flushable {
         } else {
             writer.write(string);
         }
+    }
+
+    private void putLine() throws IOException {
+        for (int i = 0; i < line.size(); i++) {
+            putField(line.get(i));
+
+            if (i != line.size() - 1) {
+                writer.write(delimiter);
+            }
+        }
+
+        writer.write("\r\n");
     }
 }
