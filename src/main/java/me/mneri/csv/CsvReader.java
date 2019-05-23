@@ -112,14 +112,14 @@ public final class CsvReader<T> implements Closeable {
         reader.close();
     }
 
-    private int columnOf(int charCode) {
-        switch (charCode) {
+    private int columnOf(int c) {
+        switch (c) {
             //@formatter:off
             case '\r': return 3;
             case '\n': return 4;
             case -1  : return 5; // EOF
-            default  : if (charCode == delimiter) return 2;
-                       if (charCode == quotation) return 1;
+            default  : if (c == delimiter) return 2;
+                       if (c == quotation) return 1;
                        return 0;
             //@formatter:on
         }
@@ -258,16 +258,16 @@ public final class CsvReader<T> implements Closeable {
     }
 
     private boolean parseLine() throws CsvException, IOException {
+        int c;
         int row = SOL;
-        int nextChar;
 
         do {
-            nextChar = read();
-            int column = columnOf(nextChar);
+            c = read();
+            int column = columnOf(c);
             int transact = TRANSACT[row + column];
 
             if ((transact & APP) != 0) {
-                line.append((char) nextChar);
+                line.append((char) c);
             } else if ((transact & MKF) != 0) {
                 line.markField();
 
@@ -286,7 +286,7 @@ public final class CsvReader<T> implements Closeable {
             return false;
         }
 
-        throw new UnexpectedCharacterException(lines, nextChar);
+        throw new UnexpectedCharacterException(lines, c);
     }
 
     private int read() throws IOException {
@@ -330,13 +330,13 @@ public final class CsvReader<T> implements Closeable {
     }
 
     private void skipLines(int n) throws CsvException, IOException {
+        int c;
         int row = SOL;
-        int nextChar;
         int toSkip = n;
 
         do {
-            nextChar = read();
-            int column = columnOf(nextChar);
+            c = read();
+            int column = columnOf(c);
             int transact = TRANSACT[row + column];
 
             if ((transact & MKL) != 0) {
@@ -357,6 +357,6 @@ public final class CsvReader<T> implements Closeable {
             return;
         }
 
-        throw new UnexpectedCharacterException(lines, nextChar);
+        throw new UnexpectedCharacterException(lines, c);
     }
 }
