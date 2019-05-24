@@ -104,6 +104,8 @@ class SequentialCsvReader<T> extends CsvReader<T> {
         int toSkip = n;
 
         if (state == ELEMENT_READ) {
+            state = ELEMENT_NOT_READ;
+
             if (--toSkip == 0) {
                 return;
             }
