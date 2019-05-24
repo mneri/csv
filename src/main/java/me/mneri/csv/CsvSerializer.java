@@ -21,7 +21,7 @@ package me.mneri.csv;
 import java.util.List;
 
 /**
- * Serialize objects into a {@link List} of strings.
+ * Serialize objects.
  *
  * @param <T> the type of the objects.
  * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;

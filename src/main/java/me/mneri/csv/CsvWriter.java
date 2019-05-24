@@ -244,7 +244,7 @@ public final class CsvWriter<T> implements Closeable, Flushable {
             try {
                 put(object);
             } catch (CsvException e) {
-                throw new UncheckedCsvException(e);
+                throw new CsvUncheckedException(e);
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }

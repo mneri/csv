@@ -39,7 +39,7 @@ public class CsvStreamSupport {
             public boolean hasNext() {
                 //@formatter:off
                 try                    { return reader.hasNext(); }
-                catch (CsvException e) { throw new UncheckedCsvException(e); }
+                catch (CsvException e) { throw new CsvUncheckedException(e); }
                 catch (IOException e)  { throw new UncheckedIOException(e); }
                 //@formatter:on
             }
@@ -48,7 +48,7 @@ public class CsvStreamSupport {
             public T next() {
                 //@formatter:off
                 try                    { return reader.next(); }
-                catch (CsvException e) { throw new UncheckedCsvException(e); }
+                catch (CsvException e) { throw new CsvUncheckedException(e); }
                 catch (IOException e)  { throw new UncheckedIOException(e); }
                 //@formatter:on
             }

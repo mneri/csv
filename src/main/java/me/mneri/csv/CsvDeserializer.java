@@ -18,10 +18,8 @@
 
 package me.mneri.csv;
 
-import java.util.List;
-
 /**
- * Deserialize objects into a {@link List} of strings.
+ * Deserialize objects.
  *
  * @param <T> the type of the objects.
  * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
@@ -31,7 +29,7 @@ public interface CsvDeserializer<T> {
     /**
      * Deserialize an object starting from csv line. The order of the strings is the same as found in the csv.
      *
-     * @param line   the csv line.
+     * @param line the csv line.
      * @return An object.
      * @throws Exception if anything goes wrong.
      */

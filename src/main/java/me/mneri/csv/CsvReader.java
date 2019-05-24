@@ -20,7 +20,6 @@ package me.mneri.csv;
 
 import java.io.*;
 import java.nio.charset.Charset;
-import java.util.NoSuchElementException;
 
 /**
  * Read csv streams and automatically transform lines into Java objects.
@@ -28,7 +27,7 @@ import java.util.NoSuchElementException;
  * @param <T> The type of the Java objects to read.
  * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
  */
-public final class CsvReader<T> implements Closeable {
+public abstract class CsvReader<T> implements Closeable {
     //@formatter:off
     private static final int SOL =  0; // Start of line
     private static final int SOF =  6; // Start of field
@@ -57,42 +56,24 @@ public final class CsvReader<T> implements Closeable {
         ERR | NOP      , ERR | NOP      , ERR | NOP      , ERR | NOP      , EOL | MKF | MKL, ERR | NOP      }; // CAR
     //@formatter:on
 
-    //@formatter:off
-    private static final int ELEMENT_NOT_READ = 0;
-    private static final int ELEMENT_READ     = 1;
-    private static final int NO_SUCH_ELEMENT  = 2;
-    private static final int CLOSED           = 3;
-    //@formatter:on
-
     private static final int DEFAULT_BUFFER_SIZE = 8192;
 
     private final char[] buffer;
     private final int delimiter;
-    private final CsvDeserializer<T> deserializer;
-    private final RecyclableCsvLine line;
     private int lines;
     private int next;
     private final int quotation;
     private final Reader reader;
     private int size;
-    private int state = ELEMENT_NOT_READ;
 
-    private CsvReader(Reader reader, CsvOptions options, CsvDeserializer<T> deserializer) {
+    protected CsvReader(Reader reader, CsvOptions options) {
         this.reader = reader;
-        this.deserializer = deserializer;
 
         buffer = new char[DEFAULT_BUFFER_SIZE];
 
         options.check();
-        line = new RecyclableCsvLine(options.getMaxLineLength());
         delimiter = options.getDelimiter();
         quotation = options.getQuotation();
-    }
-
-    private void checkClosedState() {
-        if (state == CLOSED) {
-            throw new IllegalStateException("The reader is closed.");
-        }
     }
 
     /**
@@ -104,11 +85,6 @@ public final class CsvReader<T> implements Closeable {
      */
     @Override
     public void close() throws IOException {
-        if (state == CLOSED) {
-            return;
-        }
-
-        state = CLOSED;
         reader.close();
     }
 
@@ -133,16 +109,7 @@ public final class CsvReader<T> implements Closeable {
      * @throws CsvException if the csv is not properly formatted.
      * @throws IOException  if an I/O error occurs.
      */
-    public boolean hasNext() throws CsvException, IOException {
-        checkClosedState();
-
-        //@formatter:off
-        if      (state == ELEMENT_READ)    { return true; }
-        else if (state == NO_SUCH_ELEMENT) { return false; }
-        //@formatter:on
-
-        return parseLine();
-    }
+    public abstract boolean hasNext() throws CsvException, IOException;
 
     /**
      * Return the next element in the reader.
@@ -151,22 +118,7 @@ public final class CsvReader<T> implements Closeable {
      * @throws CsvException if the csv is not properly formatted.
      * @throws IOException  if an I/O error occurs.
      */
-    public T next() throws CsvException, IOException {
-        if (!hasNext()) {
-            throw new NoSuchElementException();
-        }
-
-        try {
-            T element = deserializer.deserialize(line);
-
-            state = ELEMENT_NOT_READ;
-            line.clear();
-
-            return element;
-        } catch (Exception e) {
-            throw new CsvConversionException(line, e);
-        }
-    }
+    public abstract T next() throws CsvException, IOException;
 
     /**
      * Opens a file for reading, returning a {@code CsvReader}. Bytes from the file are decoded into characters using
@@ -254,10 +206,12 @@ public final class CsvReader<T> implements Closeable {
      * @return A new {@code CsvReader} to read the specified file.
      */
     public static <T> CsvReader<T> open(Reader reader, CsvOptions options, CsvDeserializer<T> deserializer) {
-        return new CsvReader<>(reader, options, deserializer);
+        return new SequentialCsvReader<>(reader, options, deserializer);
     }
 
-    private boolean parseLine() throws CsvException, IOException {
+    protected boolean parseLine(RecyclableCsvLine line) throws CsvException, IOException {
+        line.clear();
+
         int c;
         int row = SOL;
 
@@ -273,7 +227,6 @@ public final class CsvReader<T> implements Closeable {
 
                 if ((transact & MKL) != 0) {
                     lines++;
-                    state = ELEMENT_READ;
                     return true;
                 }
             }
@@ -282,7 +235,6 @@ public final class CsvReader<T> implements Closeable {
         } while (row < EOF);
 
         if (row == EOF) {
-            state = NO_SUCH_ELEMENT;
             return false;
         }
 
@@ -308,28 +260,9 @@ public final class CsvReader<T> implements Closeable {
      * @throws CsvException if the csv is not properly formatted.
      * @throws IOException  if an I/O error occurs.
      */
-    public void skip(int n) throws CsvException, IOException {
-        checkClosedState();
+    public abstract void skip(int n) throws CsvException, IOException;
 
-        if (state == NO_SUCH_ELEMENT) {
-            return;
-        }
-
-        int toSkip = n;
-
-        if (state == ELEMENT_READ) {
-            state = ELEMENT_NOT_READ;
-            line.clear();
-
-            if (--toSkip == 0) {
-                return;
-            }
-        }
-
-        skipLines(toSkip);
-    }
-
-    private void skipLines(int n) throws CsvException, IOException {
+    protected boolean skipLines(int n) throws CsvException, IOException {
         int c;
         int row = SOL;
         int toSkip = n;
@@ -343,7 +276,7 @@ public final class CsvReader<T> implements Closeable {
                 lines++;
 
                 if (--toSkip == 0) {
-                    return;
+                    return true;
                 }
 
                 row = SOL;
@@ -353,8 +286,7 @@ public final class CsvReader<T> implements Closeable {
         } while (row < EOF);
 
         if (row == EOF) {
-            state = NO_SUCH_ELEMENT;
-            return;
+            return false;
         }
 
         throw new UnexpectedCharacterException(lines, c);

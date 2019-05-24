@@ -18,7 +18,12 @@
 
 package me.mneri.csv;
 
-public class IllegalCsvOptionsException extends CsvRuntimeException {
+/**
+ * This exception is thrown when illegal options are passed to {@link CsvReader} or {@link CsvWriter}.
+ *
+ * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
+ */
+public class IllegalCsvOptionsException extends CsvUncheckedException {
     IllegalCsvOptionsException() {
         super("");
     }
