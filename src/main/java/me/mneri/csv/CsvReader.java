@@ -221,7 +221,11 @@ public abstract class CsvReader<T> implements Closeable {
             int transact = TRANSACT[row + column];
 
             if ((transact & APP) != 0) {
-                line.append((char) c);
+                try {
+                    line.append((char) c);
+                } catch (ArrayIndexOutOfBoundsException ignored) {
+                    throw new CsvLineTooBigException(lines);
+                }
             } else if ((transact & MKF) != 0) {
                 line.markField();
 

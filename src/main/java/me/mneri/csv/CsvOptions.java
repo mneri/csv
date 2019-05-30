@@ -24,7 +24,7 @@ package me.mneri.csv;
  * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
  */
 public class CsvOptions {
-    private static final int DEFAULT_MAX_LINE_LENGTH = 65536;
+    private static final int DEFAULT_MAX_LINE_LENGTH = 16386;
 
     private int delimiter;
     private int maxLineLength;

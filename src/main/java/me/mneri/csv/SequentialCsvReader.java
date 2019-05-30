@@ -67,10 +67,11 @@ class SequentialCsvReader<T> extends CsvReader<T> {
     public boolean hasNext() throws CsvException, IOException {
         checkState();
 
-        //@formatter:off
-        if      (state == ELEMENT_READ)    { return true; }
-        else if (state == NO_SUCH_ELEMENT) { return false; }
-        //@formatter:on
+        if (state == ELEMENT_READ) {
+            return true;
+        } else if (state == NO_SUCH_ELEMENT) {
+            return false;
+        }
 
         boolean read = parseLine(line);
         state = read ? ELEMENT_READ : NO_SUCH_ELEMENT;
