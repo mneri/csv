@@ -39,22 +39,21 @@ public abstract class CsvReader<T> implements Closeable {
     private static final int EOF = 42; // End of file
     private static final int ERR = 48; // Error
 
-    private static final int STATE_MASK = 63;
+    private static final int APP = 1 << 16; // Append
+    private static final int MKF = 1 << 17; // Make field
+    private static final int MKL = 1 << 18; // Make line
 
-    private static final int NOP = 0;      // No operation
-    private static final int APP = 1 << 6; // Append
-    private static final int MKF = 1 << 7; // Make field
-    private static final int MKL = 1 << 8; // Make line
-
-    private static final int[] TRANSACT = {
+    private static final int[] ACTIONS = {
     //  *                "                ,                \r               \n               EOF
-        TXT | APP      , QOT | NOP      , SOF | MKF      , CAR | NOP      , EOL | MKF | MKL, EOF | NOP      ,  // SOL
-        TXT | APP      , QOT | NOP      , SOF | MKF      , CAR | NOP      , EOL | MKF | MKL, EOF | MKF | MKL,  // SOF
-        QOT | APP      , ESC | NOP      , QOT | APP      , QOT | APP      , QOT | APP      , ERR | NOP      ,  // QOT
-        ERR | NOP      , QOT | APP      , SOF | MKF      , CAR | NOP      , EOL | MKF | MKL, EOF | MKF | MKL,  // ESC
-        TXT | APP      , TXT | APP      , SOF | MKF      , CAR | NOP      , EOL | MKF | MKL, EOF | MKF | MKL,  // TXT
-        ERR | NOP      , ERR | NOP      , ERR | NOP      , ERR | NOP      , EOL | MKF | MKL, ERR | NOP      }; // CAR
+        TXT | APP      , QOT            , SOF | MKF      , CAR            , EOL | MKF | MKL, EOF            ,  // SOL
+        TXT | APP      , QOT            , SOF | MKF      , CAR            , EOL | MKF | MKL, EOF | MKF | MKL,  // SOF
+        QOT | APP      , ESC            , QOT | APP      , QOT | APP      , QOT | APP      , ERR            ,  // QOT
+        ERR            , QOT | APP      , SOF | MKF      , CAR            , EOL | MKF | MKL, EOF | MKF | MKL,  // ESC
+        TXT | APP      , TXT | APP      , SOF | MKF      , CAR            , EOL | MKF | MKL, EOF | MKF | MKL,  // TXT
+        ERR            , ERR            , ERR            , ERR            , EOL | MKF | MKL, ERR            }; // CAR
     //@formatter:on
+
+    private static final int STATE_MASK = 0x0000ffff;
 
     private static final int DEFAULT_BUFFER_SIZE = 8192;
 
@@ -74,6 +73,14 @@ public abstract class CsvReader<T> implements Closeable {
         options.check();
         delimiter = options.getDelimiter();
         quotation = options.getQuotation();
+    }
+
+    private void append(RecyclableCsvLine line, char c) throws CsvLineTooBigException {
+        try {
+            line.append(c);
+        } catch (ArrayIndexOutOfBoundsException ignored) {
+            throw new CsvLineTooBigException(lines);
+        }
     }
 
     /**
@@ -110,6 +117,10 @@ public abstract class CsvReader<T> implements Closeable {
      * @throws IOException  if an I/O error occurs.
      */
     public abstract boolean hasNext() throws CsvException, IOException;
+
+    private void makeField(RecyclableCsvLine line) {
+        line.markField();
+    }
 
     /**
      * Return the next element in the reader.
@@ -217,25 +228,20 @@ public abstract class CsvReader<T> implements Closeable {
 
         do {
             c = read();
-            int column = columnOf(c);
-            int transact = TRANSACT[row + column];
+            int action = ACTIONS[row + columnOf(c)];
 
-            if ((transact & APP) != 0) {
-                try {
-                    line.append((char) c);
-                } catch (ArrayIndexOutOfBoundsException ignored) {
-                    throw new CsvLineTooBigException(lines);
-                }
-            } else if ((transact & MKF) != 0) {
-                line.markField();
+            if ((action & APP) != 0) {
+                append(line, (char) c);
+            } else if ((action & MKF) != 0) {
+                makeField(line);
 
-                if ((transact & MKL) != 0) {
+                if ((action & MKL) != 0) {
                     lines++;
                     return true;
                 }
             }
 
-            row = transact & STATE_MASK;
+            row = action & STATE_MASK;
         } while (row < EOF);
 
         if (row == EOF) {
@@ -274,7 +280,7 @@ public abstract class CsvReader<T> implements Closeable {
         do {
             c = read();
             int column = columnOf(c);
-            int transact = TRANSACT[row + column];
+            int transact = ACTIONS[row + column];
 
             if ((transact & MKL) != 0) {
                 lines++;
