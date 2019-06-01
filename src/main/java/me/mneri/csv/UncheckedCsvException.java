@@ -23,16 +23,16 @@ package me.mneri.csv;
  *
  * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
  */
-public class CsvUncheckedException extends RuntimeException {
-    CsvUncheckedException(String message, Throwable cause) {
+public class UncheckedCsvException extends RuntimeException {
+    UncheckedCsvException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    CsvUncheckedException(String message) {
+    UncheckedCsvException(String message) {
         super(message);
     }
 
-    CsvUncheckedException(Throwable cause) {
+    UncheckedCsvException(Throwable cause) {
         super(cause);
     }
 }

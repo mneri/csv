@@ -154,7 +154,7 @@ public class MainTest {
                 //@formatter:off
                 stream.forEach(line -> { });
                 //@formatter:on
-            } catch (CsvUncheckedException e) {
+            } catch (UncheckedCsvException e) {
                 throw (CsvException) e.getCause();
             }
         }
@@ -307,7 +307,7 @@ public class MainTest {
             try (CsvWriter<Void> writer = CsvWriter.open(file, new ExceptionSerializer())) {
                 try {
                     writer.putAll(Stream.of((Void) null));
-                } catch (CsvUncheckedException e) {
+                } catch (UncheckedCsvException e) {
                     throw (CsvConversionException) e.getCause();
                 }
             }

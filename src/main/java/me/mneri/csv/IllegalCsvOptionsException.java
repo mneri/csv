@@ -23,7 +23,7 @@ package me.mneri.csv;
  *
  * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
  */
-public class IllegalCsvOptionsException extends CsvUncheckedException {
+public class IllegalCsvOptionsException extends UncheckedCsvException {
     IllegalCsvOptionsException() {
         super("");
     }

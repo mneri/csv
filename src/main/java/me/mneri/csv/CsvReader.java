@@ -21,10 +21,11 @@ package me.mneri.csv;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.util.Iterator;
-import java.util.Spliterator;
-import java.util.Spliterators;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+
+import static java.util.Spliterator.*;
+import static java.util.Spliterators.spliteratorUnknownSize;
 
 /**
  * Read csv streams and automatically transform lines into Java objects.
@@ -129,7 +130,7 @@ public abstract class CsvReader<T> implements Closeable {
             public boolean hasNext() {
                 //@formatter:off
                 try                    { return reader.hasNext(); }
-                catch (CsvException e) { throw new CsvUncheckedException(e); }
+                catch (CsvException e) { throw new UncheckedCsvException(e); }
                 catch (IOException e)  { throw new UncheckedIOException(e); }
                 //@formatter:on
             }
@@ -138,7 +139,7 @@ public abstract class CsvReader<T> implements Closeable {
             public T next() {
                 //@formatter:off
                 try                    { return reader.next(); }
-                catch (CsvException e) { throw new CsvUncheckedException(e); }
+                catch (CsvException e) { throw new UncheckedCsvException(e); }
                 catch (IOException e)  { throw new UncheckedIOException(e); }
                 //@formatter:on
             }
@@ -335,7 +336,7 @@ public abstract class CsvReader<T> implements Closeable {
      * @param file         the file to open.
      * @param deserializer the deserializer used to convert csv lines into objects.
      * @param <T>          the type of the objects to read.
-     * @return A new {@code CsvReader} to read the specified file.
+     * @return A new {@link Stream} of objects read from the specified file.
      * @throws IOException if an I/O error occurs.
      */
     public static <T> Stream<T> stream(File file, CsvDeserializer<T> deserializer, boolean parallel)
@@ -351,7 +352,7 @@ public abstract class CsvReader<T> implements Closeable {
      * @param options      reading options.
      * @param deserializer the deserializer used to convert csv lines into objects.
      * @param <T>          the type of the objects to read.
-     * @return A new {@code CsvReader} to read the specified file.
+     * @return A new {@link Stream} of objects read from the specified file.
      * @throws IOException if an I/O error occurs.
      */
     public static <T> Stream<T> stream(File file, CsvOptions options, CsvDeserializer<T> deserializer,
@@ -367,7 +368,7 @@ public abstract class CsvReader<T> implements Closeable {
      * @param charset      the charset of the file.
      * @param deserializer the deserializer used to convert csv lines into objects.
      * @param <T>          the type of the objects to read.
-     * @return A new {@code CsvReader} to read the specified file.
+     * @return A new {@link Stream} of objects read from the specified file.
      * @throws IOException if an I/O error occurs.
      */
     public static <T> Stream<T> stream(File file, Charset charset, CsvDeserializer<T> deserializer,
@@ -384,7 +385,7 @@ public abstract class CsvReader<T> implements Closeable {
      * @param options      reading options.
      * @param deserializer the deserializer used to convert csv lines into objects.
      * @param <T>          the type of the objects to read.
-     * @return A new {@code CsvReader} to read the specified file.
+     * @return A new {@link Stream} of objects read from the specified file.
      * @throws IOException if an I/O error occurs.
      */
     public static <T> Stream<T> stream(File file, Charset charset, CsvOptions options, CsvDeserializer<T> deserializer,
@@ -399,7 +400,7 @@ public abstract class CsvReader<T> implements Closeable {
      * @param reader       the {@link Reader} to read from.
      * @param deserializer the deserializer used to convert csv lines into objects.
      * @param <T>          the type of the objects to read.
-     * @return A new {@code CsvReader} to read the specified file.
+     * @return A new {@link Stream} of objects read from the specified file.
      */
     public static <T> Stream<T> stream(Reader reader, CsvDeserializer<T> deserializer, boolean parallel) {
         return stream(reader, CsvOptions.defaultOptions(), deserializer, parallel);
@@ -413,20 +414,20 @@ public abstract class CsvReader<T> implements Closeable {
      * @param options      reading options.
      * @param deserializer the deserializer used to convert csv lines into objects.
      * @param <T>          the type of the objects to read.
-     * @return A new {@code CsvReader} to read the specified file.
+     * @return A new {@link Stream} of objects read from the specified file.
      */
     public static <T> Stream<T> stream(Reader reader, CsvOptions options, CsvDeserializer<T> deserializer,
                                        boolean parallel) {
         StreamableCsvReader csvReader = new StreamableCsvReader(reader, options);
-        int characteristics = Spliterator.IMMUTABLE | Spliterator.NONNULL | Spliterator.ORDERED;
+        int characteristics = IMMUTABLE | NONNULL | ORDERED;
 
         //@formatter:off
-        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator(csvReader), characteristics), parallel)
+        return StreamSupport.stream(spliteratorUnknownSize(iterator(csvReader), characteristics), parallel)
                             .map(line -> {
                                 try {
                                     return deserializer.deserialize(line);
                                 } catch (Exception e) {
-                                    throw new CsvUncheckedException(e);
+                                    throw new UncheckedCsvException(e);
                                 }
                             })
                             .onClose(() -> {
