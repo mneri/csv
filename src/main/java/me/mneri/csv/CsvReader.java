@@ -306,8 +306,7 @@ public abstract class CsvReader<T> implements Closeable {
 
         do {
             c = read();
-            int column = columnOf(c);
-            int transact = ACTIONS[row + column];
+            int transact = ACTIONS[row + columnOf(c)];
 
             if ((transact & MKL) != 0) {
                 lines++;
