@@ -149,7 +149,7 @@ public class MainTest {
     public void illegal2() throws CsvException, IOException {
         File file = getResourceFile("illegal.csv");
 
-        try (Stream<List<String>> stream = CsvStreamSupport.stream(CsvReader.open(file, new StringListDeserializer()), false)) {
+        try (Stream<List<String>> stream = CsvReader.stream(file, new StringListDeserializer(), false)) {
             try {
                 //@formatter:off
                 stream.forEach(line -> { });
@@ -286,7 +286,7 @@ public class MainTest {
                 writer.putAll(persons);
             }
 
-            try (Stream<Person> stream = CsvStreamSupport.stream(CsvReader.open(file, new PersonDeserializer()), false)) {
+            try (Stream<Person> stream = CsvReader.stream(file, new PersonDeserializer(), false)) {
                 List<Person> collected = stream.collect(Collectors.toList());
                 Assert.assertEquals(persons, collected);
             }

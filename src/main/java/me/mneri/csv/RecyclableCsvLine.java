@@ -29,16 +29,19 @@ import java.math.BigInteger;
  *
  * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
  */
-public final class RecyclableCsvLine {
-    private final char[] chars;
-    private final int[] ends;
-    private int fieldCount;
+public class RecyclableCsvLine {
+    final char[] chars;
+    final int[] endings;
     private int nextChar;
-    private int nextEnd;
+    private int nextEnding;
 
-    RecyclableCsvLine(int maxCapacity) {
-        chars = new char[maxCapacity];
-        ends = new int[maxCapacity];
+    RecyclableCsvLine(int capacity) {
+        this(new char[capacity], new int[capacity]);
+    }
+
+    RecyclableCsvLine(char[] chars, int[] endings) {
+        this.chars = chars;
+        this.endings = endings;
     }
 
     void append(char c) {
@@ -46,9 +49,7 @@ public final class RecyclableCsvLine {
     }
 
     void clear() {
-        fieldCount = 0;
-        nextChar = 0;
-        nextEnd = 0;
+        nextChar = nextEnding = 0;
     }
 
     /**
@@ -82,6 +83,10 @@ public final class RecyclableCsvLine {
         return value == null ? null : Boolean.parseBoolean(value);
     }
 
+    int getCharBufferLength() {
+        return nextChar;
+    }
+
     /**
      * Return the value of the field at the specified index as {@link Double}.
      *
@@ -93,21 +98,25 @@ public final class RecyclableCsvLine {
         return value == null ? null : Double.parseDouble(value);
     }
 
+    int getEndingBufferLength() {
+        return nextEnding;
+    }
+
     /**
      * Return the number of fields in this line.
      *
      * @return The number of fields.
      */
     public int getFieldCount() {
-        return fieldCount;
+        return nextEnding;
     }
 
     private int getFieldLength(int i) {
-        return i == 0 ? ends[0] : ends[i] - ends[i - 1];
+        return i == 0 ? endings[0] : endings[i] - endings[i - 1];
     }
 
     private int getFieldStart(int i) {
-        return i == 0 ? 0 : ends[i - 1];
+        return i == 0 ? 0 : endings[i - 1];
     }
 
     /**
@@ -210,7 +219,6 @@ public final class RecyclableCsvLine {
     }
 
     void markField() {
-        ends[nextEnd++] = nextChar;
-        fieldCount++;
+        endings[nextEnding++] = nextChar;
     }
 }

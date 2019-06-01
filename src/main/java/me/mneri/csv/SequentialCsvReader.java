@@ -22,12 +22,6 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.NoSuchElementException;
 
-/**
- * A sequential implementation of {@link CsvReader}.
- *
- * @param <T> The type of Java objects to read.
- * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
- */
 class SequentialCsvReader<T> extends CsvReader<T> {
     //@formatter:off
     private static final int ELEMENT_NOT_READ = 0;
@@ -112,7 +106,6 @@ class SequentialCsvReader<T> extends CsvReader<T> {
             }
         }
 
-        boolean more = skipLines(toSkip);
-        state = more ? ELEMENT_NOT_READ : NO_SUCH_ELEMENT;
+        state = skipLines(toSkip) ? ELEMENT_NOT_READ : NO_SUCH_ELEMENT;
     }
 }
