@@ -66,7 +66,7 @@ public class PersonSerializer implements CsvSerializer<Person> {
 }
 ```
 
-You can get a Java 8 `Stream` from a CSV file using `CsvStreamSupport#stream()` static method.
+You can get a Java 8 `Stream` from a CSV file using `CsvReader#stream()` static method.
 
 ```java
 try (Stream<Person> stream = CsvReader.stream(new File("test.csv"), new PersonDeserializer(), true)) {

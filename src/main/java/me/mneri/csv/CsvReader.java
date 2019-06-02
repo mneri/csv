@@ -419,10 +419,9 @@ public abstract class CsvReader<T> implements Closeable {
     public static <T> Stream<T> stream(Reader reader, CsvOptions options, CsvDeserializer<T> deserializer,
                                        boolean parallel) {
         StreamableCsvReader csvReader = new StreamableCsvReader(reader, options);
-        int characteristics = IMMUTABLE | NONNULL | ORDERED;
 
         //@formatter:off
-        return StreamSupport.stream(spliteratorUnknownSize(iterator(csvReader), characteristics), parallel)
+        return StreamSupport.stream(spliteratorUnknownSize(iterator(csvReader), IMMUTABLE | NONNULL | ORDERED), parallel)
                             .map(line -> {
                                 try {
                                     return deserializer.deserialize(line);

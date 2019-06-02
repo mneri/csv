@@ -19,6 +19,8 @@
 package me.mneri.csv.test;
 
 import me.mneri.csv.*;
+import me.mneri.csv.serialization.StringListCsvDeserializer;
+import me.mneri.csv.serialization.StringListCsvSerializer;
 import me.mneri.csv.test.model.CityPop;
 import me.mneri.csv.test.model.Person;
 import me.mneri.csv.test.serialization.*;
@@ -138,7 +140,7 @@ public class MainTest {
     public void illegal1() throws CsvException, IOException {
         File file = getResourceFile("illegal.csv");
 
-        try (CsvReader<List<String>> reader = CsvReader.open(file, new StringListDeserializer())) {
+        try (CsvReader<List<String>> reader = CsvReader.open(file, new StringListCsvDeserializer())) {
             while (reader.hasNext()) {
                 reader.next();
             }
@@ -149,7 +151,7 @@ public class MainTest {
     public void illegal2() throws CsvException, IOException {
         File file = getResourceFile("illegal.csv");
 
-        try (Stream<List<String>> stream = CsvReader.stream(file, new StringListDeserializer(), false)) {
+        try (Stream<List<String>> stream = CsvReader.stream(file, new StringListCsvDeserializer(), false)) {
             try {
                 //@formatter:off
                 stream.forEach(line -> { });
@@ -179,11 +181,11 @@ public class MainTest {
         try {
             file = createTempFile();
 
-            try (CsvWriter<List<String>> writer = CsvWriter.open(file, new StringListSerializer())) {
+            try (CsvWriter<List<String>> writer = CsvWriter.open(file, new StringListCsvSerializer())) {
                 writer.put(strings);
             }
 
-            try (CsvReader<List<String>> reader = CsvReader.open(file, new StringListDeserializer())) {
+            try (CsvReader<List<String>> reader = CsvReader.open(file, new StringListCsvDeserializer())) {
                 Assert.assertEquals(expected, reader.next());
             }
         } finally {
@@ -269,7 +271,7 @@ public class MainTest {
     public void skip7() throws CsvException, IOException {
         File file = getResourceFile("illegal.csv");
 
-        try (CsvReader<List<String>> reader = CsvReader.open(file, new StringListDeserializer())) {
+        try (CsvReader<List<String>> reader = CsvReader.open(file, new StringListCsvDeserializer())) {
             reader.skip(1);
         }
     }
