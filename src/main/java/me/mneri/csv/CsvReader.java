@@ -255,7 +255,7 @@ public abstract class CsvReader<T> implements Closeable {
         int row = SOL;
 
         do {
-            c = read();
+            c = nextChar();
             int action = ACTIONS[row + columnOf(c)];
 
             if ((action & APP) != 0) {
@@ -279,7 +279,7 @@ public abstract class CsvReader<T> implements Closeable {
         throw new UnexpectedCharacterException(lines, c);
     }
 
-    private int read() throws IOException {
+    private int nextChar() throws IOException {
         if (next >= size) {
             if ((size = reader.read(buffer, 0, buffer.length)) < 0) {
                 return -1;
@@ -306,7 +306,7 @@ public abstract class CsvReader<T> implements Closeable {
         int toSkip = n;
 
         do {
-            c = read();
+            c = nextChar();
             int transact = ACTIONS[row + columnOf(c)];
 
             if ((transact & MKL) != 0) {
