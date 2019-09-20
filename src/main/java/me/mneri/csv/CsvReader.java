@@ -56,10 +56,16 @@ public abstract class CsvReader<T> implements Closeable {
         QOT | APP      , ESC            , QOT | APP      , QOT | APP      , QOT | APP      , ERR            ,  // QOT
         ERR            , QOT | APP      , SOF | MKF      , CAR            , EOL | MKF | MKL, EOF | MKF | MKL,  // ESC
         TXT | APP      , TXT | APP      , SOF | MKF      , CAR            , EOL | MKF | MKL, EOF | MKF | MKL,  // TXT
-        ERR            , ERR            , ERR            , ERR            , EOL | MKF | MKL, ERR            }; // CAR
+        ERR            , ERR            , ERR            , ERR            , EOL | MKF | MKL, ERR            ,  // CAR
+        ERR            , ERR            , ERR            , ERR            , ERR            , ERR            ,  // EOL
+        ERR            , ERR            , ERR            , ERR            , ERR            , ERR            ,  // EOF
+        ERR            , ERR            , ERR            , ERR            , ERR            , ERR            ,  // ERR
+        0              , 0              , 0              , 0              , 0              , 0              ,
+        0              , 0              , 0              , 0              , 0              , 0              ,
+        0              , 0              , 0              , 0              , 0              , 0              };
     //@formatter:on
 
-    private static final int STATE_MASK = 0x0000ffff;
+    private static final int STATE_MASK = 0x00_00_00_3f;
 
     private static final int DEFAULT_BUFFER_SIZE = 8192;
 
