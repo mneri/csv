@@ -1,11 +1,9 @@
 # mneri/csv
 `mneri/csv` is a fast and easy-to-use library to read and write CSV files.
 
-[![Build Status](https://travis-ci.org/mneri/csv.svg?branch=master)](https://travis-ci.org/mneri/csv)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/d30b8cc221234302a0f4686cd9a38f42)](https://app.codacy.com/app/mneri_2/csv?utm_source=github.com&utm_medium=referral&utm_content=mneri/csv&utm_campaign=Badge_Grade_Dashboard)
 [![Language grade: Java](https://img.shields.io/lgtm/grade/java/g/mneri/csv.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/mneri/csv/context:java)
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/mneri/csv.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/mneri/csv/alerts/)
-[![Coverage Status](https://coveralls.io/repos/github/mneri/csv/badge.svg?branch=master)](https://coveralls.io/github/mneri/csv?branch=master)
 
 ## Motivation
 The code of most of the parsers you can find online is bloated and complicated. I wanted make a parser that was brief,
@@ -23,7 +21,7 @@ Memory consumption is also low. You can run `mneri/csv` on uniVocity benchmark w
 To read a CSV file you use `CsvReader` class.
 
 ```java
-try (CsvReader<Person> reader = CsvReader.open(new File("people.csv"), new PersonDeserializer())) {
+try (CsvReader<Person> reader = new DefaultCsvReaderFactory().open(new File("people.csv"), new PersonDeserializer())) {
     while (reader.hasNext()) {
         doSomething(reader.next());
     }
@@ -47,7 +45,7 @@ public class PersonDeserializer implements CsvDeserializer<Person> {
 Writing to a csv file is easy, too.
 
 ```java
-try (CsvWriter<Person> writer = CsvWriter.open(new File("people.csv"), new PersonSerializer())) {
+try (CsvWriter<Person> writer = new DefaultCsvWriterFactory().open(new File("people.csv"), new PersonSerializer())) {
     for (Person person : persons) {
         writer.put(person);
     }
@@ -63,13 +61,5 @@ public class PersonSerializer implements CsvSerializer<Person> {
         out.add(person.getFirstName());
         out.add(person.getLastName());
     }
-}
-```
-
-You can get a Java 8 `Stream` from a CSV file using `CsvReader#stream()` static method.
-
-```java
-try (Stream<Person> stream = CsvReader.stream(new File("test.csv"), new PersonDeserializer(), true)) {
-   stream.forEach(System.out::println);
 }
 ```
