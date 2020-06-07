@@ -21,7 +21,9 @@ Memory consumption is also low. You can run `mneri/csv` on uniVocity benchmark w
 To read a CSV file you use `CsvReader` class.
 
 ```java
-try (CsvReader<Person> reader = new DefaultCsvReaderFactory().open(new File("people.csv"), new PersonDeserializer())) {
+CsvReaderFactory factory = new DefaultCsvReaderFactory();
+
+try (CsvReader<Person> reader = factory.open(new File("people.csv"), new PersonDeserializer())) {
     while (reader.hasNext()) {
         doSomething(reader.next());
     }
@@ -45,7 +47,9 @@ public class PersonDeserializer implements CsvDeserializer<Person> {
 Writing to a csv file is easy, too.
 
 ```java
-try (CsvWriter<Person> writer = new DefaultCsvWriterFactory().open(new File("people.csv"), new PersonSerializer())) {
+CsvWriterFactory factory = new DefaultCsvWriterFactory();
+
+try (CsvWriter<Person> writer = factory.open(new File("people.csv"), new PersonSerializer())) {
     for (Person person : persons) {
         writer.put(person);
     }
