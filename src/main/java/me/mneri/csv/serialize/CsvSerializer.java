@@ -16,23 +16,26 @@
  * limitations under the License.
  */
 
-package me.mneri.csv;
+package me.mneri.csv.serialize;
+
+import me.mneri.csv.deserialize.CsvDeserializer;
+
+import java.util.List;
 
 /**
- * Base class for all the runtime exceptions thrown by {@link CsvReader} and {@link CsvWriter}.
+ * Serialize objects.
  *
+ * @param <T> the type of the objects.
  * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
+ * @see CsvDeserializer
  */
-public class UncheckedCsvException extends RuntimeException {
-    UncheckedCsvException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    UncheckedCsvException(String message) {
-        super(message);
-    }
-
-    UncheckedCsvException(Throwable cause) {
-        super(cause);
-    }
+public interface CsvSerializer<T> {
+    /**
+     * Serialize an object into a list of strings. The strings should be added in order to the list passed as parameter.
+     *
+     * @param object the object to serialize.
+     * @param out    the list of strings representing the csv line.
+     * @throws Exception if anything goes wrong.
+     */
+    void serialize(T object, List<String> out) throws Exception;
 }

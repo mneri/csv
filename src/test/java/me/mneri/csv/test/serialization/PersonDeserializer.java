@@ -18,8 +18,8 @@
 
 package me.mneri.csv.test.serialization;
 
-import me.mneri.csv.CsvDeserializer;
-import me.mneri.csv.RecyclableCsvLine;
+import me.mneri.csv.deserialize.CsvDeserializer;
+import me.mneri.csv.reader.RecyclableCsvLine;
 import me.mneri.csv.test.model.Person;
 
 import java.util.Date;

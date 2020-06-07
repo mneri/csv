@@ -1,11 +1,5 @@
-
-plugins {
-    id 'jacoco'
-    id 'com.github.kt3k.coveralls' version '2.6.3'
-}
-
 group 'me.mneri.csv'
-version '1.5.1-SNAPSHOT'
+version '2.0-SNAPSHOT'
 
 apply plugin: 'java'
 
@@ -17,11 +11,4 @@ repositories {
 
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
-}
-
-jacocoTestReport {
-    reports {
-        xml.enabled = true
-        html.enabled = true
-    }
 }

@@ -16,15 +16,22 @@
  * limitations under the License.
  */
 
-package me.mneri.csv;
+package me.mneri.csv.exception;
+
+import me.mneri.csv.reader.CsvReader;
+import me.mneri.csv.writer.CsvWriter;
 
 /**
- * This exception is thrown when illegal options are passed to {@link CsvReader} or {@link CsvWriter}.
+ * Base class for all the exceptions thrown by {@link CsvReader} and {@link CsvWriter}.
  *
  * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
  */
-public class IllegalCsvOptionsException extends UncheckedCsvException {
-    IllegalCsvOptionsException() {
-        super("");
+public class CsvException extends Exception {
+    public CsvException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public CsvException(String message) {
+        super(message);
     }
 }

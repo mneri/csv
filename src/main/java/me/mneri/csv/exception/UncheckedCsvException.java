@@ -16,15 +16,26 @@
  * limitations under the License.
  */
 
-package me.mneri.csv;
+package me.mneri.csv.exception;
+
+import me.mneri.csv.reader.CsvReader;
+import me.mneri.csv.writer.CsvWriter;
 
 /**
- * This exception is thrown when {@link CsvReader} reads an invalid character.
+ * Base class for all the runtime exceptions thrown by {@link CsvReader} and {@link CsvWriter}.
  *
  * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
  */
-public class UnexpectedCharacterException extends IllegalCsvFormatException {
-    UnexpectedCharacterException(int line, int c) {
-        super(line, String.format("unexpected character '%s'.", TextUtil.printable(c)));
+public class UncheckedCsvException extends RuntimeException {
+    public UncheckedCsvException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public UncheckedCsvException(String message) {
+        super(message);
+    }
+
+    public UncheckedCsvException(Throwable cause) {
+        super(cause);
     }
 }

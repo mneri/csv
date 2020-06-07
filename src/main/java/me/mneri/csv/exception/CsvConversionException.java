@@ -16,15 +16,23 @@
  * limitations under the License.
  */
 
-package me.mneri.csv;
+package me.mneri.csv.exception;
+
+import me.mneri.csv.reader.RecyclableCsvLine;
+
+import java.util.List;
 
 /**
- * This is the parent exception of all exceptions thrown for parsing errors.
+ * This exception is thrown when an error occurs during the conversion process.
  *
  * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
  */
-public class IllegalCsvFormatException extends CsvException {
-    IllegalCsvFormatException(int line, String message) {
-        super(String.format("Error at line %d: %s", line, message));
+public class CsvConversionException extends CsvException {
+    public CsvConversionException(RecyclableCsvLine line, Throwable cause) {
+        super(String.format("Error while converting values: %s", line.toString()), cause);
+    }
+
+    public CsvConversionException(List<String> line, Throwable cause) {
+        super(String.format("Error while converting values: %s", line.toString()), cause);
     }
 }

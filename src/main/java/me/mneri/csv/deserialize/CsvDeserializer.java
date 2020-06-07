@@ -16,17 +16,25 @@
  * limitations under the License.
  */
 
-package me.mneri.csv.serialization;
+package me.mneri.csv.deserialize;
 
-import me.mneri.csv.CsvSerializer;
+import me.mneri.csv.reader.RecyclableCsvLine;
+import me.mneri.csv.serialize.CsvSerializer;
 
-import java.util.List;
-
-public class StringArrayCsvSerializer implements CsvSerializer<String[]> {
-    @Override
-    public void serialize(String[] strings, List<String> out) {
-        for (int i = 0; i < strings.length; i++) {
-            out.add(strings[i]);
-        }
-    }
+/**
+ * Deserialize objects.
+ *
+ * @param <T> the type of the objects.
+ * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
+ * @see CsvSerializer
+ */
+public interface CsvDeserializer<T> {
+    /**
+     * Deserialize an object starting from csv line. The order of the strings is the same as found in the csv.
+     *
+     * @param line the csv line.
+     * @return An object.
+     * @throws Exception if anything goes wrong.
+     */
+    T deserialize(RecyclableCsvLine line) throws Exception;
 }

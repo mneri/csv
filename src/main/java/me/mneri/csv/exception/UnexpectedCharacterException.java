@@ -16,22 +16,17 @@
  * limitations under the License.
  */
 
-package me.mneri.csv;
+package me.mneri.csv.exception;
+
+import me.mneri.csv.reader.CsvReader;
 
 /**
- * Deserialize objects.
+ * This exception is thrown when {@link CsvReader} reads an invalid character.
  *
- * @param <T> the type of the objects.
  * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
- * @see CsvSerializer
  */
-public interface CsvDeserializer<T> {
-    /**
-     * Deserialize an object starting from csv line. The order of the strings is the same as found in the csv.
-     *
-     * @param line the csv line.
-     * @return An object.
-     * @throws Exception if anything goes wrong.
-     */
-    T deserialize(RecyclableCsvLine line) throws Exception;
+public class UnexpectedCharacterException extends IllegalCsvFormatException {
+    public UnexpectedCharacterException(int line, int c) {
+        super(line, String.format("unexpected character code %d.", c));
+    }
 }

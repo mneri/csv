@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package me.mneri.csv;
+package me.mneri.csv.reader;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -29,48 +29,18 @@ import java.math.BigInteger;
  *
  * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
  */
-public class RecyclableCsvLine {
-    final char[] chars;
-    final int[] endings;
-    private int nextChar;
-    private int nextEnding;
-
-    RecyclableCsvLine(int capacity) {
-        this(new char[capacity], new int[capacity]);
-    }
-
-    RecyclableCsvLine(char[] chars, int[] endings) {
-        this.chars = chars;
-        this.endings = endings;
-    }
-
-    void append(char c) {
-        chars[nextChar++] = c;
-    }
-
-    void clear() {
-        nextChar = nextEnding = 0;
-    }
-
+public interface RecyclableCsvLine {
     /**
      * Return the value of the field at the specified index as {@link BigDecimal}.
      *
      * @param i The index of the field.
      * @return The value of the field.
      */
-    public BigDecimal getBigDecimal(int i) {
-        String value = getString(i);
-        return value == null ? null : new BigDecimal(value);
-    }
+    BigDecimal getBigDecimal(int i);
 
-    public BigInteger getBigInteger(int i) {
-        return getBigInteger(i, 10);
-    }
+    BigInteger getBigInteger(int i);
 
-    public BigInteger getBigInteger(int i, int radix) {
-        String value = getString(i);
-        return value == null ? null : new BigInteger(value, radix);
-    }
+    BigInteger getBigInteger(int i, int radix);
 
     /**
      * Return the value of the field at the specified index as {@link Boolean}.
@@ -78,14 +48,7 @@ public class RecyclableCsvLine {
      * @param i The index of the field.
      * @return The value of the field.
      */
-    public Boolean getBoolean(int i) {
-        String value = getString(i);
-        return value == null ? null : Boolean.parseBoolean(value);
-    }
-
-    int getCharBufferLength() {
-        return nextChar;
-    }
+    Boolean getBoolean(int i);
 
     /**
      * Return the value of the field at the specified index as {@link Double}.
@@ -93,31 +56,14 @@ public class RecyclableCsvLine {
      * @param i The index of the field.
      * @return The value of the field.
      */
-    public Double getDouble(int i) {
-        String value = getString(i);
-        return value == null ? null : Double.parseDouble(value);
-    }
-
-    int getEndingBufferLength() {
-        return nextEnding;
-    }
+    Double getDouble(int i);
 
     /**
      * Return the number of fields in this line.
      *
      * @return The number of fields.
      */
-    public int getFieldCount() {
-        return nextEnding;
-    }
-
-    private int getFieldLength(int i) {
-        return i == 0 ? endings[0] : endings[i] - endings[i - 1];
-    }
-
-    private int getFieldStart(int i) {
-        return i == 0 ? 0 : endings[i - 1];
-    }
+    int getFieldCount();
 
     /**
      * Return the value of the field at the specified index as {@link Float}.
@@ -125,10 +71,7 @@ public class RecyclableCsvLine {
      * @param i The index of the field.
      * @return The value of the field.
      */
-    public Float getFloat(int i) {
-        String value = getString(i);
-        return value == null ? null : Float.parseFloat(value);
-    }
+    Float getFloat(int i);
 
     /**
      * Return the value of the field at the specified index as {@link Integer}.
@@ -136,9 +79,7 @@ public class RecyclableCsvLine {
      * @param i The index of the field.
      * @return The value of the field.
      */
-    public Integer getInteger(int i) {
-        return getInteger(i, 10);
-    }
+    Integer getInteger(int i);
 
     /**
      * Return the value of the field at the specified index as {@link Integer} in the radix specified by the second
@@ -149,10 +90,7 @@ public class RecyclableCsvLine {
      * @param radix The radix to be used.
      * @return The value of the field.
      */
-    public Integer getInteger(int i, int radix) {
-        String value = getString(i);
-        return value == null ? null : Integer.parseInt(value, radix);
-    }
+    Integer getInteger(int i, int radix);
 
     /**
      * Return the value of the field at the specified index as {@link Long}.
@@ -160,9 +98,7 @@ public class RecyclableCsvLine {
      * @param i The index of the field.
      * @return The value of the field.
      */
-    public Long getLong(int i) {
-        return getLong(i, 10);
-    }
+    Long getLong(int i);
 
     /**
      * Return the value of the field at the specified index as {@link Long} in the radix specified by the second
@@ -173,10 +109,7 @@ public class RecyclableCsvLine {
      * @param radix The radix to be used.
      * @return The value of the field.
      */
-    public Long getLong(int i, int radix) {
-        String value = getString(i);
-        return value == null ? null : Long.parseLong(value, radix);
-    }
+    Long getLong(int i, int radix);
 
     /**
      * Return the value of the field at the specified index as {@link Short}.
@@ -184,9 +117,7 @@ public class RecyclableCsvLine {
      * @param i The index of the field.
      * @return The value of the field.
      */
-    public Short getShort(int i) {
-        return getShort(i, 10);
-    }
+    Short getShort(int i);
 
     /**
      * Return the value of the field at the specified index as {@link Short} in the radix specified by the second
@@ -197,10 +128,7 @@ public class RecyclableCsvLine {
      * @param radix The radix to be used.
      * @return The value of the field.
      */
-    public Short getShort(int i, int radix) {
-        String value = getString(i);
-        return value == null ? null : Short.parseShort(value, radix);
-    }
+    Short getShort(int i, int radix);
 
     /**
      * Return the value of the field at the specified index as {@link String}.
@@ -208,17 +136,5 @@ public class RecyclableCsvLine {
      * @param i The index of the field.
      * @return The value of the field.
      */
-    public String getString(int i) {
-        int length = getFieldLength(i);
-
-        if (length == 0) {
-            return null;
-        }
-
-        return new String(chars, getFieldStart(i), length);
-    }
-
-    void markField() {
-        endings[nextEnding++] = nextChar;
-    }
+    String getString(int i);
 }

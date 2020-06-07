@@ -16,7 +16,11 @@
  * limitations under the License.
  */
 
-package me.mneri.csv;
+package me.mneri.csv.option;
+
+import me.mneri.csv.exception.IllegalCsvOptionsException;
+import me.mneri.csv.reader.CsvReader;
+import me.mneri.csv.writer.CsvWriter;
 
 /**
  * Options for {@link CsvReader} and {@link CsvWriter}.
@@ -34,9 +38,9 @@ public class CsvOptions {
         maxLineLength = DEFAULT_MAX_LINE_LENGTH;
     }
 
-    void check() {
+    public void check() {
         //@formatter:off
-        if     (delimiter == '\r' || delimiter == '\n' || delimiter <= 0 ||
+        if (delimiter == '\r' || delimiter == '\n' || delimiter <= 0 ||
                 quotation == '\r' || quotation == '\n' || quotation <= 0 ||
                 delimiter == quotation || maxLineLength <= 0) {
             throw new IllegalCsvOptionsException();
@@ -65,15 +69,15 @@ public class CsvOptions {
         return options;
     }
 
-    int getDelimiter() {
+    public int getDelimiter() {
         return delimiter;
     }
 
-    int getMaxLineLength() {
+    public int getMaxLineLength() {
         return maxLineLength;
     }
 
-    int getQuotation() {
+    public int getQuotation() {
         return quotation;
     }
 

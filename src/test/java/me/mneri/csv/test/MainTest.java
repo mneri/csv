@@ -18,13 +18,19 @@
 
 package me.mneri.csv.test;
 
-import me.mneri.csv.*;
-import me.mneri.csv.serialization.StringListCsvDeserializer;
-import me.mneri.csv.serialization.StringListCsvSerializer;
+import me.mneri.csv.exception.CsvConversionException;
+import me.mneri.csv.exception.CsvException;
+import me.mneri.csv.reader.CsvReader;
+import me.mneri.csv.reader.CsvReaderFactory;
+import me.mneri.csv.reader.DefaultCsvReaderFactory;
 import me.mneri.csv.test.model.CityPop;
 import me.mneri.csv.test.model.Person;
 import me.mneri.csv.test.serialization.*;
+import me.mneri.csv.writer.CsvWriter;
+import me.mneri.csv.writer.CsvWriterFactory;
+import me.mneri.csv.writer.DefaultCsvWriterFactory;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.*;
@@ -32,16 +38,23 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.zip.ZipInputStream;
 
 public class MainTest {
+    private CsvReaderFactory readerFactory;
+    private CsvWriterFactory writerFactory;
+
+    @Before
+    public void beforeEach() {
+        readerFactory = new DefaultCsvReaderFactory();
+        writerFactory = new DefaultCsvWriterFactory();
+    }
+
     @Test(expected = CsvConversionException.class)
     public void conversionException1() throws CsvException, IOException {
         File file = getResourceFile("simple.csv");
 
-        try (CsvReader<Void> reader = CsvReader.open(file, new ExceptionDeserializer())) {
+        try (CsvReader<Void> reader = readerFactory.open(file, new ExceptionDeserializer())) {
             while (reader.hasNext()) {
                 reader.next();
             }
@@ -55,13 +68,23 @@ public class MainTest {
 
         try {
             file = createTempFile();
-            writer = CsvWriter.open(file, new ExceptionSerializer());
+            writer = writerFactory.open(file, new ExceptionSerializer());
 
-            writer.put(null);
+            writer.write(null);
         } finally {
             //@formatter:off
-            if (writer != null) { try { writer.close(); } catch (IOException ignored) { } }
-            if (file != null)   { try { file.delete(); }  catch (SecurityException ignored) { } }
+            if (writer != null) {
+                try {
+                    writer.close();
+                } catch (IOException ignored) {
+                }
+            }
+            if (file != null) {
+                try {
+                    file.delete();
+                } catch (SecurityException ignored) {
+                }
+            }
             //@formatter:on
         }
     }
@@ -96,11 +119,14 @@ public class MainTest {
     public void empty() throws CsvException, IOException {
         File file = getResourceFile("empty.csv");
 
-        try (CsvReader<Void> reader = CsvReader.open(file, new VoidDeserializer())) {
+        try (CsvReader<Void> reader = readerFactory.open(file, new VoidDeserializer())) {
             reader.next();
         } finally {
             //@formatter:off
-            try { file.delete(); } catch (SecurityException ignored) { }
+            try {
+                file.delete();
+            } catch (SecurityException ignored) {
+            }
             //@formatter:on
         }
     }
@@ -116,17 +142,32 @@ public class MainTest {
             file = createTempFile();
             List<Integer> line = Arrays.asList(0, 1, 2, 3);
 
-            writer = CsvWriter.open(file, new IntegerListSerializer());
-            writer.put(line);
+            writer = writerFactory.open(file, new IntegerListSerializer());
+            writer.write(line);
             writer.flush();
 
-            reader = CsvReader.open(file, new IntegerListDeserializer());
+            reader = readerFactory.open(file, new IntegerListDeserializer());
             Assert.assertEquals(line, reader.next());
         } finally {
             //@formatter:off
-            if (writer != null) { try { writer.close(); } catch (IOException ignored) { } }
-            if (reader != null) { try { reader.close(); } catch (IOException ignored) { } }
-            if (file != null)   { try { file.delete(); }  catch (SecurityException ignored) { } }
+            if (writer != null) {
+                try {
+                    writer.close();
+                } catch (IOException ignored) {
+                }
+            }
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException ignored) {
+                }
+            }
+            if (file != null) {
+                try {
+                    file.delete();
+                } catch (SecurityException ignored) {
+                }
+            }
             //@formatter:on
         }
     }
@@ -136,62 +177,13 @@ public class MainTest {
         return new File(Objects.requireNonNull(classLoader.getResource(name)).getFile());
     }
 
-    @Test(expected = UnexpectedCharacterException.class)
-    public void illegal1() throws CsvException, IOException {
-        File file = getResourceFile("illegal.csv");
-
-        try (CsvReader<List<String>> reader = CsvReader.open(file, new StringListCsvDeserializer())) {
-            while (reader.hasNext()) {
-                reader.next();
-            }
-        }
-    }
-
-    @Test(expected = UnexpectedCharacterException.class)
-    public void illegal2() throws CsvException, IOException {
-        File file = getResourceFile("illegal.csv");
-
-        try (Stream<List<String>> stream = CsvReader.stream(file, new StringListCsvDeserializer(), false)) {
-            try {
-                //@formatter:off
-                stream.forEach(line -> { });
-                //@formatter:on
-            } catch (UncheckedCsvException e) {
-                throw (CsvException) e.getCause();
-            }
-        }
-    }
-
     @Test(expected = IllegalStateException.class)
     public void readAfterClose() throws CsvException, IOException {
         File file = getResourceFile("simple.csv");
 
-        try (CsvReader<List<Integer>> reader = CsvReader.open(file, new IntegerListDeserializer())) {
+        try (CsvReader<List<Integer>> reader = readerFactory.open(file, new IntegerListDeserializer())) {
             reader.close();
             reader.next();
-        }
-    }
-
-    @Test
-    public void shouldQuote() throws CsvException, IOException {
-        File file = null;
-        List<String> strings = Arrays.asList("a", "\"b\"", "", null, "c,d,e");
-        List<String> expected = Arrays.asList("a", "\"b\"", null, null, "c,d,e");
-
-        try {
-            file = createTempFile();
-
-            try (CsvWriter<List<String>> writer = CsvWriter.open(file, new StringListCsvSerializer())) {
-                writer.put(strings);
-            }
-
-            try (CsvReader<List<String>> reader = CsvReader.open(file, new StringListCsvDeserializer())) {
-                Assert.assertEquals(expected, reader.next());
-            }
-        } finally {
-            //@formatter:off
-            if (file != null) { try { file.delete(); } catch (SecurityException ignored) { } }
-            //@formatter:on
         }
     }
 
@@ -200,7 +192,7 @@ public class MainTest {
         File file = getResourceFile("simple.csv");
         List<Integer> expected = Arrays.asList(6, 7, 8, 9, 0);
 
-        try (CsvReader<List<Integer>> reader = CsvReader.open(file, new IntegerListDeserializer())) {
+        try (CsvReader<List<Integer>> reader = readerFactory.open(file, new IntegerListDeserializer())) {
             reader.skip(1);
             List<Integer> second = reader.next();
             Assert.assertEquals(second, expected);
@@ -212,7 +204,7 @@ public class MainTest {
         File file = getResourceFile("simple.csv");
         List<Integer> expected = Arrays.asList(6, 7, 8, 9, 0);
 
-        try (CsvReader<List<Integer>> reader = CsvReader.open(file, new IntegerListDeserializer())) {
+        try (CsvReader<List<Integer>> reader = readerFactory.open(file, new IntegerListDeserializer())) {
             if (reader.hasNext()) {
                 reader.skip(1);
             }
@@ -226,7 +218,7 @@ public class MainTest {
     public void skip3() throws CsvException, IOException {
         File file = getResourceFile("simple.csv");
 
-        try (CsvReader<List<Integer>> reader = CsvReader.open(file, new IntegerListDeserializer())) {
+        try (CsvReader<List<Integer>> reader = readerFactory.open(file, new IntegerListDeserializer())) {
             reader.next();
             reader.skip(1);
             Assert.assertFalse(reader.hasNext());
@@ -237,7 +229,7 @@ public class MainTest {
     public void skip4() throws CsvException, IOException {
         File file = getResourceFile("simple.csv");
 
-        try (CsvReader<List<Integer>> reader = CsvReader.open(file, new IntegerListDeserializer())) {
+        try (CsvReader<List<Integer>> reader = readerFactory.open(file, new IntegerListDeserializer())) {
             reader.skip(2);
             Assert.assertFalse(reader.hasNext());
         }
@@ -247,7 +239,7 @@ public class MainTest {
     public void skip5() throws CsvException, IOException {
         File file = getResourceFile("simple.csv");
 
-        try (CsvReader<List<Integer>> reader = CsvReader.open(file, new IntegerListDeserializer())) {
+        try (CsvReader<List<Integer>> reader = readerFactory.open(file, new IntegerListDeserializer())) {
             reader.skip(999);
             Assert.assertFalse(reader.hasNext());
         }
@@ -257,66 +249,13 @@ public class MainTest {
     public void skip6() throws CsvException, IOException {
         File file = getResourceFile("simple.csv");
 
-        try (CsvReader<List<Integer>> reader = CsvReader.open(file, new IntegerListDeserializer())) {
+        try (CsvReader<List<Integer>> reader = readerFactory.open(file, new IntegerListDeserializer())) {
             while (reader.hasNext()) {
                 reader.next();
             }
 
             reader.skip(1);
             Assert.assertFalse(reader.hasNext());
-        }
-    }
-
-    @Test(expected = UnexpectedCharacterException.class)
-    public void skip7() throws CsvException, IOException {
-        File file = getResourceFile("illegal.csv");
-
-        try (CsvReader<List<String>> reader = CsvReader.open(file, new StringListCsvDeserializer())) {
-            reader.skip(1);
-        }
-    }
-
-    @Test
-    public void stream1() throws CsvConversionException, IOException {
-        File file = null;
-        List<Person> persons = Arrays.asList(createMneri(), createRms());
-
-        try {
-            file = createTempFile();
-
-            try (CsvWriter<Person> writer = CsvWriter.open(file, new PersonSerializer())) {
-                writer.putAll(persons);
-            }
-
-            try (Stream<Person> stream = CsvReader.stream(file, new PersonDeserializer(), false)) {
-                List<Person> collected = stream.collect(Collectors.toList());
-                Assert.assertEquals(persons, collected);
-            }
-        } finally {
-            //@formatter:off
-            if (file != null) { try { file.delete(); } catch (SecurityException ignored) { } }
-            //@formatter:on
-        }
-    }
-
-    @Test(expected = CsvConversionException.class)
-    public void stream2() throws CsvException, IOException {
-        File file = null;
-
-        try {
-            file = createTempFile();
-
-            try (CsvWriter<Void> writer = CsvWriter.open(file, new ExceptionSerializer())) {
-                try {
-                    writer.putAll(Stream.of((Void) null));
-                } catch (UncheckedCsvException e) {
-                    throw (CsvConversionException) e.getCause();
-                }
-            }
-        } finally {
-            //@formatter:off
-            if (file != null) { try { file.delete(); } catch (SecurityException ignored) { } }
-            //@formatter:on
         }
     }
 
@@ -333,20 +272,38 @@ public class MainTest {
             zip = new ZipInputStream(new FileInputStream(input));
             zip.getNextEntry();
 
-            reader = CsvReader.open(new BufferedReader(new InputStreamReader(zip)), new CityPopDeserializer());
-            writer = CsvWriter.open(output, new CityPopSerializer());
+            reader = readerFactory.open(new BufferedReader(new InputStreamReader(zip)), new CityPopDeserializer());
+            writer = writerFactory.open(output, new CityPopSerializer());
 
             reader.skip(1);
 
             while (reader.hasNext()) {
-                writer.put(reader.next());
+                writer.write(reader.next());
             }
         } finally {
             //@formatter:off
-            if (reader != null) { try { reader.close(); }  catch (IOException ignored) { } }
-            if (writer != null) { try { writer.close(); }  catch (IOException ignored) { } }
-            try { output.delete(); } catch (SecurityException ignored) { }
-            if (zip != null)    { try { zip.close(); }     catch (IOException ignored) { } }
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException ignored) {
+                }
+            }
+            if (writer != null) {
+                try {
+                    writer.close();
+                } catch (IOException ignored) {
+                }
+            }
+            try {
+                output.delete();
+            } catch (SecurityException ignored) {
+            }
+            if (zip != null) {
+                try {
+                    zip.close();
+                } catch (IOException ignored) {
+                }
+            }
             //@formatter:on
         }
     }
@@ -360,13 +317,23 @@ public class MainTest {
 
         try {
             file = createTempFile();
-            writer = CsvWriter.open(file, new IntegerListSerializer());
+            writer = writerFactory.open(file, new IntegerListSerializer());
             writer.close();
-            writer.put(line);
+            writer.write(line);
         } finally {
             //@formatter:off
-            if (writer != null) { try { writer.close(); } catch (IOException ignored) { } }
-            if (file != null)   { try { file.delete(); }  catch (SecurityException ignored) { } }
+            if (writer != null) {
+                try {
+                    writer.close();
+                } catch (IOException ignored) {
+                }
+            }
+            if (file != null) {
+                try {
+                    file.delete();
+                } catch (SecurityException ignored) {
+                }
+            }
             //@formatter:on
         }
     }
@@ -379,17 +346,22 @@ public class MainTest {
         try {
             file = createTempFile();
 
-            try (CsvWriter<Person> writer = CsvWriter.open(file, new PersonSerializer())) {
-                writer.put(mneri);
+            try (CsvWriter<Person> writer = writerFactory.open(file, new PersonSerializer())) {
+                writer.write(mneri);
             }
 
-            try (CsvReader<Person> reader = CsvReader.open(file, new PersonDeserializer())) {
+            try (CsvReader<Person> reader = readerFactory.open(file, new PersonDeserializer())) {
                 Person person = reader.next();
                 Assert.assertEquals(mneri, person);
             }
         } finally {
             //@formatter:off
-            if (file != null) { try { file.delete(); } catch (SecurityException ignored) { } }
+            if (file != null) {
+                try {
+                    file.delete();
+                } catch (SecurityException ignored) {
+                }
+            }
             //@formatter:on
         }
     }
