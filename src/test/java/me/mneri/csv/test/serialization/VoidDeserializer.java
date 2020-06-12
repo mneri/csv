@@ -18,7 +18,7 @@
 
 package me.mneri.csv.test.serialization;
 
-import me.mneri.csv.deserialize.CsvDeserializer;
+import me.mneri.csv.deserializer.CsvDeserializer;
 import me.mneri.csv.reader.RecyclableCsvLine;
 
 public class VoidDeserializer implements CsvDeserializer<Void> {

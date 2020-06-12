@@ -18,7 +18,7 @@
 
 package me.mneri.csv.test.serialization;
 
-import me.mneri.csv.serialize.CsvSerializer;
+import me.mneri.csv.serializer.CsvSerializer;
 
 import java.util.List;
 
