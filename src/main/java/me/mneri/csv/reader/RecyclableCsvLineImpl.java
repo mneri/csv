@@ -52,6 +52,7 @@ class RecyclableCsvLineImpl implements RecyclableCsvLine {
     /**
      * {@inheritDoc}
      */
+    @Override
     public BigDecimal getBigDecimal(int i) {
         int length = getFieldLength(i);
 
@@ -65,6 +66,7 @@ class RecyclableCsvLineImpl implements RecyclableCsvLine {
     /**
      * {@inheritDoc}
      */
+    @Override
     public BigInteger getBigInteger(int i) {
         return getBigInteger(i, 10);
     }
@@ -72,6 +74,7 @@ class RecyclableCsvLineImpl implements RecyclableCsvLine {
     /**
      * {@inheritDoc}
      */
+    @Override
     public BigInteger getBigInteger(int i, int radix) {
         String value = getString(i);
         return value == null ? null : new BigInteger(value, radix);
@@ -80,30 +83,25 @@ class RecyclableCsvLineImpl implements RecyclableCsvLine {
     /**
      * {@inheritDoc}
      */
+    @Override
     public Boolean getBoolean(int i) {
         String value = getString(i);
         return value == null ? null : Boolean.parseBoolean(value);
     }
 
-    int getCharBufferLength() {
-        return nextChar;
-    }
-
     /**
      * {@inheritDoc}
      */
+    @Override
     public Double getDouble(int i) {
         String value = getString(i);
         return value == null ? null : Double.parseDouble(value);
     }
 
-    int getEndingBufferLength() {
-        return nextEnding;
-    }
-
     /**
      * {@inheritDoc}
      */
+    @Override
     public int getFieldCount() {
         return nextEnding;
     }
@@ -119,6 +117,7 @@ class RecyclableCsvLineImpl implements RecyclableCsvLine {
     /**
      * {@inheritDoc}
      */
+    @Override
     public Float getFloat(int i) {
         String value = getString(i);
         return value == null ? null : Float.parseFloat(value);
@@ -127,6 +126,7 @@ class RecyclableCsvLineImpl implements RecyclableCsvLine {
     /**
      * {@inheritDoc}
      */
+    @Override
     public Integer getInteger(int i) {
         return getInteger(i, 10);
     }
@@ -134,6 +134,7 @@ class RecyclableCsvLineImpl implements RecyclableCsvLine {
     /**
      * {@inheritDoc}
      */
+    @Override
     public Integer getInteger(int i, int radix) {
         String value = getString(i);
         return value == null ? null : Integer.parseInt(value, radix);
@@ -142,6 +143,7 @@ class RecyclableCsvLineImpl implements RecyclableCsvLine {
     /**
      * {@inheritDoc}
      */
+    @Override
     public Long getLong(int i) {
         return getLong(i, 10);
     }
@@ -149,6 +151,7 @@ class RecyclableCsvLineImpl implements RecyclableCsvLine {
     /**
      * {@inheritDoc}
      */
+    @Override
     public Long getLong(int i, int radix) {
         String value = getString(i);
         return value == null ? null : Long.parseLong(value, radix);
@@ -157,6 +160,7 @@ class RecyclableCsvLineImpl implements RecyclableCsvLine {
     /**
      * {@inheritDoc}
      */
+    @Override
     public Short getShort(int i) {
         return getShort(i, 10);
     }
@@ -164,6 +168,7 @@ class RecyclableCsvLineImpl implements RecyclableCsvLine {
     /**
      * {@inheritDoc}
      */
+    @Override
     public Short getShort(int i, int radix) {
         String value = getString(i);
         return value == null ? null : Short.parseShort(value, radix);
@@ -172,6 +177,7 @@ class RecyclableCsvLineImpl implements RecyclableCsvLine {
     /**
      * {@inheritDoc}
      */
+    @Override
     public String getString(int i) {
         int length = getFieldLength(i);
 
