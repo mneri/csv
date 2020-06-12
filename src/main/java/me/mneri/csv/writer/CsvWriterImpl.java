@@ -22,7 +22,7 @@ import me.mneri.csv.exception.CsvException;
 import me.mneri.csv.option.CsvOptions;
 import me.mneri.csv.exception.CsvConversionException;
 import me.mneri.csv.exception.UncheckedCsvException;
-import me.mneri.csv.serialize.CsvSerializer;
+import me.mneri.csv.serializer.CsvSerializer;
 
 import java.io.*;
 import java.util.ArrayList;

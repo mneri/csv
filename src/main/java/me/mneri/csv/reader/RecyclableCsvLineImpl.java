@@ -53,8 +53,13 @@ class RecyclableCsvLineImpl implements RecyclableCsvLine {
      * {@inheritDoc}
      */
     public BigDecimal getBigDecimal(int i) {
-        String value = getString(i);
-        return value == null ? null : new BigDecimal(value);
+        int length = getFieldLength(i);
+
+        if (length == 0) {
+            return null;
+        }
+
+        return new BigDecimal(chars, getFieldStart(i), length);
     }
 
     /**

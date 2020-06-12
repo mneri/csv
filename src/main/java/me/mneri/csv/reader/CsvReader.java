@@ -67,5 +67,4 @@ public interface CsvReader<T> extends Closeable {
      * @throws IOException  if an I/O error occurs.
      */
     void skip(int n) throws CsvException, IOException;
-
 }

@@ -19,7 +19,7 @@
 package me.mneri.csv.writer;
 
 import me.mneri.csv.option.CsvOptions;
-import me.mneri.csv.serialize.CsvSerializer;
+import me.mneri.csv.serializer.CsvSerializer;
 
 import java.io.File;
 import java.io.IOException;

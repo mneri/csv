@@ -16,10 +16,10 @@
  * limitations under the License.
  */
 
-package me.mneri.csv.deserialize;
+package me.mneri.csv.deserializer;
 
 import me.mneri.csv.reader.RecyclableCsvLine;
-import me.mneri.csv.serialize.CsvSerializer;
+import me.mneri.csv.serializer.CsvSerializer;
 
 /**
  * Deserialize objects.

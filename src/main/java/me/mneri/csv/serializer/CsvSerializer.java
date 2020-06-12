@@ -16,9 +16,9 @@
  * limitations under the License.
  */
 
-package me.mneri.csv.serialize;
+package me.mneri.csv.serializer;
 
-import me.mneri.csv.deserialize.CsvDeserializer;
+import me.mneri.csv.deserializer.CsvDeserializer;
 
 import java.util.List;
 

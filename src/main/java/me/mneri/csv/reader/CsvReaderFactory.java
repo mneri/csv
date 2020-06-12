@@ -18,7 +18,7 @@
 
 package me.mneri.csv.reader;
 
-import me.mneri.csv.deserialize.CsvDeserializer;
+import me.mneri.csv.deserializer.CsvDeserializer;
 import me.mneri.csv.option.CsvOptions;
 
 import java.io.File;

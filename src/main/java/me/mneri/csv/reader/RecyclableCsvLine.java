@@ -38,8 +38,22 @@ public interface RecyclableCsvLine {
      */
     BigDecimal getBigDecimal(int i);
 
+    /**
+     * Return the value of the field at the specified index as {@link BigInteger}.
+     *
+     * @param i The index of the field.
+     * @return The value of the field.
+     */
     BigInteger getBigInteger(int i);
 
+    /**
+     * Return the value of the field at the specified index as {@link BigInteger} in the radix specified by the second
+     * argument.
+     *
+     * @param i The index of the field.
+     * @param radix The radix to be used.
+     * @return The value of the field.
+     */
     BigInteger getBigInteger(int i, int radix);
 
     /**

@@ -18,7 +18,7 @@
 
 package me.mneri.csv.reader;
 
-import me.mneri.csv.deserialize.CsvDeserializer;
+import me.mneri.csv.deserializer.CsvDeserializer;
 import me.mneri.csv.exception.CsvConversionException;
 import me.mneri.csv.exception.CsvException;
 import me.mneri.csv.exception.CsvLineTooBigException;
@@ -37,8 +37,8 @@ import java.util.NoSuchElementException;
  */
 class CsvReaderImpl<T> implements CsvReader<T> {
     //@formatter:off
-    private static final int SOL = 0; // Start of line
-    private static final int SOF = 6; // Start of field
+    private static final int SOL = 0;  // Start of line
+    private static final int SOF = 6;  // Start of field
     private static final int QOT = 12; // Quotation
     private static final int ESC = 18; // Escape
     private static final int TXT = 24; // Text
@@ -65,18 +65,16 @@ class CsvReaderImpl<T> implements CsvReader<T> {
             0,                   0,               0,               0,               0,               0,
             0,                   0,               0,               0,               0,               0,
             0,                   0,               0,               0,               0,               0};
-    //@formatter:on
 
     private static final int STATE_MASK = 0x00_00_00_3f;
 
-    private static final int DEFAULT_BUFFER_SIZE = 8192;
-
-    //@formatter:off
     private static final int ELEMENT_NOT_READ = 0;
     private static final int ELEMENT_READ = 1;
     private static final int NO_SUCH_ELEMENT = 2;
     private static final int CLOSED = 3;
     //@formatter:on
+
+    private static final int DEFAULT_BUFFER_SIZE = 8192;
 
     private final char[] buffer;
     private final int delimiter;
@@ -130,20 +128,13 @@ class CsvReaderImpl<T> implements CsvReader<T> {
 
     private int columnOf(int c) {
         switch (c) {
-            case '\r':
-                return 3;
-            case '\n':
-                return 4;
-            case -1:
-                return 5; // EOF
+            case '\r': return 3;
+            case '\n': return 4;
+            case -1:   return 5; // EOF
             default:
-                if (c == delimiter) {
-                    return 2;
-                } else if (c == quotation) {
-                    return 1;
-                } else {
-                    return 0;
-                }
+                if (c == delimiter) return 2;
+                if (c == quotation) return 1;
+                return 0;
         }
     }
 
