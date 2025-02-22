@@ -16,22 +16,25 @@
  * limitations under the License.
  */
 
-package me.mneri.csv.test.serialization;
+package me.mneri.csv.deserializer;
 
+import me.mneri.csv.reader.RecycledLine;
 import me.mneri.csv.serializer.CsvSerializer;
-import me.mneri.csv.test.model.CityPop;
 
-import java.util.List;
-
-public class CityPopSerializer implements CsvSerializer<CityPop> {
-    @Override
-    public void serialize(CityPop city, List<String> out) {
-        out.add(city.getCountry());
-        out.add(city.getCity());
-        out.add(city.getAccentCity());
-        out.add(city.getRegion());
-        out.add(city.getPopulation() != null ? city.getPopulation().toString() : null);
-        out.add(city.getLatitude() != null ? city.getLatitude().toString() : null);
-        out.add(city.getLongitude() != null ? city.getLongitude().toString() : null);
-    }
+/**
+ * Deserialize objects.
+ *
+ * @param <T> the type of the objects.
+ * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
+ * @see CsvSerializer
+ */
+public interface Deserializer<T> {
+    /**
+     * Deserialize an object starting from csv line. The order of the strings is the same as found in the csv.
+     *
+     * @param line the csv line.
+     * @return An object.
+     * @throws Exception if anything goes wrong.
+     */
+    T deserialize(RecycledLine line) throws Exception;
 }

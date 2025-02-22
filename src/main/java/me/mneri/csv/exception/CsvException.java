@@ -18,7 +18,6 @@
 
 package me.mneri.csv.exception;
 
-import me.mneri.csv.reader.CsvReader;
 import me.mneri.csv.writer.CsvWriter;
 
 /**

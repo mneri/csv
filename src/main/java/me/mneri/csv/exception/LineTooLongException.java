@@ -16,25 +16,10 @@
  * limitations under the License.
  */
 
-package me.mneri.csv.deserializer;
+package me.mneri.csv.exception;
 
-import me.mneri.csv.reader.RecyclableCsvLine;
-import me.mneri.csv.serializer.CsvSerializer;
-
-/**
- * Deserialize objects.
- *
- * @param <T> the type of the objects.
- * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
- * @see CsvSerializer
- */
-public interface CsvDeserializer<T> {
-    /**
-     * Deserialize an object starting from csv line. The order of the strings is the same as found in the csv.
-     *
-     * @param line the csv line.
-     * @return An object.
-     * @throws Exception if anything goes wrong.
-     */
-    T deserialize(RecyclableCsvLine line) throws Exception;
+public class LineTooLongException extends IllegalCsvFormatException {
+    public LineTooLongException(int line) {
+        super(line, "line is too big.");
+    }
 }

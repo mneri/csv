@@ -18,7 +18,7 @@
 
 package me.mneri.csv.exception;
 
-import me.mneri.csv.reader.RecyclableCsvLine;
+import me.mneri.csv.reader.RecycledLine;
 
 import java.util.List;
 
@@ -28,7 +28,7 @@ import java.util.List;
  * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
  */
 public class CsvConversionException extends CsvException {
-    public CsvConversionException(RecyclableCsvLine line, Throwable cause) {
+    public CsvConversionException(RecycledLine line, Throwable cause) {
         super(String.format("Error while converting values: %s", line.toString()), cause);
     }
 

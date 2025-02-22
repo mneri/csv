@@ -18,8 +18,6 @@
 
 package me.mneri.csv.exception;
 
-import me.mneri.csv.reader.CsvReader;
-
 /**
  * This exception is thrown when {@link CsvReader} reads an invalid character.
  *

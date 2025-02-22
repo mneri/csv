@@ -19,7 +19,6 @@
 package me.mneri.csv.option;
 
 import me.mneri.csv.exception.IllegalCsvOptionsException;
-import me.mneri.csv.reader.CsvReader;
 import me.mneri.csv.writer.CsvWriter;
 
 /**

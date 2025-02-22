@@ -18,7 +18,7 @@
 
 package me.mneri.csv.serializer;
 
-import me.mneri.csv.deserializer.CsvDeserializer;
+import me.mneri.csv.deserializer.Deserializer;
 
 import java.util.List;
 
@@ -27,7 +27,7 @@ import java.util.List;
  *
  * @param <T> the type of the objects.
  * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
- * @see CsvDeserializer
+ * @see Deserializer
  */
 public interface CsvSerializer<T> {
     /**
