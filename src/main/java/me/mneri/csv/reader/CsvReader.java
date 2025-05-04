@@ -23,11 +23,27 @@ import me.mneri.csv.exception.CsvException;
 import me.mneri.csv.exception.LineTooLongException;
 import me.mneri.csv.exception.UnexpectedCharacterException;
 import me.mneri.csv.format.Format;
+import me.mneri.csv.format.Rfc4180RelaxedFormat;
 
-import java.io.*;
+import java.io.Closeable;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
+import java.util.List;
 import java.util.NoSuchElementException;
 
-import static me.mneri.csv.format.Format.*;
+import static me.mneri.csv.format.Format.ANY;
+import static me.mneri.csv.format.Format.EFB;
+import static me.mneri.csv.format.Format.EFH;
+import static me.mneri.csv.format.Format.ELH;
+import static me.mneri.csv.format.Format.ERH;
+import static me.mneri.csv.format.Format.Provider;
+import static me.mneri.csv.format.Format.RCB;
+import static me.mneri.csv.format.Format.RLR;
+import static me.mneri.csv.format.Format.SFH;
+import static me.mneri.csv.format.Format.STP;
 
 /**
  * Read csv streams and automatically transform lines into Java objects.
@@ -73,6 +89,45 @@ public class CsvReader<T> implements Closeable {
     }
 
     /**
+     * Return a new {@link CsvReader} in open state, reading from the specified file, deserializing each line into a
+     * {@link List<String>}.
+     *
+     * @param f The file.
+     * @param p A provider of {@link Format}s.
+     * @return A new {@link CsvReader}, in open state.
+     * @throws FileNotFoundException If the file does not exist.
+     */
+    public static CsvReader<List<String>> open(File f, Format.Provider<?> p) throws FileNotFoundException {
+        return open(f, p, new StringListDeserializer());
+    }
+
+    /**
+     * Return a new {@link CsvReader} in open state, reading from the specified file, parsing with
+     * {@link Rfc4180RelaxedFormat}.
+     *
+     * @param f   The file.
+     * @param des The deserializer, mapping CSV lines to Java objects.
+     * @param <T> The type of object a CSV line should be mapped to.
+     * @return A new {@link CsvReader}, in open state.
+     * @throws FileNotFoundException If the file does not exist.
+     */
+    public static <T> CsvReader<T> open(File f, Deserializer<T> des) throws FileNotFoundException {
+        return open(f, Rfc4180RelaxedFormat.provider(), des);
+    }
+
+    /**
+     * Return a new {@link CsvReader} in open state, reading from the specified file, parsing with
+     * {@link Rfc4180RelaxedFormat}, deserializing each line into a {@link List<String>}.
+     *
+     * @param f The file.
+     * @return A new {@link CsvReader}, in open state.
+     * @throws FileNotFoundException If the file does not exist.
+     */
+    public static CsvReader<List<String>> open(File f) throws FileNotFoundException {
+        return open(f, Rfc4180RelaxedFormat.provider(), new StringListDeserializer());
+    }
+
+    /**
      * Return a new {@link CsvReader} in open state, reading from the specified reader.
      *
      * @param rdr The reader.
@@ -85,11 +140,43 @@ public class CsvReader<T> implements Closeable {
         return new CsvReader<>(rdr, p, new RecycledLineImpl(), des);
     }
 
-    CsvReader(
-            Reader rdr,
-            Provider<? extends Format> provider,
-            RecycledLineImpl line,
-            Deserializer<T> des) {
+    /**
+     * Return a new {@link CsvReader} in open state, reading from the specified reader, deserializing each line into a
+     * {@link List<String>}.
+     *
+     * @param rdr The reader.
+     * @param p   A provider of {@link Format}s.
+     * @return A new {@link CsvReader}, in open state.
+     */
+    public static CsvReader<List<String>> open(Reader rdr, Format.Provider<?> p) {
+        return open(rdr, p, new StringListDeserializer());
+    }
+
+    /**
+     * Return a new {@link CsvReader} in open state, reading from the specified reader, parsing with
+     * {@link Rfc4180RelaxedFormat}.
+     *
+     * @param rdr The reader.
+     * @param des The deserializer, mapping CSV lines to Java objects.
+     * @param <T> The type of object a CSV line should be mapped to.
+     * @return A new {@link CsvReader}, in open state.
+     */
+    public static <T> CsvReader<T> open(Reader rdr, Deserializer<T> des) {
+        return open(rdr, Rfc4180RelaxedFormat.provider(), des);
+    }
+
+    /**
+     * Return a new {@link CsvReader} in open state, reading from the specified reader, deserializing each line into a
+     * {@link List<String>}, parsing with {@link Rfc4180RelaxedFormat}.
+     *
+     * @param rdr The reader.
+     * @return A new {@link CsvReader}, in open state.
+     */
+    public static CsvReader<List<String>> open(Reader rdr) {
+        return open(rdr, Rfc4180RelaxedFormat.provider(), new StringListDeserializer());
+    }
+
+    private CsvReader(Reader rdr, Provider<? extends Format> provider, RecycledLineImpl line, Deserializer<T> des) {
         // A FormatProvider is used instead of a plain Format because Formats can be stateful. Reusing a stateful Format
         // across different CsvReader instances can cause parsing errors because the state, which was meant to be
         // private, would now be shared between different streams of data. If the client uses frameworks like Spring
@@ -184,6 +271,7 @@ public class CsvReader<T> implements Closeable {
         }
     }
 
+    @SuppressWarnings("StatementWithEmptyBody")
     private boolean parseLine(Format fmt) throws CsvException, IOException {
         int s = fmt.base();
         int start = -1, length;
@@ -192,8 +280,9 @@ public class CsvReader<T> implements Closeable {
         mark = nextChar;
 
         do {
-            while (isNoneSet(s = fmt.consume(s, getNextChar()), ANY))
-                ; // Intentionally empty
+            while (isNoneSet(s = fmt.consume(s, getNextChar()), ANY)) {
+                // Intentionally empty
+            }
 
             if (isAnySet(s, SFH)) {
                 start = (nextChar - 1) + offset;
@@ -205,7 +294,7 @@ public class CsvReader<T> implements Closeable {
             if (isAnySet(s, RLR | RCB)) {
                 if (isAnySet(s, RLR)) {
                     nextChar--;
-                } else  {
+                } else {
                     shiftBuffer(start, start + 1, (nextChar - 2) - start);
                     start++;
                 }
@@ -290,6 +379,7 @@ public class CsvReader<T> implements Closeable {
         state = skipLines(toSkip) ? ELEMENT_NOT_PREPARED : NO_SUCH_ELEMENT;
     }
 
+    @SuppressWarnings("StatementWithEmptyBody")
     protected boolean skipLines(int n) throws CsvException, IOException {
         int s = fmt.base();
         mark = nextChar;

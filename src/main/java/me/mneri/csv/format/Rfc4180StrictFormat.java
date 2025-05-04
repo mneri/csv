@@ -18,9 +18,9 @@
 
 package me.mneri.csv.format;
 
-import me.mneri.csv.reader.Deserializer;
 import me.mneri.csv.exception.UnexpectedCharacterException;
 import me.mneri.csv.reader.CsvReader;
+import me.mneri.csv.reader.Deserializer;
 import me.mneri.csv.reader.RecycledLine;
 
 /**
@@ -48,6 +48,7 @@ import me.mneri.csv.reader.RecycledLine;
  * always guarantees to have a <i>best-effort</i> interpretation of a non-compliant CSV file and never throw an
  * exception.
  */
+@SuppressWarnings({"Duplicates", "Unused"})
 public final class Rfc4180StrictFormat implements Format {
     private static final int BFL = 0;  // Before line
     private static final int BFF = 8;  // Before field
@@ -126,7 +127,6 @@ public final class Rfc4180StrictFormat implements Format {
      * @return The initial state.
      */
     @Override
-    @SuppressWarnings("Duplicates")
     public int base() {
         return BFL;
     }
@@ -137,7 +137,6 @@ public final class Rfc4180StrictFormat implements Format {
      * @param c The character.
      * @return The column index of the specified character.
      */
-    @SuppressWarnings("Duplicates")
     private int indexOf(int c) {
         // The following chain of if-statements is ordered by expected frequency, so that frequent cases appear first.
         // Doing so, we significantly reduce the amount of computation necessary. For example, the comma character might
@@ -172,7 +171,6 @@ public final class Rfc4180StrictFormat implements Format {
      * @return An integer encoding both the next state and the action to perform.
      */
     @Override
-    @SuppressWarnings("Duplicates")
     public int consume(int s, int c) {
         // Given the current state and an input character, search the matrix for the next state and the actions to be
         // performed by the client when transitioning. This is a highly optimized implementation; a more naive

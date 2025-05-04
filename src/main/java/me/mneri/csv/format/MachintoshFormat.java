@@ -18,6 +18,7 @@
 
 package me.mneri.csv.format;
 
+@SuppressWarnings({"Duplicates", "Unused"})
 public final class MachintoshFormat implements Format {
     private static final int BFL = 0;  // Before line
     private static final int BFF = 8;  // Before field
@@ -79,14 +80,14 @@ public final class MachintoshFormat implements Format {
      * @return The initial state.
      */
     @Override
-    @SuppressWarnings("Duplicates")
     public int base() {
         return BFL;
     }
 
-    @SuppressWarnings("Duplicates")
     private int indexOf(int c) {
-        if (c == ',') {
+        if (c > ',') {
+            return 0;
+        } if (c == ',') {
             return 2;
         } else if (c == '\r') {
             return 3;
@@ -101,7 +102,6 @@ public final class MachintoshFormat implements Format {
     }
 
     @Override
-    @SuppressWarnings("Duplicates")
     public int consume(int s, int c) {
         final int i = (s | indexOf(c)) & 0x7F;
         return i == FLD ? FLD : DFA[i];
