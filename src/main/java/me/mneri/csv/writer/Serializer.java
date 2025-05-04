@@ -16,17 +16,26 @@
  * limitations under the License.
  */
 
-package me.mneri.csv.exception;
+package me.mneri.csv.writer;
 
-import me.mneri.csv.writer.CsvWriter;
+import me.mneri.csv.reader.Deserializer;
+
+import java.util.List;
 
 /**
- * This exception is thrown when illegal options are passed to {@link CsvReader} or {@link CsvWriter}.
+ * Serialize objects.
  *
+ * @param <T> the type of the objects.
  * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
+ * @see Deserializer
  */
-public class IllegalCsvOptionsException extends UncheckedCsvException {
-    public IllegalCsvOptionsException() {
-        super("");
-    }
+public interface Serializer<T> {
+    /**
+     * Serialize an object into a list of strings. The strings should be added in order to the list passed as parameter.
+     *
+     * @param object the object to serialize.
+     * @param out    the list of strings representing the csv line.
+     * @throws Exception if anything goes wrong.
+     */
+    void serialize(T object, List<String> out) throws Exception;
 }

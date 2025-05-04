@@ -1,6 +1,24 @@
+/*
+ * Copyright 2018 Massimo Neri <hello@mneri.me>
+ *
+ * This file is part of mneri/csv.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package me.mneri.csv.format;
 
-public final class CustomFormat implements Format {
+public final class MachintoshFormat implements Format {
     private static final int BFL = 0;  // Before line
     private static final int BFF = 8;  // Before field
     private static final int SQT = 16; // Start quotation
@@ -22,7 +40,7 @@ public final class CustomFormat implements Format {
        QOT,             ESC,             QOT,             QOT,             QOT,             ERR|ERH,         0,0, // QOT
        ERR|ERH,         QOT|RCB,         BFF|EFB,         CAR|EFB,         BFL|EFB|ELH,     EOF|EFB|ELH|STP, 0,0, // ESC
        FLD,             FLD,             BFF|EFH,         CAR|EFH,         BFL|EFH|ELH,     EOF|EFH|STP,     0,0, // FLD
-       ERR|ERH,         ERR|ERH,         ERR|ERH,         ERR|ERH,         BFL|ELH,         ERR|ERH,         0,0, // CAR
+       ERR|RLR|ELH,     ERR|RLR,         ERR|RLR,         ERR|RLR,         BFL|ELH,         ERR|ERH,         0,0, // CAR
        ERR|ERH,         ERR|ERH,         ERR|ERH,         ERR|ERH,         ERR|ERH,         ERR|ERH,         0,0, // EOF
        ERR|ERH,         ERR|ERH,         ERR|ERH,         ERR|ERH,         ERR|ERH,         ERR|ERH,         0,0, // ERR
        0,               0,               0,               0,               0,               0,               0,0,
@@ -33,12 +51,26 @@ public final class CustomFormat implements Format {
        0,               0,               0,               0,               0,               0,               0,0};
     //@formatter:on
 
-    private final char separator;
-    private final char textQualifier;
+    /**
+     * Provider of {@link Rfc4180HalfRelaxedFormat}.
+     */
+    public static final class Provider implements Format.Provider<MachintoshFormat> {
+        private Provider() {
+        }
 
-    public CustomFormat(char separator, char textQualifier) {
-        this.separator = separator;
-        this.textQualifier = textQualifier;
+        /**
+         * Return a new {@link MachintoshFormat} instance.
+         *
+         * @return A new {@link MachintoshFormat} instance.
+         */
+        @Override
+        public MachintoshFormat provide() {
+            return new MachintoshFormat();
+        }
+    }
+
+    public static Provider provider() {
+        return new Provider();
     }
 
     /**
@@ -52,30 +84,22 @@ public final class CustomFormat implements Format {
         return BFL;
     }
 
+    @SuppressWarnings("Duplicates")
     private int indexOf(int c) {
-        if (c > ',') {
-            return 0;
-        } else if (c == separator) {
+        if (c == ',') {
             return 2;
-        } else if (c == '\n') {
-            return 4;
         } else if (c == '\r') {
             return 3;
-        } else if (c == textQualifier) {
+        } else if (c == '"') {
             return 1;
+        } else if (c == '\n') {
+            return 4;
         } else if (c > 0) {
             return 0;
         }
         return 5;
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @param s The current state as returned by a previous call to {@link Format#base()} or this method.
-     * @param c The character.
-     * @return An integer encoding both the next state and the action to perform.
-     */
     @Override
     @SuppressWarnings("Duplicates")
     public int consume(int s, int c) {

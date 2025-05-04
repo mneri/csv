@@ -1,50 +1,25 @@
-package me.mneri.csv.format;
+/*
+ * Copyright 2018 Massimo Neri <hello@mneri.me>
+ *
+ * This file is part of mneri/csv.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-import java.util.List;
+package me.mneri.csv.format;
 
 /**
  * A specific CSV dialect.
- * <p>
- * Implementors of this interface have to obey to the following contract:
- * <ul>
- *     <li>
- *         Return a start of field marker at the start of the field. For unquoted fields, at the
- *         first character; for quoted fields, at the first character after the quotation symbol; in case of escape
- *         at the beginning of a quoted field, return the start of field marker after the escape character.
- *         For example:<br/>
- *         <samp>
- *             aaa,"bbb","""ccc"""\r\n
- *         </samp>
- *     </li>
- *     <li>
- *         Either return end of field marker or end of field marker before, never both.
- *     </li>
- *     <li>
- *         Return the end of field marker on the character immediately following the last character of the field.
- *     </li>
- *     <li>
- *         Return the end of field before marker at the second character following the last character of the field. This
- *         is useful in cases where it's not possible to determine if the current character is the last of a field or
- *         not and we need a lookahead.
- *     </li>
- *     <li>
- *         Return the remove character before marker when the previous character needs to be removed from the field.
- *     </li>
- *     <li>
- *         Return the repeat last read character when it's required the client submits the same character as before.
- *         This is useful in cases where it's not possible to determine the end of the line at the current position
- *         and we need a lookahead.
- *     </li>
- *     <li>
- *          Return the end of the line marker strictly before the first character of the following line.
- *     </li>
- *     <li>
- *         Return the stop marker at the end of file.
- *     </li>
- *     <li>
- *         Return the err marker when you encounter an error in the format of the CSV file.
- *     </li>
- * </ul>
  */
 public interface Format {
     int SFH = 1 << 16; // Start field at the current position.
@@ -57,6 +32,21 @@ public interface Format {
     int ERH = 1 << 23; // Error at the current position.
 
     int ANY = 0x0FFF << 16;
+
+    /**
+     *
+     * @param <T>
+     */
+    interface Provider<T extends Format> {
+        /**
+         * Return a new {@link Format} instance.
+         * <p>
+         * Implementors of this interface must guarantee a new instance is returned for each call.
+         *
+         * @return A fresh format instance.
+         */
+        T provide();
+    }
 
 
     /**

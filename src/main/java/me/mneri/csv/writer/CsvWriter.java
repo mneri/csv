@@ -23,57 +23,127 @@ import me.mneri.csv.exception.CsvConversionException;
 import java.io.Closeable;
 import java.io.Flushable;
 import java.io.IOException;
+import java.io.Writer;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.stream.Stream;
+import java.util.List;
 
 /**
- * Write Java objects as csv lines.
+ * Default implementation of {@link CsvWriter}.
  *
  * @param <T> The type of the Java objects to write.
  * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
  */
-public interface CsvWriter<T> extends Closeable, Flushable {
-    /**
-     * Closes the stream, flushing it first. Once the stream has been closed, further {@link CsvWriter#flush()},
-     * {@link CsvWriter#write(Object)}, {@link CsvWriter#writeAll(Collection)} and
-     * {@link CsvWriter#writeAll(Stream)} invocations will cause an {@link IOException} to be thrown. Closing a
-     * previously closed stream has no effect.
-     *
-     * @throws IOException if an I/O error occurs.
-     */
+public class CsvWriter<T> implements Closeable, Flushable {
+    private static final int OPENED = 0;
+    private static final int CLOSED = 1;
+
+    private final int del;
+    private final List<String> line;
+    private final int qual;
+    private final Serializer<T> ser;
+    private int state = OPENED;
+    private final Writer wtr;
+
+    CsvWriter(Writer wtr, Serializer<T> ser) {
+        this.wtr = wtr;
+        this.ser = ser;
+
+        line = new ArrayList<>();
+        del = ',';
+        qual = '"';
+    }
+
+    private void isOpenOrThrow() {
+        if (state == CLOSED) {
+            throw new IllegalStateException("The writer is closed.");
+        }
+    }
+
     @Override
-    void close() throws IOException;
+    public void close() throws IOException {
+        if (state == CLOSED) {
+            return;
+        }
+        state = CLOSED;
+        line.clear();
+        wtr.flush();
+        wtr.close();
+    }
 
-    /**
-     * Flushes this stream by writing any buffered output to the underlying stream.
-     *
-     * @throws IOException if an I/O error occurs.
-     */
     @Override
-    void flush() throws IOException;
+    public void flush() throws IOException {
+        isOpenOrThrow();
+        wtr.flush();
+    }
 
-    /**
-     * Write a single object as csv line.
-     *
-     * @param object the object to write.
-     * @throws CsvConversionException if an error occurs during object serialization.
-     * @throws IOException            if an I/O error occurs.
-     */
-    void write(T object) throws CsvConversionException, IOException;
+    private boolean isQuotingNeeded(String string) {
+        for (int i = 0; i < string.length(); i++) {
+            int c = string.charAt(i);
 
-    /**
-     * Write a {@link Collection} of objects as csv lines.
-     *
-     * @param objects the objects to write.
-     * @throws CsvConversionException if an error occurs during object serialization.
-     * @throws IOException            if an I/O error occurs.
-     */
-    void writeAll(Collection<T> objects) throws CsvConversionException, IOException;
+            if (c == del || c == qual) {
+                return true;
+            }
+        }
 
-    /**
-     * Write a {@link Stream} of objects as csv lines.
-     *
-     * @param stream the stream of objects to write.
-     */
-    void writeAll(Stream<T> stream);
+        return false;
+    }
+
+    public void write(T object) throws CsvConversionException, IOException {
+        isOpenOrThrow();
+
+        try {
+            line.clear();
+            ser.serialize(object, line);
+        } catch (Exception e) {
+            throw new CsvConversionException(line, e);
+        }
+
+        writeLine();
+    }
+
+    public void writeAll(Collection<T> objects) throws CsvConversionException, IOException {
+        isOpenOrThrow();
+
+        for (T object : objects) {
+            write(object);
+        }
+    }
+
+    private void writeField(String string) throws IOException {
+        if (string == null) {
+            return;
+        }
+
+        if (isQuotingNeeded(string)) {
+            wtr.write(qual);
+
+            for (int i = 0; i < string.length(); i++) {
+                int c = string.charAt(i);
+
+                if (c == qual) {
+                    wtr.write(qual);
+                    wtr.write(qual);
+                } else {
+                    wtr.write(c);
+                }
+            }
+
+            wtr.write(qual);
+        } else {
+            wtr.write(string);
+        }
+    }
+
+    private void writeLine() throws IOException {
+        for (int i = 0; i < line.size(); i++) {
+            writeField(line.get(i));
+
+            if (i != line.size() - 1) {
+                wtr.write(del);
+            }
+        }
+
+        wtr.write("\r\n");
+    }
 }

@@ -1,6 +1,24 @@
+/*
+ * Copyright 2018 Massimo Neri <hello@mneri.me>
+ *
+ * This file is part of mneri/csv.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package me.mneri.csv.format;
 
-import me.mneri.csv.deserializer.Deserializer;
+import me.mneri.csv.reader.Deserializer;
 import me.mneri.csv.exception.UnexpectedCharacterException;
 import me.mneri.csv.reader.CsvReader;
 import me.mneri.csv.reader.RecycledLine;
@@ -75,7 +93,10 @@ public final class Rfc4180StrictFormat implements Format {
     /**
      * Provider of {@link Rfc4180StrictFormat}.
      */
-    public static final class Provider implements FormatProvider<Rfc4180StrictFormat> {
+    public static final class Provider implements Format.Provider<Rfc4180StrictFormat> {
+        private Provider() {
+        }
+
         /**
          * Return a new {@link Rfc4180StrictFormat} instance.
          *
@@ -85,6 +106,10 @@ public final class Rfc4180StrictFormat implements Format {
         public Rfc4180StrictFormat provide() {
             return new Rfc4180StrictFormat();
         }
+    }
+
+    public static Provider provider() {
+        return new Provider();
     }
 
     /**
@@ -143,7 +168,7 @@ public final class Rfc4180StrictFormat implements Format {
      * {@inheritDoc}
      *
      * @param s The current state as returned by a previous call to {@link Format#base()} or this method.
-     * @param c The character.
+     * @param c The character, or {@code -1} for {@code EOF}.
      * @return An integer encoding both the next state and the action to perform.
      */
     @Override

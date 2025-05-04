@@ -18,8 +18,6 @@
 
 package me.mneri.csv.exception;
 
-import me.mneri.csv.writer.CsvWriter;
-
 /**
  * Base class for all the exceptions thrown by {@link CsvReader} and {@link CsvWriter}.
  *

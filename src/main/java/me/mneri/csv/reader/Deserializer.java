@@ -16,17 +16,16 @@
  * limitations under the License.
  */
 
-package me.mneri.csv.deserializer;
+package me.mneri.csv.reader;
 
-import me.mneri.csv.reader.RecycledLine;
-import me.mneri.csv.serializer.CsvSerializer;
+import me.mneri.csv.writer.Serializer;
 
 /**
  * Deserialize objects.
  *
  * @param <T> the type of the objects.
  * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
- * @see CsvSerializer
+ * @see Serializer
  */
 public interface Deserializer<T> {
     /**
