@@ -10,8 +10,8 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 public class Main {
-    private static final int WARMUP_ROUNDS = 10;
-    private static final int ROUNDS = 1;
+    private static final int WARMUP_ROUNDS = 40;
+    private static final int ROUNDS = 40;
 
     private final Deserializer<Integer> deserializer = line -> {
         int hashCode = 0;

@@ -100,33 +100,10 @@ public final class Rfc4180HalfRelaxedFormat implements Format {
        0,               0,               0,               0,               0,               0,               0,0};
     //@formatter:on
 
-    /**
-     * Provider of {@link Rfc4180HalfRelaxedFormat}.
-     */
-    public static final class Provider implements Format.Provider<Rfc4180HalfRelaxedFormat> {
-        private Provider() {
-        }
-
-        /**
-         * Return a new {@link Rfc4180HalfRelaxedFormat} instance.
-         *
-         * @return A new {@link Rfc4180HalfRelaxedFormat} instance.
-         */
-        @Override
-        public Rfc4180HalfRelaxedFormat provide() {
-            return new Rfc4180HalfRelaxedFormat();
-        }
+    public static Format.Provider<Rfc4180HalfRelaxedFormat> provider() {
+        return Rfc4180HalfRelaxedFormat::new;
     }
 
-    public static Provider provider() {
-        return new Provider();
-    }
-
-    /**
-     * Create a new {@code Rfc4180HalfRelaxedFormat} instance.
-     * <p>
-     * This method is private, use {@link Rfc4180HalfRelaxedFormat.Provider#provide()} instead.
-     */
     private Rfc4180HalfRelaxedFormat() {
     }
 

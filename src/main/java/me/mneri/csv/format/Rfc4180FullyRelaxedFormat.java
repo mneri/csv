@@ -121,33 +121,10 @@ public final class Rfc4180FullyRelaxedFormat implements Format {
        0,             0,               0,               0,               0,               0,               0,0};
     //@formatter:on
 
-    /**
-     * Provider of {@link Rfc4180FullyRelaxedFormat}.
-     */
-    public static final class Provider implements Format.Provider<Rfc4180FullyRelaxedFormat> {
-        private Provider() {
-        }
-
-        /**
-         * Return a new {@link Rfc4180FullyRelaxedFormat} instance.
-         *
-         * @return A new {@link Rfc4180FullyRelaxedFormat} instance.
-         */
-        @Override
-        public Rfc4180FullyRelaxedFormat provide() {
-            return new Rfc4180FullyRelaxedFormat();
-        }
+    public static Format.Provider<Rfc4180FullyRelaxedFormat> provider() {
+        return Rfc4180FullyRelaxedFormat::new;
     }
 
-    public static Provider provider() {
-        return new Provider();
-    }
-
-    /**
-     * Create a new {@code Rfc4180RelaxedFormat} instance.
-     * <p>
-     * This method is private, use {@link Provider#provide()} instead.
-     */
     private Rfc4180FullyRelaxedFormat() {
     }
 

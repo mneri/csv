@@ -18,38 +18,27 @@
 
 package me.mneri.csv.format;
 
-import me.mneri.csv.exception.UnexpectedCharacterException;
-import me.mneri.csv.reader.CsvReader;
-import me.mneri.csv.reader.Deserializer;
-import me.mneri.csv.reader.RecycledLine;
-
 /**
- * Implements a strict interpretation of the RFC4180 standard for CSV files, with one simple variation:
+ * Implements a strict interpretation of the legacy Macintosh CSV format, which historically utilizes a carriage return
+ * ({@code \r}) as the sole line terminator.
+ * <p>
+ * This format is designed for high-performance processing of files originating from older Apple-based systems or
+ * specific spreadsheet exports that do not follow the modern RFC 4180 standard (which requires {@code \r\n}).
+ * <p>
+ * The following features and variations are supported:
  * <ul>
  *     <li>
- *         <b>Variable number of fields</b>: lines may contain a different number of fields from one another. For
- *         example:<br/>
+ *         <b>Variable number of fields</b>: Unlike the strictest interpretations of CSV, this format allows lines to
+ *         contain a different number of fields from one another. For example:<br/>
  *         <samp>
- *             aaa,bbb,ccc CRLF<br/>
- *             xxx,yyy CRLF
+ *             aaa,bbb,ccc CR<br/>
+ *             xxx,yyy CR
  *         </samp>
  *     </li>
  * </ul>
- * If the number of fields is a strict requirement, clients shall perform the validation in
- * {@link Deserializer#deserialize(RecycledLine)}, on the deserializer instance given to the {@link CsvReader}.
- * <p>
- * This strict interpretation forces the {@link CsvReader} to throw a {@link UnexpectedCharacterException} whenever one
- * of the rules specified in RFC4180 is broken (with the exclusion of the variable number of fields, as explained
- * above).
- * <p>
- * There are two progressively relaxed variations of the {@code Rfc4180StrictFormat}:
- * {@link Rfc4180HalfRelaxedFormat} which relaxes some of the rules but still throws
- * {@link UnexpectedCharacterException} under a number of circumstances, and {@link Rfc4180FullyRelaxedFormat} which
- * always guarantees to have a <i>best-effort</i> interpretation of a non-compliant CSV file and never throw an
- * exception.
  */
 @SuppressWarnings({"Duplicates", "Unused"})
-public final class Rfc4180StrictFormat implements Format {
+public final class MachintoshStrictFormat implements Format {
     private static final int FLD = 0; // Field
     private static final int BFF = 8;  // Before field
     private static final int SQT = 16; // Start quotation
@@ -57,9 +46,8 @@ public final class Rfc4180StrictFormat implements Format {
     private static final int ESC = 32; // Escape
     private static final int SQE = 40; // Escape at start quotation
     private static final int BFL = 48;  // Before line
-    private static final int CAR = 56; // Carriage return
-    private static final int EOF = 64; // End of file
-    private static final int ERR = 72; // Error
+    private static final int EOF = 56; // End of file
+    private static final int ERR = 64; // Error
 
     // The parser uses a deterministic finite state automaton (DFA) represented as a flattened 2D matrix.
     //
@@ -80,30 +68,30 @@ public final class Rfc4180StrictFormat implements Format {
 
     //@formatter:off
     private static final int[] DFA = {
-    // *                ,                \r               \n               "                EOF              padding
-       FLD,             BFF|EFH,         CAR|EFH,         ERR|ERH,         ERR|ERH,         EOF|EFH|STP,     0,0,             // FLD
-       FLD|SFH,         BFF|SFH|EFH,     CAR|SFH|EFH,     ERR|ERH,         SQT,             EOF|SFH|EFH|ELH, 0,0,             // BFF
-       QOT|SFH,         QOT,             QOT,             QOT,             SQE,             ERR|ERH,         0,0,             // SQT
-       QOT,             QOT,             QOT,             QOT,             ESC,             ERR|ERH,         0,0,             // QOT
-       ERR|ERH,         BFF|EFB,         CAR|EFB,         ERR|ERH,         QOT|RCB,         EOF|EFB|ELH|STP, 0,0,             // ESC
-       ERR|ERH,         BFF|SFH|EFH,     CAR|SFH|EFH,     ERR|ERH,         QOT|SFH,         EOF|SFH|EFH|STP, 0,0,             // SQE
-       FLD|SFH,         BFF|SFH|EFH,     CAR|SFH|EFH,     ERR|ERH,         SQT,             EOF|STP,         0,0,             // BFL
-       ERR|ERH,         ERR|ERH,         ERR|ERH,         BFL|ELH,         ERR|ERH,         ERR|ERH,         0,0,             // CAR
-       ERR|ERH,         ERR|ERH,         ERR|ERH,         ERR|ERH,         ERR|ERH,         ERR|ERH,         0,0,             // EOF
-       ERR|ERH,         ERR|ERH,         ERR|ERH,         ERR|ERH,         ERR|ERH,         ERR|ERH,         0,0,             // ERR
-       0,               0,               0,               0,               0,               0,               0,0,
-       0,               0,               0,               0,               0,               0,               0,0,
-       0,               0,               0,               0,               0,               0,               0,0,
-       0,               0,               0,               0,               0,               0,               0,0,
-       0,               0,               0,               0,               0,               0,               0,0,
-       0,               0,               0,               0,               0,               0,               0,0};
+    // *                ,                \r               "                EOF              padding
+       FLD,             BFF|EFH,         ERR|ERH,         ERR|ERH,         EOF|EFH|STP,     0,0,             // FLD
+       FLD|SFH,         BFF|SFH|EFH,     ERR|ERH,         SQT,             EOF|SFH|EFH|ELH, 0,0,             // BFF
+       QOT|SFH,         QOT,             QOT,             SQE,             ERR|ERH,         0,0,             // SQT
+       QOT,             QOT,             QOT,             ESC,             ERR|ERH,         0,0,             // QOT
+       ERR|ERH,         BFF|EFB,         ERR|ERH,         QOT|RCB,         EOF|EFB|ELH|STP, 0,0,             // ESC
+       ERR|ERH,         BFF|SFH|EFH,     ERR|ERH,         QOT|SFH,         EOF|SFH|EFH|STP, 0,0,             // SQE
+       FLD|SFH,         BFF|SFH|EFH,     ERR|ERH,         SQT,             EOF|STP,         0,0,             // BFL
+       ERR|ERH,         ERR|ERH,         ERR|ERH,         ERR|ERH,         ERR|ERH,         0,0,             // EOF
+       ERR|ERH,         ERR|ERH,         ERR|ERH,         ERR|ERH,         ERR|ERH,         0,0,             // ERR
+       0,               0,               0,               0,               0,               0,0,
+       0,               0,               0,               0,               0,               0,0,
+       0,               0,               0,               0,               0,               0,0,
+       0,               0,               0,               0,               0,               0,0,
+       0,               0,               0,               0,               0,               0,0,
+       0,               0,               0,               0,               0,               0,0};
     //@formatter:on
 
-    public static Format.Provider<Rfc4180StrictFormat> provider() {
-        return Rfc4180StrictFormat::new;
+
+    public static Format.Provider<MachintoshStrictFormat> provider() {
+        return MachintoshStrictFormat::new;
     }
 
-    private Rfc4180StrictFormat() {
+    private MachintoshStrictFormat() {
     }
 
     /**
@@ -126,16 +114,16 @@ public final class Rfc4180StrictFormat implements Format {
         // Fast Path: Check if 'c' is an "ordinary" character. This includes anything > 44 (standard text) or characters
         // <= 44 not in the special mask.
         // We use (c + 1) to shift the range of potential inputs from [-1, 44] (that is [EOF, ',']) to [0, 45].
-        // Mask 0x20_08_00_00_48_01L has bits at: 0 (EOF), 11 (\n), 14 (\r), 35 ("), 45 (,).
-        if (c > ',' || ((1L << (c + 1)) & 0x20_08_00_00_48_01L) == 0) {
+        // Mask 0x20_08_00_00_48_01L has bits at: 0 (EOF), 14 (\r), 35 ("), 45 (,).
+        if (c > ',' || ((1L << (c + 1)) & 0x20_08_00_00_40_01L) == 0) {
             return 0;
         }
 
         // Special Path: Map the character to a 3-bit column index via bit-field extraction.
         // Data Map 0xE0_30_00_00_C0_05L encodes:
-        // Bits [00-02]: 5 (EOF)  | Bits [11-13]: 3 (\n) | Bits [14-16]: 2 (\r)
-        // Bits [35-37]: 4 (")    | Bits [45-47]: 1 (,)
-        return (int) (0x20_20_00_00_98_05L >> (c + 1)) & 0x7;
+        // Bits [00-02]: 5 (EOF)  | Bits [14-16]: 2 (\r) | Bits [35-37]: 4 (")
+        // Bits [45-47]: 1 (,)
+        return (int) (0x20_20_00_00_80_05L >> (c + 1)) & 0x7;
     }
 
     /**

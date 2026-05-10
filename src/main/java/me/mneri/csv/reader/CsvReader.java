@@ -204,6 +204,55 @@ public class CsvReader<T> implements Closeable {
     }
 
     /**
+     * Returns {@code true} if the reader has more elements (in other words, returns {@code true} if
+     * {@link CsvReader#next()} would return an element rather than throwing an exception).
+     *
+     * @return {@code true} if the reader has more elements.
+     * @throws CsvException if the csv is not properly formatted.
+     * @throws IOException  if an I/O error occurs.
+     */
+    public boolean hasNext() throws CsvException, IOException {
+        if (state == ELEMENT_NOT_PREPARED) {
+            if (parseLine(fmt)) {
+                state = ELEMENT_PREPARED;
+                return true;
+            } else {
+                state = NO_SUCH_ELEMENT;
+                return false;
+            }
+        }
+
+        if (state < CLOSED) {
+            return state == ELEMENT_PREPARED;
+        }
+
+        throw new IllegalStateException("The reader is closed.");
+    }
+
+    /**
+     * Return the next element in the reader.
+     *
+     * @return The next element.
+     * @throws CsvException if the csv is not properly formatted.
+     * @throws IOException  if an I/O error occurs.
+     */
+    public T next() throws CsvException, IOException {
+        // Optimization: In a typical loop (while(hasNext()) { next() }), the state is already ELEMENT_PREPARED when
+        // this method is called. We check this directly to avoid the overhead of an extra method call to hasNext() for
+        // every row.
+        if (state != ELEMENT_PREPARED && !hasNext()) {
+            throw new NoSuchElementException();
+        }
+
+        try {
+            state = ELEMENT_NOT_PREPARED;
+            return des.deserialize(line);
+        } catch (Exception e) {
+            throw new CsvConversionException(line, e);
+        }
+    }
+
+    /**
      * Return the next character in the reader stream.
      *
      * @return The character.
@@ -217,58 +266,6 @@ public class CsvReader<T> implements Closeable {
             }
         }
         return buff[nextChar++];
-    }
-
-    /**
-     * Returns {@code true} if the reader has more elements (in other words, returns {@code true} if
-     * {@link CsvReader#next()} would return an element rather than throwing an exception).
-     *
-     * @return {@code true} if the reader has more elements.
-     * @throws CsvException if the csv is not properly formatted.
-     * @throws IOException  if an I/O error occurs.
-     */
-    public boolean hasNext() throws CsvException, IOException {
-        //@formatter:off
-        switch (state) {
-            case ELEMENT_NOT_PREPARED: return prepareElement();
-            case ELEMENT_PREPARED:     return true;
-            case NO_SUCH_ELEMENT:      return false;
-            case CLOSED:
-            default:                   throw new IllegalStateException("The reader is closed.");
-        }
-        //@formatter:on
-    }
-
-    /**
-     * Prepare and cache the next element.
-     *
-     * @return {@code true} if an element has been successfully read, {@code false} otherwise.
-     * @throws CsvException if the csv is not properly formatted.
-     * @throws IOException  if an I/O error occurs.
-     */
-    private boolean prepareElement() throws CsvException, IOException {
-        boolean prepared = parseLine(fmt);
-        state = prepared ? ELEMENT_PREPARED : NO_SUCH_ELEMENT;
-        return prepared;
-    }
-
-    /**
-     * Return the next element in the reader.
-     *
-     * @return The next element.
-     * @throws CsvException if the csv is not properly formatted.
-     * @throws IOException  if an I/O error occurs.
-     */
-    public T next() throws CsvException, IOException {
-        if (!hasNext()) {
-            throw new NoSuchElementException();
-        }
-        try {
-            state = ELEMENT_NOT_PREPARED;
-            return des.deserialize(line);
-        } catch (Exception e) {
-            throw new CsvConversionException(line, e);
-        }
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
