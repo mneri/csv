@@ -23,7 +23,7 @@ import me.mneri.csv.exception.CsvException;
 import me.mneri.csv.exception.LineTooLongException;
 import me.mneri.csv.exception.UnexpectedCharacterException;
 import me.mneri.csv.format.Format;
-import me.mneri.csv.format.Rfc4180RelaxedFormat;
+import me.mneri.csv.format.Rfc4180FullyRelaxedFormat;
 
 import java.io.Closeable;
 import java.io.File;
@@ -103,7 +103,7 @@ public class CsvReader<T> implements Closeable {
 
     /**
      * Return a new {@link CsvReader} in open state, reading from the specified file, parsing with
-     * {@link Rfc4180RelaxedFormat}.
+     * {@link Rfc4180FullyRelaxedFormat}.
      *
      * @param f   The file.
      * @param des The deserializer, mapping CSV lines to Java objects.
@@ -112,19 +112,19 @@ public class CsvReader<T> implements Closeable {
      * @throws FileNotFoundException If the file does not exist.
      */
     public static <T> CsvReader<T> open(File f, Deserializer<T> des) throws FileNotFoundException {
-        return open(f, Rfc4180RelaxedFormat.provider(), des);
+        return open(f, Rfc4180FullyRelaxedFormat.provider(), des);
     }
 
     /**
      * Return a new {@link CsvReader} in open state, reading from the specified file, parsing with
-     * {@link Rfc4180RelaxedFormat}, deserializing each line into a {@link List<String>}.
+     * {@link Rfc4180FullyRelaxedFormat}, deserializing each line into a {@link List<String>}.
      *
      * @param f The file.
      * @return A new {@link CsvReader}, in open state.
      * @throws FileNotFoundException If the file does not exist.
      */
     public static CsvReader<List<String>> open(File f) throws FileNotFoundException {
-        return open(f, Rfc4180RelaxedFormat.provider(), new StringListDeserializer());
+        return open(f, Rfc4180FullyRelaxedFormat.provider(), new StringListDeserializer());
     }
 
     /**
@@ -154,7 +154,7 @@ public class CsvReader<T> implements Closeable {
 
     /**
      * Return a new {@link CsvReader} in open state, reading from the specified reader, parsing with
-     * {@link Rfc4180RelaxedFormat}.
+     * {@link Rfc4180FullyRelaxedFormat}.
      *
      * @param rdr The reader.
      * @param des The deserializer, mapping CSV lines to Java objects.
@@ -162,18 +162,18 @@ public class CsvReader<T> implements Closeable {
      * @return A new {@link CsvReader}, in open state.
      */
     public static <T> CsvReader<T> open(Reader rdr, Deserializer<T> des) {
-        return open(rdr, Rfc4180RelaxedFormat.provider(), des);
+        return open(rdr, Rfc4180FullyRelaxedFormat.provider(), des);
     }
 
     /**
      * Return a new {@link CsvReader} in open state, reading from the specified reader, deserializing each line into a
-     * {@link List<String>}, parsing with {@link Rfc4180RelaxedFormat}.
+     * {@link List<String>}, parsing with {@link Rfc4180FullyRelaxedFormat}.
      *
      * @param rdr The reader.
      * @return A new {@link CsvReader}, in open state.
      */
     public static CsvReader<List<String>> open(Reader rdr) {
-        return open(rdr, Rfc4180RelaxedFormat.provider(), new StringListDeserializer());
+        return open(rdr, Rfc4180FullyRelaxedFormat.provider(), new StringListDeserializer());
     }
 
     private CsvReader(Reader rdr, Provider<? extends Format> provider, RecycledLineImpl line, Deserializer<T> des) {
@@ -280,32 +280,32 @@ public class CsvReader<T> implements Closeable {
         mark = nextChar;
 
         do {
-            while (isNoneSet(s = fmt.consume(s, getNextChar()), ANY)) {
+            while (none(s = fmt.consume(s, getNextChar()), ANY)) {
                 // Intentionally empty
             }
 
-            if (isAnySet(s, SFH)) {
+            if (any(s, SFH)) {
                 start = (nextChar - 1) + offset;
             }
-            if (isAnySet(s, EFH | EFB)) {
-                length = nextChar + offset - (isAnySet(s, EFB) ? 2 : 1) - start;
+            if (any(s, EFH | EFB)) {
+                length = nextChar + offset - (any(s, EFB) ? 2 : 1) - start;
                 line.addField(new String(buff, start - offset, length));
             }
-            if (isAnySet(s, RLR | RCB)) {
-                if (isAnySet(s, RLR)) {
+            if (any(s, RLR | RCB)) {
+                if (any(s, RLR)) {
                     nextChar--;
                 } else {
                     shiftBuffer(start, start + 1, (nextChar - 2) - start);
                     start++;
                 }
             }
-        } while (isNoneSet(s, ELH | ERH | STP));
+        } while (none(s, ELH | ERH | STP));
 
         lines++;
 
-        if (isNoneSet(s, STP | ERH)) {
+        if (none(s, STP | ERH)) {
             return true;
-        } else if (isAnySet(s, ERH)) {
+        } else if (any(s, ERH)) {
             throw new UnexpectedCharacterException(lines, buff[nextChar - 1]);
         } else {
             return false;
@@ -319,7 +319,7 @@ public class CsvReader<T> implements Closeable {
      * @param flags The flags.
      * @return {@code true} if at least one of the flags are set, {@code false} otherwise.
      */
-    private boolean isAnySet(int s, int flags) {
+    private boolean any(int s, int flags) {
         return (s & flags) != 0;
     }
 
@@ -330,7 +330,7 @@ public class CsvReader<T> implements Closeable {
      * @param flags The flags.
      * @return {@code true} if none of the flags are set, {@code false} otherwise.
      */
-    private boolean isNoneSet(int s, int flags) {
+    private boolean none(int s, int flags) {
         return (s & flags) == 0;
     }
 
@@ -386,19 +386,19 @@ public class CsvReader<T> implements Closeable {
         int skipped = 0;
 
         do {
-            while (isNoneSet(s = fmt.consume(s, getNextChar()), ELH | ERH | STP | RLR))
+            while (none(s = fmt.consume(s, getNextChar()), ELH | ERH | STP | RLR))
                 ; // Intentionally empty
 
-            if (isAnySet(s, RLR)) {
+            if (any(s, RLR)) {
                 nextChar--;
             }
-        } while (++skipped <= n && isNoneSet(s, ERH | STP));
+        } while (++skipped <= n && none(s, ERH | STP));
 
         lines += skipped;
 
-        if (isNoneSet(s, STP | ERH)) {
+        if (none(s, STP | ERH)) {
             return true;
-        } else if (isAnySet(s, ERH)) {
+        } else if (any(s, ERH)) {
             throw new UnexpectedCharacterException(lines, buff[nextChar - 1]);
         } else {
             return false;

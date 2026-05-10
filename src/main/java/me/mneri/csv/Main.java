@@ -1,7 +1,7 @@
 package me.mneri.csv;
 
 import me.mneri.csv.exception.CsvException;
-import me.mneri.csv.format.Rfc4180RelaxedFormat;
+import me.mneri.csv.format.Rfc4180FullyRelaxedFormat;
 import me.mneri.csv.reader.CsvReader;
 import me.mneri.csv.reader.Deserializer;
 
@@ -10,8 +10,8 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 public class Main {
-    private static final int WARMUP_ROUNDS = 40;
-    private static final int ROUNDS = 40;
+    private static final int WARMUP_ROUNDS = 10;
+    private static final int ROUNDS = 1;
 
     private final Deserializer<Integer> deserializer = line -> {
         int hashCode = 0;
@@ -42,7 +42,7 @@ public class Main {
     private long execute() throws IOException, CsvException {
         File file = new File("/home/mneri/Downloads/worldcitiespop.csv");
 
-        try (CsvReader<Integer> reader = CsvReader.open(file, Rfc4180RelaxedFormat.provider(), deserializer)) {
+        try (CsvReader<Integer> reader = CsvReader.open(file, Rfc4180FullyRelaxedFormat.provider(), deserializer)) {
             int blackhole = 0;
             long startTimeNanos = System.nanoTime();
             while (reader.hasNext()) {

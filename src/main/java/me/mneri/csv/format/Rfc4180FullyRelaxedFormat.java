@@ -19,7 +19,10 @@
 package me.mneri.csv.format;
 
 /**
- * Implements a relaxed interpretation of the RFC4180 standard for CSV files.
+ * Implements a <i>fully relaxed</i> interpretation of the RFC4180 standard for CSV files that can parse a higher
+ * number of non-compliant CSV files than {@link Rfc4180HalfRelaxedFormat}. This version is modeled around the
+ * behaviour of the Microsoft Excel CSV parser and is guaranteed to never emit errors and always offer a
+ * <i>best-effort</i> interpretation of a non-compliant CSV file.
  * <p>
  * The following features are supported:
  * <ul>
@@ -32,8 +35,9 @@ package me.mneri.csv.format;
  *         </samp>
  *     </li>
  *     <li>
- *         <b>Line termination</b>: lines can end with {@code \r\n} or {@code \n}; files can be inconsistent in their
- *         line termination, using different line terminators on different lines, any number of times. For example:<br/>
+ *         <b>Line termination</b>: lines can end with {@code \r\n}, {@code \r}, or {@code \n}; files can be
+ *         inconsistent in their line termination, using different line terminators on different lines, any number of
+ *         times. For example:<br/>
  *         <samp>
  *             aaa,bbb,ccc CRLF<br/>
  *             xxx,yyy,zzz LF
@@ -47,10 +51,27 @@ package me.mneri.csv.format;
  *             xxx,y"y,zzz CRLF   ; interpreted as &lt;xxx&gt;, &lt;y"y&gt; and &lt;zzz&gt;
  *         </samp>
  *     </li>
+ *     <li>
+ *         <b>Extra text after a double quoted field</b>: fields that begin with a double quotes character ({@code "})
+ *         may include additional text after the closing double quotes and before the comma delimiter ({@code ,}); this
+ *         additional text is treated as part of the field, following the rules for unquoted fields. For example:<br/>
+ *         <samp>
+ *             aaa,"bb"b,ccc CRLF ; interpreted as &lt;aaa&gt;, &lt;bbb&gt; and &lt;ccc&gt;<br/>
+ *             xxx,"y"yy",zzz CRLF ; interpreted as &lt;xxx&gt;, &lt;yyy"&gt; and &lt;zzz&gt;
+ *         </samp>
+ *     </li>
+ *     <li>
+ *         <b>Termination of double quoted fields</b>: if a field starts with a double quote character ({@code "}) and
+ *         the end of file is reached prior to the corresponding closing double quote, the field shall still be regarded
+ *         as correctly terminated. For example:<br/>
+ *         <samp>
+ *             aaa,bbb,"ccc EOF ; interpreted as &lt;aaa&gt;, &lt;bbb&gt; and &lt;ccc&gt;<br/>
+ *         </samp>
+ *     </li>
  * </ul>
  */
 @SuppressWarnings({"Duplicates", "Unused"})
-public final class Rfc4180HalfRelaxedFormat implements Format {
+public final class Rfc4180FullyRelaxedFormat implements Format {
     private static final int FLD = 0; // Field
     private static final int BFF = 8;  // Before field
     private static final int SQT = 16; // Start quotation
@@ -81,40 +102,40 @@ public final class Rfc4180HalfRelaxedFormat implements Format {
 
     //@formatter:off
     private static final int[] DFA = {
-    // *                ,                \r               \n               "                EOF              padding
-       FLD,             BFF|EFH,         CAR|EFH,         BFL|EFH|ELH,     FLD,             EOF|EFH|STP,     0,0,             // FLD
-       FLD|SFH,         BFF|SFH|EFH,     CAR|SFH|EFH,     BFL|SFH|EFH|ELH, SQT,             EOF|SFH|EFH|ELH, 0,0,             // BFF
-       QOT|SFH,         QOT,             QOT,             QOT,             SQE,             ERR|ERH,         0,0,             // SQT
-       QOT,             QOT,             QOT,             QOT,             ESC,             ERR|ERH,         0,0,             // QOT
-       ERR|ERH,         BFF|EFB,         CAR|EFB,         BFL|EFB|ELH,     QOT|RCB,         EOF|EFB|ELH|STP, 0,0,             // ESC
-       ERR|ERH,         BFF|SFH|EFH,     CAR|SFH|EFH,     BFL|SFH|EFH,     QOT|SFH,         EOF|SFH|EFH|STP, 0,0,             // SQE
-       FLD|SFH,         BFF|SFH|EFH,     CAR|SFH|EFH,     BFL|SFH|EFH|ELH, SQT,             EOF|STP,         0,0,             // BFL
-       ERR|ERH,         ERR|ERH,         ERR|ERH,         BFL|ELH,         ERR|ERH,         ERR|ERH,         0,0,             // CAR
-       ERR|ERH,         ERR|ERH,         ERR|ERH,         ERR|ERH,         ERR|ERH,         ERR|ERH,         0,0,             // EOF
-       ERR|ERH,         ERR|ERH,         ERR|ERH,         ERR|ERH,         ERR|ERH,         ERR|ERH,         0,0,             // ERR
-       0,               0,               0,               0,               0,               0,               0,0,
-       0,               0,               0,               0,               0,               0,               0,0,
-       0,               0,               0,               0,               0,               0,               0,0,
-       0,               0,               0,               0,               0,               0,               0,0,
-       0,               0,               0,               0,               0,               0,               0,0,
-       0,               0,               0,               0,               0,               0,               0,0};
+    // *              ,                \r               \n               "                EOF              padding
+       FLD,           BFF|EFH,         CAR|EFH,         BFL|EFH|ELH,     FLD,             EOF|EFH|STP,     0,0,               // FLD
+       FLD|SFH,       BFF|SFH|EFH,     CAR|SFH|EFH,     BFL|SFH|EFH|ELH, SQT,             EOF|SFH|EFH|STP, 0,0,               // BFF
+       QOT|SFH,       QOT,             QOT,             QOT,             SQE,             EOF|SFH|EFH|STP, 0,0,               // SQT
+       QOT,           QOT,             QOT,             QOT,             ESC,             EOF|EFH|STP,     0,0,               // QOT
+       FLD|RCB,       BFF|EFB,         CAR|EFB,         BFL|EFB|ELH,     QOT|RCB,         EOF|EFB|STP,     0,0,               // ESC
+       FLD|SFH,       BFF|SFH|EFH,     CAR|SFH|EFH,     BFL|SFH|EFH,     QOT|SFH,         EOF|SFH|EFH|STP, 0,0,               // SQE
+       FLD|SFH,       BFF|SFH|EFH,     CAR|SFH|EFH,     BFL|SFH|EFH|ELH, SQT,             EOF|STP,         0,0,               // BFL
+       BFL|RLR,       BFL|ELH|RLR,     BFL|ELH|RLR,     BFL|ELH,         BFL|ELH|RLR,     EOF|STP,         0,0,               // CAR
+       ERR|ERH,       ERR|ERH,         ERR|ERH,         ERR|ERH,         ERR|ERH,         ERR|ERH,         0,0,               // EOF
+       ERR|ERH,       ERR|ERH,         ERR|ERH,         ERR|ERH,         ERR|ERH,         ERR|ERH,         0,0,               // ERR
+       0,             0,               0,               0,               0,               0,               0,0,
+       0,             0,               0,               0,               0,               0,               0,0,
+       0,             0,               0,               0,               0,               0,               0,0,
+       0,             0,               0,               0,               0,               0,               0,0,
+       0,             0,               0,               0,               0,               0,               0,0,
+       0,             0,               0,               0,               0,               0,               0,0};
     //@formatter:on
 
     /**
-     * Provider of {@link Rfc4180HalfRelaxedFormat}.
+     * Provider of {@link Rfc4180FullyRelaxedFormat}.
      */
-    public static final class Provider implements Format.Provider<Rfc4180HalfRelaxedFormat> {
+    public static final class Provider implements Format.Provider<Rfc4180FullyRelaxedFormat> {
         private Provider() {
         }
 
         /**
-         * Return a new {@link Rfc4180HalfRelaxedFormat} instance.
+         * Return a new {@link Rfc4180FullyRelaxedFormat} instance.
          *
-         * @return A new {@link Rfc4180HalfRelaxedFormat} instance.
+         * @return A new {@link Rfc4180FullyRelaxedFormat} instance.
          */
         @Override
-        public Rfc4180HalfRelaxedFormat provide() {
-            return new Rfc4180HalfRelaxedFormat();
+        public Rfc4180FullyRelaxedFormat provide() {
+            return new Rfc4180FullyRelaxedFormat();
         }
     }
 
@@ -123,11 +144,11 @@ public final class Rfc4180HalfRelaxedFormat implements Format {
     }
 
     /**
-     * Create a new {@code Rfc4180HalfRelaxedFormat} instance.
+     * Create a new {@code Rfc4180RelaxedFormat} instance.
      * <p>
-     * This method is private, use {@link Rfc4180HalfRelaxedFormat.Provider#provide()} instead.
+     * This method is private, use {@link Provider#provide()} instead.
      */
-    private Rfc4180HalfRelaxedFormat() {
+    private Rfc4180FullyRelaxedFormat() {
     }
 
     /**
@@ -140,8 +161,9 @@ public final class Rfc4180HalfRelaxedFormat implements Format {
         return BFL;
     }
 
+
     /**
-     * Return the column index of the specified character in the matrix of the finite-state automaton parser.
+     * Return the column index of the specified character in the matrix of the finite state automaton parser.
      *
      * @param c The character.
      * @return The column index of the specified character.

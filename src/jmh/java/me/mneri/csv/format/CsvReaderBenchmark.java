@@ -42,7 +42,7 @@ public class CsvReaderBenchmark {
     @BenchmarkMode(Mode.AverageTime)
     @Measurement(timeUnit = TimeUnit.NANOSECONDS)
     public void readRfc4180RelaxedFormat(Blackhole blackhole) throws IOException, CsvException {
-        try (CsvReader<List<String>> reader = CsvReader.open(file, Rfc4180RelaxedFormat.provider())) {
+        try (CsvReader<List<String>> reader = CsvReader.open(file, Rfc4180FullyRelaxedFormat.provider())) {
             while (reader.hasNext()) {
                 blackhole.consume(reader.next());
             }
