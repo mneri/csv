@@ -78,8 +78,10 @@ public class SimdLineParser implements LineParser {
                 do {
                     if (pos >= strideEnd) {
                         pos = strideEnd;
-                        bitmask = reader.getBitmask(format, s, SPECIES, pos);
                         strideEnd += STRIDE;
+                        // XXX: This is... Ugh. We are giving Format unrestricted access to the reader's internal
+                        //      character buffer. This would be a no-no in any case other than this.
+                        bitmask = format.simd().bitmask(s, SPECIES, reader.array(pos, pos + STRIDE), reader.index(pos));
                     }
                     int shift = Long.numberOfTrailingZeros(bitmask);
                     bitmask = (bitmask >>> shift) - 1;

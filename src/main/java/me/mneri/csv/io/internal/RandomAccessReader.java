@@ -18,9 +18,6 @@
 
 package me.mneri.csv.io.internal;
 
-import jdk.incubator.vector.VectorSpecies;
-import me.mneri.csv.format.Format;
-
 import java.io.IOException;
 import java.io.Reader;
 import java.nio.BufferOverflowException;
@@ -106,24 +103,9 @@ public interface RandomAccessReader extends AutoCloseable {
      */
     String getString(long start, long end) throws IOException;
 
-    /**
-     * Return a bitmask with bits set in state-changing positions.
-     * <p>
-     * Ugh, this is just <b>ugly</b> and violates a good amount of software engineering principles, but until project
-     * Valhalla comes to an end, it probably needs to stay this way.
-     * <p>
-     * The Vector API isn't properly inlined by the C2 compiler unless all the instructions are placed
-     * one-after-the-other in the same method, and this is the only sequence of calls I could come up with that doesn't
-     * end up in a non-inlined invokevirtual series of calls.
-     *
-     * @param format  The format.
-     * @param s       The state of the format.
-     * @param species The species of the CPU's SIMD registers.
-     * @param pos     The position.
-     * @return The bitmask.
-     * @throws IOException If an I/O error occurs.
-     */
-    long getBitmask(Format format, int s, VectorSpecies<Short> species, long pos) throws IOException;
+    char[] array(long start, long end) throws IOException;
+
+    int index(long pos);
 
     @Override
     void close() throws IOException;

@@ -18,10 +18,6 @@
 
 package me.mneri.csv.io.internal;
 
-import jdk.incubator.vector.ShortVector;
-import jdk.incubator.vector.VectorSpecies;
-import me.mneri.csv.format.Format;
-
 import java.io.IOException;
 import java.io.Reader;
 import java.nio.BufferOverflowException;
@@ -42,8 +38,6 @@ public class BufferedRandomAccessReader implements RandomAccessReader {
 
     private static final int READ_SIZE = 8_192;
 
-    private static final int SPECIES_MAX_LENGTH = ShortVector.SPECIES_MAX.length();
-
     private char[] cb;
     private final int mask;
     private long first; // Absolute index of the first buffered character
@@ -52,7 +46,6 @@ public class BufferedRandomAccessReader implements RandomAccessReader {
     private int limit; // Relative index of the last buffered character
     private Reader in;
     private int state = STATE_OPEN;
-    private final char[] vector = new char[SPECIES_MAX_LENGTH];
 
     /**
      * Create a new reader.
@@ -319,30 +312,26 @@ public class BufferedRandomAccessReader implements RandomAccessReader {
     }
 
     @Override
-    public long getBitmask(Format format, int s, VectorSpecies<Short> species, long start) throws IOException {
-        long end = start + species.length();
+    public char[] array(long start, long end) throws IOException {
         if (end <= last) {
-            return format.simd().bitmask(s, species, cb, (int) (start + offset));
+            return cb;
         }
-        return getBitmask2(species, start, format, s);
+        return array2(start, end);
     }
 
-    private long getBitmask2(VectorSpecies<Short> species, long start, Format format, int s) throws IOException {
+    private char[] array2(long start, long end) throws IOException {
         if (state == STATE_CLOSED) {
             readerIsClosedException();
         }
         if (start < first) {
             indexOutOfBoundsException(start);
         }
-        long end = start + species.length();
         read(end - 1);
-        if (end < last) {
-            return format.simd().bitmask(s, species, cb, (int) (start + offset));
-        } else {
-            int length = (int) (last - start);
-            System.arraycopy(cb, (int) (start + offset), vector, 0, length);
-            vector[length] = (char) -1;
-            return format.simd().bitmask(s, species, vector, 0);
-        }
+        return cb;
+    }
+
+    @Override
+    public int index(long pos) {
+        return (int) (pos + offset);
     }
 }
