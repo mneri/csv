@@ -20,6 +20,7 @@ package me.mneri.csv.format;
 
 import jdk.incubator.vector.ShortVector;
 import jdk.incubator.vector.VectorSpecies;
+import me.mneri.csv.io.internal.RandomAccessStream;
 
 /**
  * A specific CSV dialect. Instances of this interface manage the state of the CSV parser and dictate the actions a
@@ -139,12 +140,12 @@ public interface Format {
          *
          * @param s       The current state as returned by a previous call to {@link #base()}, {@link #consume(int, int)} or
          *                {@link #consumeSlow(int, int)}.
+         * @param cs      The character source.
+         * @param pos     The offset in the character source
          * @param species The species of the CPU's SIMD registers.
-         * @param source  The source character array.
-         * @param offset  The offset in the source array.
          * @return A bitmask.
          */
-        long bitmask(int s, VectorSpecies<Short> species, char[] source, int offset);
+        long bitmask(int s, RandomAccessStream cs, long pos, VectorSpecies<Short> species);
     }
 
     /**
@@ -181,11 +182,9 @@ public interface Format {
     int consumeSlow(int s, int c);
 
     /**
-     * Return the {@code Format}'s SIMD extension.
-     * <p>
-     * <b>Warning:</b> calling this method when the Vector API is not enabled will result in a runtime exception.
+     * {@inheritDoc}
      *
-     * @return The SIMD extension.
+     * @return {@inheritDoc}
      */
     Simd simd();
 }

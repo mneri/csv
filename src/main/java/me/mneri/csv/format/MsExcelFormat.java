@@ -18,8 +18,8 @@
 
 package me.mneri.csv.format;
 
-import jdk.incubator.vector.ShortVector;
 import jdk.incubator.vector.VectorSpecies;
+import me.mneri.csv.io.internal.RandomAccessStream;
 
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
@@ -143,22 +143,14 @@ public final class MsExcelFormat implements Format {
          * {@inheritDoc}
          *
          * @param s       {@inheritDoc}
+         * @param cs      {@inheritDoc}
+         * @param pos     {@inheritDoc}
          * @param species {@inheritDoc}
-         * @param source  {@inheritDoc}
-         * @param offset  {@inheritDoc}
          * @return {@inheritDoc}
          */
         @Override
-        public long bitmask(int s, VectorSpecies<Short> species, char[] source, int offset) {
-            // XXX: Unless all the ShortVector instructions (up until .toLong()) are placed one-after-the-other in the
-            //      same method, the escape analysis fails to prove these objects are short-lived and allocates them in
-            //      the heap. It'll probably stay this way until Project Valhalla comes to an end. This method is called
-            //      *very frequently* and heap allocations kill performances to a degree where SIMD processing becomes
-            //      10-20% *less* efficient than sequential processing.
-
-            // XXX: SIMD instructions for bitmasking must live inside Format because they're dependent on the Format and
-            //      its state: some Formats look for different special characters than others, and the rightmost bit is
-            //      dependent on the Format's current state!
+        public long bitmask(int s, RandomAccessStream cs, long pos, VectorSpecies<Short> species) {
+            long bitmask = cs.getBitmask(pos, species, '\n', '\r', '"', (char) sep, (char) -1);
 
             // A bitmask with 1's set at the positions of commas (or any other CSV special character) is not sufficient;
             // for example, the Format needs to consume a comma to track the end of the current field and the character
@@ -167,13 +159,6 @@ public final class MsExcelFormat implements Format {
             // positioned after. We also might need to set the first bit: the Format needs to consume the character at
             // the start of field! We set it unless we're already inside a field (FLD or QOT). The states FLD and QOT
             // are conveniently positioned at the top of the DFA, so anything greater is an outside-the-field state.
-            ShortVector chunk = ShortVector.fromCharArray(species, source, offset);
-            long bitmask = chunk.eq((short) -1)
-                    .or(chunk.eq((short) '\n'))
-                    .or(chunk.eq((short) '\r'))
-                    .or(chunk.eq((short) '"'))
-                    .or(chunk.eq((short) sep))
-                    .toLong();
             return bitmask | (bitmask << 1) | ((s & 0xFFFF) >= (QOT + 8) ? 1L : 0L); // The QOT line is 8 integers
         }
     }
@@ -292,7 +277,7 @@ public final class MsExcelFormat implements Format {
      * @return {@inheritDoc}
      */
     @Override
-    public Format.Simd simd() {
+    public Simd simd() {
         if (simd == null) {
             simd = new Simd(sep);
         }

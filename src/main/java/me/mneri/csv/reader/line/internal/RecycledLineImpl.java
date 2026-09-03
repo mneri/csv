@@ -19,7 +19,7 @@
 package me.mneri.csv.reader.line.internal;
 
 import me.mneri.csv.exception.NoSuchFieldException;
-import me.mneri.csv.io.internal.RandomAccessReader;
+import me.mneri.csv.io.internal.RandomAccessStream;
 import me.mneri.csv.reader.line.RecycledLine;
 
 import java.io.IOException;
@@ -28,7 +28,7 @@ import java.math.BigInteger;
 import java.util.Arrays;
 
 public class RecycledLineImpl implements RecycledLine {
-    private final RandomAccessReader reader;
+    private final RandomAccessStream reader;
 
     private long[] idx = new long[768];
     private int idxSize;
@@ -38,7 +38,7 @@ public class RecycledLineImpl implements RecycledLine {
 
     private char[] buff = new char[256];
 
-    public RecycledLineImpl(RandomAccessReader reader) {
+    public RecycledLineImpl(RandomAccessStream reader) {
         if (reader == null) {
             throw new IllegalArgumentException("Reader cannot be null");
         }

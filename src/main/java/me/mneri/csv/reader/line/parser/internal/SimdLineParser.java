@@ -23,7 +23,7 @@ import jdk.incubator.vector.VectorSpecies;
 import me.mneri.csv.exception.CsvException;
 import me.mneri.csv.exception.UnexpectedCharacterException;
 import me.mneri.csv.format.Format;
-import me.mneri.csv.io.internal.RandomAccessReader;
+import me.mneri.csv.io.internal.RandomAccessStream;
 import me.mneri.csv.reader.line.internal.RecycledLineImpl;
 
 import java.io.IOException;
@@ -42,14 +42,14 @@ public class SimdLineParser implements LineParser {
 
     private final Format format;
     private final RecycledLineImpl line;
-    private final RandomAccessReader reader;
+    private final RandomAccessStream stream;
 
     private long bitmask;
     private long strideEnd;
     private long pos;
 
-    public SimdLineParser(RandomAccessReader reader, Format format, RecycledLineImpl line) {
-        this.reader = reader;
+    public SimdLineParser(RandomAccessStream stream, Format format, RecycledLineImpl line) {
+        this.stream = stream;
         this.format = format;
         this.line = line;
     }
@@ -69,7 +69,7 @@ public class SimdLineParser implements LineParser {
         long strideEnd = this.strideEnd;
 
         line.clear();
-        reader.compact(pos);
+        stream.compact(pos);
         do {
             // Optimization: The most frequent actions are to start and to end a field. For example, in a line with 5
             // fields there are 10 field-start/field-stop and only 1 end-of-line. We inserted a tighter loop , saving a
@@ -79,16 +79,14 @@ public class SimdLineParser implements LineParser {
                     if (pos >= strideEnd) {
                         pos = strideEnd;
                         strideEnd += STRIDE;
-                        // XXX: This is... Ugh. We are giving Format unrestricted access to the reader's internal
-                        //      character buffer. This would be a no-no in any case other than this.
-                        bitmask = format.simd().bitmask(s, SPECIES, reader.array(pos, pos + STRIDE), reader.index(pos));
+                        bitmask = format.simd().bitmask(s, stream, pos, SPECIES);
                     }
                     int shift = Long.numberOfTrailingZeros(bitmask);
                     bitmask = (bitmask >>> shift) - 1;
                     pos += shift;
                 } while (pos >= strideEnd);
 
-                s = format.consumeSlow(s, reader.getChar(pos));
+                s = format.consumeSlow(s, stream.getChar(pos));
 
                 if (isStartOfField(s)) {
                     line.startField(pos);

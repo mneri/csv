@@ -24,8 +24,8 @@ import me.mneri.csv.exception.CsvConversionException;
 import me.mneri.csv.exception.CsvException;
 import me.mneri.csv.format.Format;
 import me.mneri.csv.format.Rfc4180FullyRelaxedFormat;
-import me.mneri.csv.io.internal.BufferedRandomAccessReader;
-import me.mneri.csv.io.internal.RandomAccessReader;
+import me.mneri.csv.io.internal.RandomAccessCharStream;
+import me.mneri.csv.io.internal.RandomAccessStream;
 import me.mneri.csv.reader.line.internal.RecycledLineImpl;
 import me.mneri.csv.reader.line.parser.internal.LineParser;
 import me.mneri.csv.reader.line.parser.internal.SequentialLineParser;
@@ -159,14 +159,14 @@ public class CsvReader<T> implements AutoCloseable {
     private final Deserializer<T> deserializer;
     private final RecycledLineImpl line;
     private final LineParser parser;
-    private final RandomAccessReader reader;
+    private final RandomAccessStream reader;
     private int state = ELEMENT_NOT_PREPARED;
 
     private CsvReader(Reader reader, Provider<? extends Format> provider, Deserializer<T> deserializer) {
-        this(new BufferedRandomAccessReader(reader, MAX_LINE_SIZE), provider, deserializer);
+        this(new RandomAccessCharStream(reader, MAX_LINE_SIZE), provider, deserializer);
     }
 
-    private CsvReader(RandomAccessReader reader, Provider<? extends Format> provider, Deserializer<T> deserializer) {
+    private CsvReader(RandomAccessStream reader, Provider<? extends Format> provider, Deserializer<T> deserializer) {
         this.reader = reader;
         this.line = new RecycledLineImpl(reader);
         this.deserializer = deserializer;

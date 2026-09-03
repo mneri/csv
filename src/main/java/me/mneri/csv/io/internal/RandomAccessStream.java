@@ -18,6 +18,8 @@
 
 package me.mneri.csv.io.internal;
 
+import jdk.incubator.vector.VectorSpecies;
+
 import java.io.IOException;
 import java.io.Reader;
 import java.nio.BufferOverflowException;
@@ -45,7 +47,15 @@ import java.nio.BufferOverflowException;
  * To maximise raw I/O throughput, this class is inherently thread-unsafe. Exposing a single instance to concurrent
  * threads will result in immediate state tearing of the cursor offsets and data corruption.
  */
-public interface RandomAccessReader extends AutoCloseable {
+public interface RandomAccessStream extends AutoCloseable {
+    /**
+     * Close the character stream.
+     *
+     * @throws IOException If an I/O error occurs.
+     */
+    @Override
+    void close() throws IOException;
+
     /**
      * Compact the backing buffer, moving the start of the window to the specified position.
      * <p>
@@ -61,6 +71,81 @@ public interface RandomAccessReader extends AutoCloseable {
      * @throws IndexOutOfBoundsException If the requested position is out of the buffered window.
      */
     void compact(long pos) throws IOException;
+
+    /**
+     * Return a bitmask with bits set in the positions of the specified character.
+     * <p>
+     * This operation leverages the CPU's SIMD registers. The vector species defines the size of the registers, and the
+     * number of consecutive characters to check.
+     *
+     * @param pos     The offset in the character source.
+     * @param species The species of the CPU's SIMD registers.
+     * @param c       The character to find.
+     * @return A bitmask.
+     */
+    long getBitmask(long pos, VectorSpecies<Short> species, char c);
+
+    /**
+     * Return a bitmask with bits set in the positions of the specified characters.
+     * <p>
+     * This operation leverages the CPU's SIMD registers. The vector species defines the size of the registers, and the
+     * number of consecutive characters to check.
+     *
+     * @param pos     The offset in the character source.
+     * @param species The species of the CPU's SIMD registers.
+     * @param c1      A character to find.
+     * @param c2      A character to find.
+     * @return A bitmask.
+     */
+    long getBitmask(long pos, VectorSpecies<Short> species, char c1, char c2);
+
+    /**
+     * Return a bitmask with bits set in the positions of the specified characters.
+     * <p>
+     * This operation leverages the CPU's SIMD registers. The vector species defines the size of the registers, and the
+     * number of consecutive characters to check.
+     *
+     * @param pos     The offset in the character source.
+     * @param species The species of the CPU's SIMD registers.
+     * @param c1      A character to find.
+     * @param c2      A character to find.
+     * @param c3      A character to find.
+     * @return A bitmask.
+     */
+    long getBitmask(long pos, VectorSpecies<Short> species, char c1, char c2, char c3);
+
+    /**
+     * Return a bitmask with bits set in the positions of the specified characters.
+     * <p>
+     * This operation leverages the CPU's SIMD registers. The vector species defines the size of the registers, and the
+     * number of consecutive characters to check.
+     *
+     * @param pos     The offset in the character source.
+     * @param species The species of the CPU's SIMD registers.
+     * @param c1      A character to find.
+     * @param c2      A character to find.
+     * @param c3      A character to find.
+     * @param c4      A character to find.
+     * @return A bitmask.
+     */
+    long getBitmask(long pos, VectorSpecies<Short> species, char c1, char c2, char c3, char c4);
+
+    /**
+     * Return a bitmask with bits set in the positions of the specified characters.
+     * <p>
+     * This operation leverages the CPU's SIMD registers. The vector species defines the size of the registers, and the
+     * number of consecutive characters to check.
+     *
+     * @param pos     The offset in the character source.
+     * @param species The species of the CPU's SIMD registers.
+     * @param c1      A character to find.
+     * @param c2      A character to find.
+     * @param c3      A character to find.
+     * @param c4      A character to find.
+     * @param c5      A character to find.
+     * @return A bitmask.
+     */
+    long getBitmask(long pos, VectorSpecies<Short> species, char c1, char c2, char c3, char c4, char c5);
 
     /**
      * Get the character at the specified position.
@@ -102,11 +187,4 @@ public interface RandomAccessReader extends AutoCloseable {
      * @throws BufferOverflowException   If the requested position exceeds the internal buffer limits.
      */
     String getString(long start, long end) throws IOException;
-
-    char[] array(long start, long end) throws IOException;
-
-    int index(long pos);
-
-    @Override
-    void close() throws IOException;
 }
