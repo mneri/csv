@@ -5,9 +5,10 @@ plugins {
 
 group = 'me.mneri.csv'
 version = '2.0-SNAPSHOT'
-
 java {
-    sourceCompatibility = 1.8
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(26) // or your target Java version
+    }
 }
 
 repositories {
@@ -22,4 +23,16 @@ dependencies {
 
 test {
     useJUnitPlatform()
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs += ['--enable-preview', '--add-modules=jdk.incubator.vector']
+}
+
+tasks.withType(Test).configureEach {
+    jvmArgs += ['--enable-preview', '--add-modules=jdk.incubator.vector']
+}
+
+tasks.withType(JavaExec).configureEach {
+    jvmArgs += ['--enable-preview', '--add-modules=jdk.incubator.vector']
 }

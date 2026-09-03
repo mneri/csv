@@ -19,6 +19,7 @@
 package me.mneri.csv.writer;
 
 import me.mneri.csv.exception.CsvConversionException;
+import me.mneri.csv.serializer.Serializer;
 
 import java.io.Closeable;
 import java.io.Flushable;

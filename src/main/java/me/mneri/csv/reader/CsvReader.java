@@ -18,32 +18,25 @@
 
 package me.mneri.csv.reader;
 
+import me.mneri.csv.deserializer.Deserializer;
+import me.mneri.csv.deserializer.StringListDeserializer;
 import me.mneri.csv.exception.CsvConversionException;
 import me.mneri.csv.exception.CsvException;
-import me.mneri.csv.exception.LineTooLongException;
-import me.mneri.csv.exception.UnexpectedCharacterException;
 import me.mneri.csv.format.Format;
 import me.mneri.csv.format.Rfc4180FullyRelaxedFormat;
+import me.mneri.csv.io.internal.BufferedRandomAccessReader;
+import me.mneri.csv.io.internal.RandomAccessReader;
+import me.mneri.csv.reader.line.internal.RecycledLineImpl;
+import me.mneri.csv.reader.line.parser.internal.LineParser;
+import me.mneri.csv.reader.line.parser.internal.SequentialLineParser;
+import me.mneri.csv.reader.line.parser.internal.SimdLineParser;
+import me.mneri.csv.extension.Extensions;
 
-import java.io.Closeable;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.Reader;
+import java.io.*;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import static me.mneri.csv.format.Format.ANY;
-import static me.mneri.csv.format.Format.EFB;
-import static me.mneri.csv.format.Format.EFH;
-import static me.mneri.csv.format.Format.ELH;
-import static me.mneri.csv.format.Format.ERH;
 import static me.mneri.csv.format.Format.Provider;
-import static me.mneri.csv.format.Format.RCB;
-import static me.mneri.csv.format.Format.RLR;
-import static me.mneri.csv.format.Format.SFH;
-import static me.mneri.csv.format.Format.STP;
 
 /**
  * Read csv streams and automatically transform lines into Java objects.
@@ -51,27 +44,14 @@ import static me.mneri.csv.format.Format.STP;
  * @param <T> The type of the Java objects to read.
  * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
  */
-public class CsvReader<T> implements Closeable {
+@SuppressWarnings("unused")
+public class CsvReader<T> implements AutoCloseable {
     private static final int ELEMENT_NOT_PREPARED = 0;
     private static final int ELEMENT_PREPARED = 1;
     private static final int NO_SUCH_ELEMENT = 2;
-    private static final int CLOSED = 3;
+    private static final int READER_CLOSED = 3;
 
-    private static final int MAX_LINE_SIZE = 32_768;
-    private static final int MAX_READ_SIZE = 8_192;
-
-    private final char[] buff = new char[MAX_LINE_SIZE];
-    private final Deserializer<T> des;
-    private final Format fmt;
-    private final RecycledLineImpl line;
-    private final Reader rdr;
-
-    private int lines;
-    private int mark;
-    private int nextChar;
-    private int offset;
-    private int size;
-    private int state = ELEMENT_NOT_PREPARED;
+    private static final int MAX_LINE_SIZE = 65_536;
 
     /**
      * Return a new {@link CsvReader} in open state, reading from the specified file.
@@ -137,7 +117,7 @@ public class CsvReader<T> implements Closeable {
      * @return A new {@link CsvReader}, in open state.
      */
     public static <T> CsvReader<T> open(Reader rdr, Format.Provider<?> p, Deserializer<T> des) {
-        return new CsvReader<>(rdr, p, new RecycledLineImpl(), des);
+        return new CsvReader<>(rdr, p, des);
     }
 
     /**
@@ -176,31 +156,42 @@ public class CsvReader<T> implements Closeable {
         return open(rdr, Rfc4180FullyRelaxedFormat.provider(), new StringListDeserializer());
     }
 
-    private CsvReader(Reader rdr, Provider<? extends Format> provider, RecycledLineImpl line, Deserializer<T> des) {
-        // A FormatProvider is used instead of a plain Format because Formats can be stateful. Reusing a stateful Format
-        // across different CsvReader instances can cause parsing errors because the state, which was meant to be
-        // private, would now be shared between different streams of data. If the client uses frameworks like Spring
-        // that encourage injection and instance reuse, this error might become very hard to spot. A FormatProvider does
-        // very little and might look like a waste, but could save clients hours of debugging.
-        this.rdr = rdr;
-        this.fmt = provider.provide();
-        this.line = line;
-        this.des = des;
+    private final Deserializer<T> deserializer;
+    private final RecycledLineImpl line;
+    private final LineParser parser;
+    private final RandomAccessReader reader;
+    private int state = ELEMENT_NOT_PREPARED;
+
+    private CsvReader(Reader reader, Provider<? extends Format> provider, Deserializer<T> deserializer) {
+        this(new BufferedRandomAccessReader(reader, MAX_LINE_SIZE), provider, deserializer);
+    }
+
+    private CsvReader(RandomAccessReader reader, Provider<? extends Format> provider, Deserializer<T> deserializer) {
+        this.reader = reader;
+        this.line = new RecycledLineImpl(reader);
+        this.deserializer = deserializer;
+
+        if (Extensions.SIMD_SUPPORTED) {
+            this.parser = new SimdLineParser(reader, provider.provide(), line);
+        } else {
+            this.parser = new SequentialLineParser(reader, provider.provide(), line);
+        }
     }
 
     /**
      * Closes the stream and releases any system resources associated with it. Once the stream has been closed, further
-     * {@link CsvReader#hasNext()}, {@link CsvReader#next()} and {@link CsvReader#skip(int)} invocations will throw an
-     * {@link IOException}. Closing a previously closed stream has no effect.
+     * {@link CsvReader#hasNext()}, {@link CsvReader#next()} invocations will throw an {@link IOException}. Closing a
+     * previously closed stream has no effect.
      *
      * @throws IOException if an I/O error occurs.
      */
+    @Override
     public void close() throws IOException {
-        if (state == CLOSED) {
+        if (state == READER_CLOSED) {
             return;
         }
-        state = CLOSED;
-        rdr.close();
+        state = READER_CLOSED;
+        reader.close();
     }
 
     /**
@@ -211,22 +202,26 @@ public class CsvReader<T> implements Closeable {
      * @throws CsvException if the csv is not properly formatted.
      * @throws IOException  if an I/O error occurs.
      */
-    public boolean hasNext() throws CsvException, IOException {
+    public boolean hasNext() throws CsvException, IOException { // Bytecode size: 36 (OpenJDK 26)
+        // Optimization: In a typical hasNext()/next() loop, the state at the beginning of the call is always
+        // ELEMENT_NOT PREPARED. We check if this is the case, and delegate the rest to the cold-path method hasNext2(),
+        // reducing the bytecode size and making it more likely this method is inlined by the JIT compiler.
         if (state == ELEMENT_NOT_PREPARED) {
-            if (parseLine(fmt)) {
+            if (parser.parse()) {
                 state = ELEMENT_PREPARED;
                 return true;
             } else {
                 state = NO_SUCH_ELEMENT;
-                return false;
             }
         }
+        return hasNext2(); // Only called if the client doesn't follow the idiomatic pattern hasNext()/next()
+    }
 
-        if (state < CLOSED) {
-            return state == ELEMENT_PREPARED;
+    public boolean hasNext2() {
+        if (state == READER_CLOSED) {
+            readerIsClosedException();
         }
-
-        throw new IllegalStateException("The reader is closed.");
+        return state == ELEMENT_PREPARED;
     }
 
     /**
@@ -236,169 +231,48 @@ public class CsvReader<T> implements Closeable {
      * @throws CsvException if the csv is not properly formatted.
      * @throws IOException  if an I/O error occurs.
      */
-    public T next() throws CsvException, IOException {
-        // Optimization: In a typical loop (while(hasNext()) { next() }), the state is already ELEMENT_PREPARED when
-        // this method is called. We check this directly to avoid the overhead of an extra method call to hasNext() for
-        // every row.
-        if (state != ELEMENT_PREPARED && !hasNext()) {
-            throw new NoSuchElementException();
+    public T next() throws CsvException, IOException { // Bytecode size: 38 (OpenJDK 26)
+        // Optimization: In a typical while(hasNext())/next() loop, the state is already ELEMENT_PREPARED when this
+        // method is called. We check this directly and delegate the rest to the cold-path method next2(), reducing the
+        // bytecode size and making it more likely this method is inlined by the JIT compiler.
+        if (state == ELEMENT_PREPARED) {
+            try {
+                state = ELEMENT_NOT_PREPARED;
+                return deserializer.deserialize(line);
+            } catch (Throwable e) {
+                csvConversionException(e);
+            }
         }
+        return next2(); // Only called if the client doesn't follow the idiomatic pattern while(hasNext())/next()
+    }
 
+    private T next2() throws CsvException, IOException {
+        if (state == READER_CLOSED) {
+            readerIsClosedException();
+        }
+        if (!hasNext()) {
+            noSuchElementException();
+        }
+        // The element is now prepared
+        T element = null;
         try {
             state = ELEMENT_NOT_PREPARED;
-            return des.deserialize(line);
-        } catch (Exception e) {
-            throw new CsvConversionException(line, e);
+            element = deserializer.deserialize(line);
+        } catch (Throwable e) {
+            csvConversionException(e);
         }
+        return element;
     }
 
-    /**
-     * Return the next character in the reader stream.
-     *
-     * @return The character.
-     * @throws LineTooLongException If a character can't be returned because the read buffer is full.
-     * @throws IOException          if an I/O error occurs.
-     */
-    private int getNextChar() throws LineTooLongException, IOException {
-        if (nextChar == size) {
-            if (performRead() == -1) {
-                return -1;
-            }
-        }
-        return buff[nextChar++];
+    private void csvConversionException(Throwable cause) throws CsvConversionException {
+        throw new CsvConversionException(line, cause);
     }
 
-    @SuppressWarnings("StatementWithEmptyBody")
-    private boolean parseLine(Format fmt) throws CsvException, IOException {
-        int s = fmt.base();
-        int start = -1, length;
-
-        line.reset();
-        mark = nextChar;
-
-        do {
-            while (none(s = fmt.consume(s, getNextChar()), ANY)) {
-                // Intentionally empty
-            }
-
-            if (any(s, SFH)) {
-                start = (nextChar - 1) + offset;
-            }
-            if (any(s, EFH | EFB)) {
-                length = nextChar + offset - (any(s, EFB) ? 2 : 1) - start;
-                line.addField(new String(buff, start - offset, length));
-            }
-            if (any(s, RLR | RCB)) {
-                if (any(s, RLR)) {
-                    nextChar--;
-                } else {
-                    shiftBuffer(start, start + 1, (nextChar - 2) - start);
-                    start++;
-                }
-            }
-        } while (none(s, ELH | ERH | STP));
-
-        lines++;
-
-        if (none(s, STP | ERH)) {
-            return true;
-        } else if (any(s, ERH)) {
-            throw new UnexpectedCharacterException(lines, buff[nextChar - 1]);
-        } else {
-            return false;
-        }
+    private void noSuchElementException() {
+        throw new NoSuchElementException();
     }
 
-    /**
-     * Return {@code true} if the state returned by the {@link Format} includes at least one of the specified flags.
-     *
-     * @param s     The state, as returned by {@link Format#base()} or {@link Format#consume(int, int)}.
-     * @param flags The flags.
-     * @return {@code true} if at least one of the flags are set, {@code false} otherwise.
-     */
-    private boolean any(int s, int flags) {
-        return (s & flags) != 0;
-    }
-
-    /**
-     * Return {@code true} if the state returned by the {@link Format} does not include any of the specified flags.
-     *
-     * @param s     The state, as returned by {@link Format#base()} or {@link Format#consume(int, int)}.
-     * @param flags The flags.
-     * @return {@code true} if none of the flags are set, {@code false} otherwise.
-     */
-    private boolean none(int s, int flags) {
-        return (s & flags) == 0;
-    }
-
-    private int performRead() throws IOException, LineTooLongException {
-        if (buff.length - size < MAX_READ_SIZE) {
-            int length = size - mark;
-            shiftBuffer(mark, 0, length);
-            nextChar = size = length;
-            offset += mark;
-        }
-        if (size == buff.length) {
-            throw new LineTooLongException(lines);
-        }
-        int read;
-        if ((read = rdr.read(buff, size, Math.min(MAX_READ_SIZE, buff.length - size))) < 0) {
-            return -1;
-        }
-        size += read;
-        return 0;
-    }
-
-    private void shiftBuffer(int source, int dest, int length) {
-        System.arraycopy(buff, source, buff, dest, length);
-    }
-
-    /**
-     * Skip the next elements of the reader.
-     *
-     * @param n The number of elements to skip.
-     * @throws CsvException if the csv is not properly formatted.
-     * @throws IOException  if an I/O error occurs.
-     */
-    public void skip(int n) throws CsvException, IOException {
-        int toSkip = n;
-        switch (state) {
-            case ELEMENT_PREPARED:
-                state = ELEMENT_NOT_PREPARED;
-                if (--toSkip == 0) {
-                    return;
-                }
-            case NO_SUCH_ELEMENT:
-                return;
-            case CLOSED:
-                throw new IllegalStateException("The reader is closed.");
-        }
-        state = skipLines(toSkip) ? ELEMENT_NOT_PREPARED : NO_SUCH_ELEMENT;
-    }
-
-    @SuppressWarnings("StatementWithEmptyBody")
-    protected boolean skipLines(int n) throws CsvException, IOException {
-        int s = fmt.base();
-        mark = nextChar;
-        int skipped = 0;
-
-        do {
-            while (none(s = fmt.consume(s, getNextChar()), ELH | ERH | STP | RLR))
-                ; // Intentionally empty
-
-            if (any(s, RLR)) {
-                nextChar--;
-            }
-        } while (++skipped <= n && none(s, ERH | STP));
-
-        lines += skipped;
-
-        if (none(s, STP | ERH)) {
-            return true;
-        } else if (any(s, ERH)) {
-            throw new UnexpectedCharacterException(lines, buff[nextChar - 1]);
-        } else {
-            return false;
-        }
+    private void readerIsClosedException() {
+        throw new IllegalStateException("The reader is closed.");
     }
 }

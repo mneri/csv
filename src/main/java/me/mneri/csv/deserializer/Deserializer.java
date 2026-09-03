@@ -16,26 +16,25 @@
  * limitations under the License.
  */
 
-package me.mneri.csv.writer;
+package me.mneri.csv.deserializer;
 
-import me.mneri.csv.reader.Deserializer;
-
-import java.util.List;
+import me.mneri.csv.reader.line.RecycledLine;
+import me.mneri.csv.serializer.Serializer;
 
 /**
- * Serialize objects.
+ * Deserialize objects.
  *
  * @param <T> the type of the objects.
  * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
- * @see Deserializer
+ * @see Serializer
  */
-public interface Serializer<T> {
+public interface Deserializer<T> {
     /**
-     * Serialize an object into a list of strings. The strings should be added in order to the list passed as parameter.
+     * Deserialize an object starting from csv line. The order of the strings is the same as found in the csv.
      *
-     * @param object the object to serialize.
-     * @param out    the list of strings representing the csv line.
+     * @param line the csv line.
+     * @return An object.
      * @throws Exception if anything goes wrong.
      */
-    void serialize(T object, List<String> out) throws Exception;
+    T deserialize(RecycledLine line) throws Exception;
 }

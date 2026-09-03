@@ -1,17 +1,17 @@
 package me.mneri.csv;
 
+import me.mneri.csv.deserializer.Deserializer;
 import me.mneri.csv.exception.CsvException;
 import me.mneri.csv.format.Rfc4180FullyRelaxedFormat;
 import me.mneri.csv.reader.CsvReader;
-import me.mneri.csv.reader.Deserializer;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 public class Main {
-    private static final int WARMUP_ROUNDS = 40;
-    private static final int ROUNDS = 40;
+    private static final int WARMUP_ROUNDS = 100;
+    private static final int ROUNDS = 100;
 
     private final Deserializer<Integer> deserializer = line -> {
         int hashCode = 0;

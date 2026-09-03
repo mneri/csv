@@ -21,8 +21,12 @@ package me.mneri.csv.format;
 import jdk.incubator.vector.ShortVector;
 import jdk.incubator.vector.VectorSpecies;
 
+import java.text.DecimalFormatSymbols;
+import java.util.Locale;
+
 /**
- * Implements a relaxed interpretation of the RFC4180 standard for CSV files.
+ * Implements a <i>fully relaxed</i> interpretation of the RFC4180 standard mirroring the behaviour of Microsoft Excel,
+ * which accepts
  * <p>
  * The following features are supported:
  * <ul>
@@ -35,8 +39,9 @@ import jdk.incubator.vector.VectorSpecies;
  *         </samp>
  *     </li>
  *     <li>
- *         <b>Line termination</b>: lines can end with {@code \r\n} or {@code \n}; files can be inconsistent in their
- *         line termination, using different line terminators on different lines, any number of times. For example:<br/>
+ *         <b>Line termination</b>: lines can end with {@code \r\n}, {@code \r}, or {@code \n}; files can be
+ *         inconsistent in their line termination, using different line terminators on different lines, any number of
+ *         times. For example:<br/>
  *         <samp>
  *             aaa,bbb,ccc CRLF<br/>
  *             xxx,yyy,zzz LF
@@ -50,10 +55,34 @@ import jdk.incubator.vector.VectorSpecies;
  *             xxx,y"y,zzz CRLF   ; interpreted as &lt;xxx&gt;, &lt;y"y&gt; and &lt;zzz&gt;
  *         </samp>
  *     </li>
+ *     <li>
+ *         <b>Extra text after a double quoted field</b>: fields that begin with a double quotes character ({@code "})
+ *         may include additional text after the closing double quotes and before the comma delimiter ({@code ,}); this
+ *         additional text is treated as part of the field, following the rules for unquoted fields. For example:<br/>
+ *         <samp>
+ *             aaa,"bb"b,ccc CRLF ; interpreted as &lt;aaa&gt;, &lt;bbb&gt; and &lt;ccc&gt;<br/>
+ *             xxx,"y"yy",zzz CRLF ; interpreted as &lt;xxx&gt;, &lt;yyy"&gt; and &lt;zzz&gt;
+ *         </samp>
+ *     </li>
+ *     <li>
+ *         <b>Termination of double quoted fields</b>: if a field starts with a double quote character ({@code "}) and
+ *         the end of file is reached prior to the corresponding closing double quote, the field shall still be regarded
+ *         as correctly terminated. For example:<br/>
+ *         <samp>
+ *             aaa,bbb,"ccc EOF ; interpreted as &lt;aaa&gt;, &lt;bbb&gt; and &lt;ccc&gt;<br/>
+ *         </samp>
+ *     </li>
+ *     <li>
+ *         <b>Locale-dependent separator</b>: the field separator is {@code ,} in some locales, while is {@code ;} in
+ *         others. For example:<br/>
+ *         <samp>
+ *             aaa;bbb;"ccc EOF ; interpreted as &lt;aaa&gt;, &lt;bbb&gt; and &lt;ccc&gt; if the locale is IT-it<br/>
+ *         </samp>
+ *     </li>
  * </ul>
  */
 @SuppressWarnings({"Duplicates", "unused"})
-public final class Rfc4180HalfRelaxedFormat implements Format {
+public final class MsExcelFormat implements Format {
     private static final int FLD = 0; // Field
     private static final int QOT = 8; // Quotation
     private static final int BFF = 16;  // Before field
@@ -84,26 +113,32 @@ public final class Rfc4180HalfRelaxedFormat implements Format {
 
     //@formatter:off
     private static final int[] DFA = {
-    // *                ,                \r               \n               "                EOF              padding
-       FLD,             BFF|EFH,         CAR|EFH,         BFL|EFH|ELH,     FLD,             EOF|EFH|STP,     0,0,             // FLD
-       QOT,             QOT,             QOT,             QOT,             ESC,             ERR|ERH,         0,0,             // QOT
-       FLD|SFH,         BFF|SFH|EFH,     CAR|SFH|EFH,     BFL|SFH|EFH|ELH, SQT,             EOF|SFH|EFH|ELH, 0,0,             // BFF
-       QOT|SFH,         QOT,             QOT,             QOT,             SQE,             ERR|ERH,         0,0,             // SQT
-       ERR|ERH,         BFF|EFB,         CAR|EFB,         BFL|EFB|ELH,     QOT|RMB,         EOF|EFB|ELH|STP, 0,0,             // ESC
-       ERR|ERH,         BFF|SFH|EFH,     CAR|SFH|EFH,     BFL|SFH|EFH,     QOT|SFH,         EOF|SFH|EFH|STP, 0,0,             // SQE
-       FLD|SFH,         BFF|SFH|EFH,     CAR|SFH|EFH,     BFL|SFH|EFH|ELH, SQT,             EOF|STP,         0,0,             // BFL
-       ERR|ERH,         ERR|ERH,         ERR|ERH,         BFL|ELH,         ERR|ERH,         ERR|ERH,         0,0,             // CAR
-       ERR|ERH,         ERR|ERH,         ERR|ERH,         ERR|ERH,         ERR|ERH,         ERR|ERH,         0,0,             // EOF
-       ERR|ERH,         ERR|ERH,         ERR|ERH,         ERR|ERH,         ERR|ERH,         ERR|ERH,         0,0,             // ERR
-       0,               0,               0,               0,               0,               0,               0,0,
-       0,               0,               0,               0,               0,               0,               0,0,
-       0,               0,               0,               0,               0,               0,               0,0,
-       0,               0,               0,               0,               0,               0,               0,0,
-       0,               0,               0,               0,               0,               0,               0,0,
-       0,               0,               0,               0,               0,               0,               0,0};
+    // *              ,                \r               \n               "                EOF              padding
+       FLD,           BFF|EFH,         CAR|EFH,         BFL|EFH|ELH,     FLD,             EOF|EFH|STP,     0,0,               // FLD
+       QOT,           QOT,             QOT,             QOT,             ESC,             EOF|EFH|STP,     0,0,               // QOT
+       FLD|SFH,       BFF|SFH|EFH,     CAR|SFH|EFH,     BFL|SFH|EFH|ELH, SQT,             EOF|SFH|EFH|STP, 0,0,               // BFF
+       QOT|SFH,       QOT,             QOT,             QOT,             SQE,             EOF|SFH|EFH|STP, 0,0,               // SQT
+       FLD|RMB,       BFF|EFB,         CAR|EFB,         BFL|EFB|ELH,     QOT|RMB,         EOF|EFB|STP,     0,0,               // ESC
+       FLD|SFH,       BFF|SFH|EFH,     CAR|SFH|EFH,     BFL|SFH|EFH,     QOT|SFH,         EOF|SFH|EFH|STP, 0,0,               // SQE
+       FLD|SFH,       BFF|SFH|EFH,     CAR|SFH|EFH,     BFL|SFH|EFH|ELH, SQT,             EOF|STP,         0,0,               // BFL
+       BFL|RPL,       BFL|ELH|RPL,     BFL|ELH|RPL,     BFL|ELH,         BFL|ELH|RPL,     EOF|STP,         0,0,               // CAR
+       ERR|ERH,       ERR|ERH,         ERR|ERH,         ERR|ERH,         ERR|ERH,         ERR|ERH,         0,0,               // EOF
+       ERR|ERH,       ERR|ERH,         ERR|ERH,         ERR|ERH,         ERR|ERH,         ERR|ERH,         0,0,               // ERR
+       0,             0,               0,               0,               0,               0,               0,0,
+       0,             0,               0,               0,               0,               0,               0,0,
+       0,             0,               0,               0,               0,               0,               0,0,
+       0,             0,               0,               0,               0,               0,               0,0,
+       0,             0,               0,               0,               0,               0,               0,0,
+       0,             0,               0,               0,               0,               0,               0,0};
     //@formatter:on
 
     public static final class Simd implements Format.Simd {
+        private final int sep;
+
+        private Simd(int sep) {
+            this.sep = sep;
+        }
+
         /**
          * {@inheritDoc}
          *
@@ -137,30 +172,47 @@ public final class Rfc4180HalfRelaxedFormat implements Format {
                     .or(chunk.eq((short) '\n'))
                     .or(chunk.eq((short) '\r'))
                     .or(chunk.eq((short) '"'))
-                    .or(chunk.eq((short) ','))
+                    .or(chunk.eq((short) sep))
                     .toLong();
             return bitmask | (bitmask << 1) | ((s & 0xFFFF) >= (QOT + 8) ? 1L : 0L); // The QOT line is 8 integers
         }
     }
 
     /**
-     * SIMD extension segregator.
+     * Return a provider of {@code MsExcelFormat} instances for the specified locale.
+     *
+     * @param locale The locale.
+     * @return The provider.
      */
-    private static final class SimdHolder {
-        private static final Simd INSTANCE = new Simd();
+    public static Provider<MsExcelFormat> provider(Locale locale) {
+        return () -> new MsExcelFormat(locale);
     }
 
-    public static Format.Provider<Rfc4180HalfRelaxedFormat> provider() {
-        return Rfc4180HalfRelaxedFormat::new;
-    }
+    private final int sep;
+    private final long map;
+    private final long mask;
+    private Simd simd;
 
-    private Rfc4180HalfRelaxedFormat() {
+    private MsExcelFormat(Locale locale) {
+        int sep = DecimalFormatSymbols.getInstance(locale).getDecimalSeparator();
+        this.sep = sep;
+
+        // Java's shift operators natively mask the shift by 63 (c & 63). Thus, 1L << -1 cleanly wraps to bit 63.
+        // Mask 0x80_00_00_04_00_00_24_00L has bits set at: 10 (\n), 13 (\r), 34 ("), 63 (EOF), then we set the bit
+        // for the separator (e.g. 44 (','), or 59 (';')).
+        this.mask = 0x80_00_00_04_00_00_24_00L | (1L << sep);
+
+        // Data Map 0x00_00_00_20_00_00_98_05L encodes:
+        // Bits [00-02]: 5 (EOF)  | Bits [11-13]: 3 (\n) | Bits [14-16]: 2 (\r)
+        // Bits [35-37]: 4 (")
+        // Then, we add the bits for the separator.
+        this.map = 0x00_00_00_20_00_00_98_05L | (0x01L << (sep + 1));
     }
 
     /**
      * {@inheritDoc}
      *
-     * @return The initial state.
+     * @return {@inheritDoc}
      */
     @Override
     public int base() { // Bytecode size: 3 (OpenJDK 26)
@@ -168,14 +220,14 @@ public final class Rfc4180HalfRelaxedFormat implements Format {
     }
 
     /**
-     * Return the column index of the specified character in the matrix of the finite-state automaton parser.
+     * Return the column index of the specified character in the matrix of the finite state automaton parser.
      *
      * @param c The character.
      * @return The column index of the specified character.
      */
     private int columnOf(int c) { // Bytecode size: 34 (OpenJDK 26)
         // The implementation is equivalent to the following code:
-        // if (c == ',') {
+        // if (c == sep) {
         //     return 1;
         // } else if (c == '\r') {
         //     return 2;
@@ -189,35 +241,30 @@ public final class Rfc4180HalfRelaxedFormat implements Format {
         //     return 0;
         // }
 
-        // Fast Path: Check if 'c' is an "ordinary" character. This includes anything > 44 (standard text) or characters
-        // <= 44 not in the special mask.
-        // Java's shift operators natively mask the shift by 63 (c & 63). Thus, 1L << -1 cleanly wraps to bit 63.
-        // Mask 0x8000_1004_0000_2400L has bits set at: 10 (\n), 13 (\r), 34 ("), 44 (,), 63 (EOF).
-        if (c > ',' || ((1L << c) & 0x80_00_10_04_00_00_24_00L) == 0) {
+        // Fast Path: Check if 'c' is an "ordinary" character. This includes anything > sep (standard text) or
+        // characters <= sep not in the special mask.
+        if (c > sep || ((1L << c) & mask) == 0) {
             return 0;
         }
 
         // Special Path: Map the character to a 3-bit column index via bit-field extraction.
-        // We use (c + 1) to shift the range of potential inputs from [-1, 44] (that is [EOF, ',']) to [0, 45].
-        // Data Map 0x20_20_00_00_98_05L encodes:
-        // Bits [00-02]: 5 (EOF)  | Bits [11-13]: 3 (\n) | Bits [14-16]: 2 (\r)
-        // Bits [35-37]: 4 (")    | Bits [45-47]: 1 (,)
-        return (int) (0x00_00_20_20_00_00_98_05L >>> (c + 1L)) & 0x7;
+        // We use (c + 1) to shift the range of potential inputs from [-1, sep] (that is [EOF, sep]) to [0, sep + 1].
+        return (int) (map >>> (c + 1L)) & 0x7;
     }
 
     /**
      * {@inheritDoc}
      *
-     * @param s The current state as returned by a previous call to {@link Format#base()} or this method.
-     * @param c The character.
-     * @return An integer encoding both the next state and the action to perform.
+     * @param s {@inheritDoc}
+     * @param c {@inheritDoc}
+     * @return {@inheritDoc}
      */
     @Override
     public int consume(int s, int c) { // Bytecode size: 27 (OpenJDK 26)
         // Super-Hot Path: Standard CSV data (letters, numbers, etc.) is the most common case. If the current state is
-        // FLD (Inside Field) and the character is 'ordinary' (> 44), we bypass the bit-masking and array lookup
+        // FLD (Inside Field) and the character is 'ordinary' (> sep), we bypass the bit-masking and array lookup
         // entirely to return the FLD state. This turns a potential memory access into a simple register comparison.
-        if (s == FLD && c > ',') {
+        if (s == FLD && c > sep) {
             return FLD;
         }
         return consumeSlow(s, c);
@@ -246,6 +293,9 @@ public final class Rfc4180HalfRelaxedFormat implements Format {
      */
     @Override
     public Format.Simd simd() {
-        return SimdHolder.INSTANCE;
+        if (simd == null) {
+            simd = new Simd(sep);
+        }
+        return simd;
     }
 }

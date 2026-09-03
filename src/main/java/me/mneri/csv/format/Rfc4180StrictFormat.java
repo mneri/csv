@@ -18,10 +18,12 @@
 
 package me.mneri.csv.format;
 
+import jdk.incubator.vector.ShortVector;
+import jdk.incubator.vector.VectorSpecies;
+import me.mneri.csv.deserializer.Deserializer;
 import me.mneri.csv.exception.UnexpectedCharacterException;
 import me.mneri.csv.reader.CsvReader;
-import me.mneri.csv.reader.Deserializer;
-import me.mneri.csv.reader.RecycledLine;
+import me.mneri.csv.reader.line.RecycledLine;
 
 /**
  * Implements a strict interpretation of the RFC4180 standard for CSV files, with one simple variation:
@@ -48,12 +50,12 @@ import me.mneri.csv.reader.RecycledLine;
  * always guarantees to have a <i>best-effort</i> interpretation of a non-compliant CSV file and never throw an
  * exception.
  */
-@SuppressWarnings({"Duplicates", "Unused"})
+@SuppressWarnings({"Duplicates", "unused"})
 public final class Rfc4180StrictFormat implements Format {
     private static final int FLD = 0; // Field
-    private static final int BFF = 8;  // Before field
-    private static final int SQT = 16; // Start quotation
-    private static final int QOT = 24; // Quotation
+    private static final int QOT = 8; // Quotation
+    private static final int BFF = 16;  // Before field
+    private static final int SQT = 24; // Start quotation
     private static final int ESC = 32; // Escape
     private static final int SQE = 40; // Escape at start quotation
     private static final int BFL = 48;  // Before line
@@ -65,7 +67,7 @@ public final class Rfc4180StrictFormat implements Format {
     //
     // Structure:
     // - Rows: Represent current states (BFL, BFF, etc.).
-    // - Columns: Represent character categories (mapped via the private method indexOf()).
+    // - Columns: Represent character categories (mapped via the private method columnOf()).
     // - Cells: Each 32-bit integer packs the next state in the lower 16 bits and transition actions in the upper 16
     //   bits.
     //
@@ -82,10 +84,10 @@ public final class Rfc4180StrictFormat implements Format {
     private static final int[] DFA = {
     // *                ,                \r               \n               "                EOF              padding
        FLD,             BFF|EFH,         CAR|EFH,         ERR|ERH,         ERR|ERH,         EOF|EFH|STP,     0,0,             // FLD
+       QOT,             QOT,             QOT,             QOT,             ESC,             ERR|ERH,         0,0,             // QOT
        FLD|SFH,         BFF|SFH|EFH,     CAR|SFH|EFH,     ERR|ERH,         SQT,             EOF|SFH|EFH|ELH, 0,0,             // BFF
        QOT|SFH,         QOT,             QOT,             QOT,             SQE,             ERR|ERH,         0,0,             // SQT
-       QOT,             QOT,             QOT,             QOT,             ESC,             ERR|ERH,         0,0,             // QOT
-       ERR|ERH,         BFF|EFB,         CAR|EFB,         ERR|ERH,         QOT|RCB,         EOF|EFB|ELH|STP, 0,0,             // ESC
+       ERR|ERH,         BFF|EFB,         CAR|EFB,         ERR|ERH,         QOT|RMB,         EOF|EFB|ELH|STP, 0,0,             // ESC
        ERR|ERH,         BFF|SFH|EFH,     CAR|SFH|EFH,     ERR|ERH,         QOT|SFH,         EOF|SFH|EFH|STP, 0,0,             // SQE
        FLD|SFH,         BFF|SFH|EFH,     CAR|SFH|EFH,     ERR|ERH,         SQT,             EOF|STP,         0,0,             // BFL
        ERR|ERH,         ERR|ERH,         ERR|ERH,         BFL|ELH,         ERR|ERH,         ERR|ERH,         0,0,             // CAR
@@ -99,6 +101,53 @@ public final class Rfc4180StrictFormat implements Format {
        0,               0,               0,               0,               0,               0,               0,0};
     //@formatter:on
 
+    public static final class Simd implements Format.Simd {
+        /**
+         * {@inheritDoc}
+         *
+         * @param s       {@inheritDoc}
+         * @param species {@inheritDoc}
+         * @param source  {@inheritDoc}
+         * @param offset  {@inheritDoc}
+         * @return {@inheritDoc}
+         */
+        @Override
+        public long bitmask(int s, VectorSpecies<Short> species, char[] source, int offset) {
+            // XXX: Unless all the ShortVector instructions (up until .toLong()) are placed one-after-the-other in the
+            //      same method, the escape analysis fails to prove these objects are short-lived and allocates them in
+            //      the heap. It'll probably stay this way until Project Valhalla comes to an end. This method is called
+            //      *very frequently* and heap allocations kill performances to a degree where SIMD processing becomes
+            //      10-20% *less* efficient than sequential processing.
+
+            // XXX: SIMD instructions for bitmasking must live inside Format because they're dependent on the Format and
+            //      its state: some Formats look for different special characters than others, and the rightmost bit is
+            //      dependent on the Format's current state!
+
+            // A bitmask with 1's set at the positions of commas (or any other CSV special character) is not sufficient;
+            // for example, the Format needs to consume a comma to track the end of the current field and the character
+            // after to track the start of the next field (and the same goes for new lines and double quotes). So, we
+            // first calculate a bitmask for the CSV special characters, and then we add 1's for the characters
+            // positioned after. We also might need to set the first bit: the Format needs to consume the character at
+            // the start of field! We set it unless we're already inside a field (FLD or QOT). The states FLD and QOT
+            // are conveniently positioned at the top of the DFA, so anything greater is an outside-the-field state.
+            ShortVector chunk = ShortVector.fromCharArray(species, source, offset);
+            long bitmask = chunk.eq((short) -1)
+                    .or(chunk.eq((short) '\n'))
+                    .or(chunk.eq((short) '\r'))
+                    .or(chunk.eq((short) '"'))
+                    .or(chunk.eq((short) ','))
+                    .toLong();
+            return bitmask | (bitmask << 1) | ((s & 0xFFFF) >= (QOT + 8) ? 1L : 0L); // The QOT line is 8 integers
+        }
+    }
+
+    /**
+     * SIMD extension segregator.
+     */
+    private static final class SimdHolder {
+        private static final Simd INSTANCE = new Simd();
+    }
+
     public static Format.Provider<Rfc4180StrictFormat> provider() {
         return Rfc4180StrictFormat::new;
     }
@@ -109,10 +158,10 @@ public final class Rfc4180StrictFormat implements Format {
     /**
      * {@inheritDoc}
      *
-     * @return The initial state.
+     * @return {@inheritDoc}
      */
     @Override
-    public int base() {
+    public int base() { // Bytecode size: 3 (OpenJDK 26)
         return BFL;
     }
 
@@ -122,43 +171,79 @@ public final class Rfc4180StrictFormat implements Format {
      * @param c The character.
      * @return The column index of the specified character.
      */
-    private int columnOf(int c) {
+    private int columnOf(int c) { // Bytecode size: 34 (OpenJDK 26)
+        // The implementation is equivalent to the following code:
+        // if (c == ',') {
+        //     return 1;
+        // } else if (c == '\r') {
+        //     return 2;
+        // } else if (c == '\n') {
+        //     return 3;
+        // } else if (c == '"') {
+        //     return 4;
+        // } else if (c == -1) {
+        //     return 5;
+        // } else {
+        //     return 0;
+        // }
+
         // Fast Path: Check if 'c' is an "ordinary" character. This includes anything > 44 (standard text) or characters
         // <= 44 not in the special mask.
-        // We use (c + 1) to shift the range of potential inputs from [-1, 44] (that is [EOF, ',']) to [0, 45].
-        // Mask 0x20_08_00_00_48_01L has bits at: 0 (EOF), 11 (\n), 14 (\r), 35 ("), 45 (,).
-        if (c > ',' || ((1L << (c + 1)) & 0x20_08_00_00_48_01L) == 0) {
+        // Java's shift operators natively mask the shift by 63 (c & 63). Thus, 1L << -1 cleanly wraps to bit 63.
+        // Mask 0x8000_1004_0000_2400L has bits set at: 10 (\n), 13 (\r), 34 ("), 44 (,), 63 (EOF).
+        if (c > ',' || ((1L << c) & 0x80_00_10_04_00_00_24_00L) == 0) {
             return 0;
         }
 
         // Special Path: Map the character to a 3-bit column index via bit-field extraction.
-        // Data Map 0xE0_30_00_00_C0_05L encodes:
+        // We use (c + 1) to shift the range of potential inputs from [-1, 44] (that is [EOF, ',']) to [0, 45].
+        // Data Map 0x20_20_00_00_98_05L encodes:
         // Bits [00-02]: 5 (EOF)  | Bits [11-13]: 3 (\n) | Bits [14-16]: 2 (\r)
         // Bits [35-37]: 4 (")    | Bits [45-47]: 1 (,)
-        return (int) (0x20_20_00_00_98_05L >> (c + 1)) & 0x7;
+        return (int) (0x00_00_20_20_00_00_98_05L >>> (c + 1L)) & 0x7;
     }
 
     /**
      * {@inheritDoc}
      *
-     * @param s The current state as returned by a previous call to {@link Format#base()} or this method.
-     * @param c The character, or {@code -1} for {@code EOF}.
-     * @return An integer encoding both the next state and the action to perform.
+     * @param {@inheritDoc}
+     * @param {@inheritDoc}
+     * @return {@inheritDoc}
      */
     @Override
-    public int consume(int s, int c) {
+    public int consume(int s, int c) { // Bytecode size: 27 (OpenJDK 26)
         // Super-Hot Path: Standard CSV data (letters, numbers, etc.) is the most common case. If the current state is
         // FLD (Inside Field) and the character is 'ordinary' (> 44), we bypass the bit-masking and array lookup
         // entirely to return the FLD state. This turns a potential memory access into a simple register comparison.
         if (s == FLD && c > ',') {
             return FLD;
         }
+        return consumeSlow(s, c);
+    }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param {@inheritDoc}
+     * @param {@inheritDoc}
+     * @return {@inheritDoc}
+     */
+    @Override
+    public int consumeSlow(int s, int c) {
         // Calculate the combined index (state (row) + character (column)). State values (BFL, BFF, etc.) are multiples
         // of 8, meaning the lower 3 bits are 0. indexOf(c) returns 0-7. Using '|' effectively performs addition without
         // carry. We mask with 0x7F (127) to stay within the 128-element DFA table; this hints to the JIT compiler to
         // eliminate array bounds checking.
-        final int i = (s | columnOf(c)) & 0x7F;
-        return DFA[i];
+        return DFA[(s | columnOf(c)) & 0x7F];
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public Format.Simd simd() {
+        return SimdHolder.INSTANCE;
     }
 }

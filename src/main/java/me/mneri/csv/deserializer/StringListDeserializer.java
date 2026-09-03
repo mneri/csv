@@ -16,23 +16,22 @@
  * limitations under the License.
  */
 
-package me.mneri.csv.exception;
+package me.mneri.csv.deserializer;
 
 import me.mneri.csv.reader.line.RecycledLine;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
-/**
- * This exception is thrown when an error occurs during the conversion process.
- *
- * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
- */
-public class CsvConversionException extends CsvException {
-    public CsvConversionException(RecycledLine line, Throwable cause) {
-        super(String.format("Error while converting values: %s", line.toString()), cause);
-    }
-
-    public CsvConversionException(List<String> line, Throwable cause) {
-        super(String.format("Error while converting values: %s", line.toString()), cause);
+public class StringListDeserializer implements Deserializer<List<String>> {
+    @Override
+    public List<String> deserialize(RecycledLine line) throws IOException {
+        final int len = line.getFieldCount();
+        List<String> list = new ArrayList<>(len);
+        for (int i = 0; i < len; i++) {
+            list.add(line.getString(i));
+        }
+        return list;
     }
 }

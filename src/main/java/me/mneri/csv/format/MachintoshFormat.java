@@ -22,38 +22,26 @@ import jdk.incubator.vector.ShortVector;
 import jdk.incubator.vector.VectorSpecies;
 
 /**
- * Implements a relaxed interpretation of the RFC4180 standard for CSV files.
+ * Implements a strict interpretation of the legacy Macintosh CSV format, which historically utilizes a carriage return
+ * ({@code \r}) as the sole line terminator.
  * <p>
- * The following features are supported:
+ * This format is designed for high-performance processing of files originating from older Apple-based systems or
+ * specific spreadsheet exports that do not follow the modern RFC 4180 standard (which requires {@code \r\n}).
+ * <p>
+ * The following features and variations are supported:
  * <ul>
  *     <li>
- *         <b>Variable number of fields</b>: lines may contain a different number of fields from one another. For
- *         example:<br/>
+ *         <b>Variable number of fields</b>: Unlike the strictest interpretations of CSV, this format allows lines to
+ *         contain a different number of fields from one another. For example:<br/>
  *         <samp>
- *             aaa,bbb,ccc CRLF<br/>
- *             xxx,yyy CRLF
- *         </samp>
- *     </li>
- *     <li>
- *         <b>Line termination</b>: lines can end with {@code \r\n} or {@code \n}; files can be inconsistent in their
- *         line termination, using different line terminators on different lines, any number of times. For example:<br/>
- *         <samp>
- *             aaa,bbb,ccc CRLF<br/>
- *             xxx,yyy,zzz LF
- *         </samp>
- *     </li>
- *     <li>
- *         <b>Fields containing double quotes</b>: fields that do not begin with a double quotes character ({@code "})
- *         may contain double quotes; in such cases, double quotes are treated as ordinary characters. For example:<br/>
- *         <samp>
- *             aaa,b"b"b,ccc CRLF ; interpreted as &lt;aaa&gt;, &lt;b"b"b&gt; and &lt;ccc&gt;<br/>
- *             xxx,y"y,zzz CRLF   ; interpreted as &lt;xxx&gt;, &lt;y"y&gt; and &lt;zzz&gt;
+ *             aaa,bbb,ccc CR<br/>
+ *             xxx,yyy CR
  *         </samp>
  *     </li>
  * </ul>
  */
 @SuppressWarnings({"Duplicates", "unused"})
-public final class Rfc4180HalfRelaxedFormat implements Format {
+public final class MachintoshFormat implements Format {
     private static final int FLD = 0; // Field
     private static final int QOT = 8; // Quotation
     private static final int BFF = 16;  // Before field
@@ -61,9 +49,8 @@ public final class Rfc4180HalfRelaxedFormat implements Format {
     private static final int ESC = 32; // Escape
     private static final int SQE = 40; // Escape at start quotation
     private static final int BFL = 48;  // Before line
-    private static final int CAR = 56; // Carriage return
-    private static final int EOF = 64; // End of file
-    private static final int ERR = 72; // Error
+    private static final int EOF = 56; // End of file
+    private static final int ERR = 64; // Error
 
     // The parser uses a deterministic finite state automaton (DFA) represented as a flattened 2D matrix.
     //
@@ -84,23 +71,22 @@ public final class Rfc4180HalfRelaxedFormat implements Format {
 
     //@formatter:off
     private static final int[] DFA = {
-    // *                ,                \r               \n               "                EOF              padding
-       FLD,             BFF|EFH,         CAR|EFH,         BFL|EFH|ELH,     FLD,             EOF|EFH|STP,     0,0,             // FLD
-       QOT,             QOT,             QOT,             QOT,             ESC,             ERR|ERH,         0,0,             // QOT
-       FLD|SFH,         BFF|SFH|EFH,     CAR|SFH|EFH,     BFL|SFH|EFH|ELH, SQT,             EOF|SFH|EFH|ELH, 0,0,             // BFF
-       QOT|SFH,         QOT,             QOT,             QOT,             SQE,             ERR|ERH,         0,0,             // SQT
-       ERR|ERH,         BFF|EFB,         CAR|EFB,         BFL|EFB|ELH,     QOT|RMB,         EOF|EFB|ELH|STP, 0,0,             // ESC
-       ERR|ERH,         BFF|SFH|EFH,     CAR|SFH|EFH,     BFL|SFH|EFH,     QOT|SFH,         EOF|SFH|EFH|STP, 0,0,             // SQE
-       FLD|SFH,         BFF|SFH|EFH,     CAR|SFH|EFH,     BFL|SFH|EFH|ELH, SQT,             EOF|STP,         0,0,             // BFL
-       ERR|ERH,         ERR|ERH,         ERR|ERH,         BFL|ELH,         ERR|ERH,         ERR|ERH,         0,0,             // CAR
-       ERR|ERH,         ERR|ERH,         ERR|ERH,         ERR|ERH,         ERR|ERH,         ERR|ERH,         0,0,             // EOF
-       ERR|ERH,         ERR|ERH,         ERR|ERH,         ERR|ERH,         ERR|ERH,         ERR|ERH,         0,0,             // ERR
-       0,               0,               0,               0,               0,               0,               0,0,
-       0,               0,               0,               0,               0,               0,               0,0,
-       0,               0,               0,               0,               0,               0,               0,0,
-       0,               0,               0,               0,               0,               0,               0,0,
-       0,               0,               0,               0,               0,               0,               0,0,
-       0,               0,               0,               0,               0,               0,               0,0};
+    // *                ,                \r               "                EOF              padding
+       FLD,             BFF|EFH,         ERR|ERH,         ERR|ERH,         EOF|EFH|STP,     0,0,0,           // FLD
+       QOT,             QOT,             QOT,             ESC,             ERR|ERH,         0,0,0,           // QOT
+       FLD|SFH,         BFF|SFH|EFH,     ERR|ERH,         SQT,             EOF|SFH|EFH|ELH, 0,0,0,           // BFF
+       QOT|SFH,         QOT,             QOT,             SQE,             ERR|ERH,         0,0,0,           // SQT
+       ERR|ERH,         BFF|EFB,         ERR|ERH,         QOT|RMB,         EOF|EFB|ELH|STP, 0,0,0,           // ESC
+       ERR|ERH,         BFF|SFH|EFH,     ERR|ERH,         QOT|SFH,         EOF|SFH|EFH|STP, 0,0,0,           // SQE
+       FLD|SFH,         BFF|SFH|EFH,     ERR|ERH,         SQT,             EOF|STP,         0,0,0,           // BFL
+       ERR|ERH,         ERR|ERH,         ERR|ERH,         ERR|ERH,         ERR|ERH,         0,0,0,           // EOF
+       ERR|ERH,         ERR|ERH,         ERR|ERH,         ERR|ERH,         ERR|ERH,         0,0,0,           // ERR
+       0,               0,               0,               0,               0,               0,0,0,
+       0,               0,               0,               0,               0,               0,0,0,
+       0,               0,               0,               0,               0,               0,0,0,
+       0,               0,               0,               0,               0,               0,0,0,
+       0,               0,               0,               0,               0,               0,0,0,
+       0,               0,               0,               0,               0,               0,0,0};
     //@formatter:on
 
     public static final class Simd implements Format.Simd {
@@ -134,7 +120,6 @@ public final class Rfc4180HalfRelaxedFormat implements Format {
             // are conveniently positioned at the top of the DFA, so anything greater is an outside-the-field state.
             ShortVector chunk = ShortVector.fromCharArray(species, source, offset);
             long bitmask = chunk.eq((short) -1)
-                    .or(chunk.eq((short) '\n'))
                     .or(chunk.eq((short) '\r'))
                     .or(chunk.eq((short) '"'))
                     .or(chunk.eq((short) ','))
@@ -150,17 +135,17 @@ public final class Rfc4180HalfRelaxedFormat implements Format {
         private static final Simd INSTANCE = new Simd();
     }
 
-    public static Format.Provider<Rfc4180HalfRelaxedFormat> provider() {
-        return Rfc4180HalfRelaxedFormat::new;
+    public static Format.Provider<MachintoshFormat> provider() {
+        return MachintoshFormat::new;
     }
 
-    private Rfc4180HalfRelaxedFormat() {
+    private MachintoshFormat() {
     }
 
     /**
      * {@inheritDoc}
      *
-     * @return The initial state.
+     * @return {@inheritDoc}
      */
     @Override
     public int base() { // Bytecode size: 3 (OpenJDK 26)
@@ -179,8 +164,6 @@ public final class Rfc4180HalfRelaxedFormat implements Format {
         //     return 1;
         // } else if (c == '\r') {
         //     return 2;
-        // } else if (c == '\n') {
-        //     return 3;
         // } else if (c == '"') {
         //     return 4;
         // } else if (c == -1) {
@@ -192,25 +175,24 @@ public final class Rfc4180HalfRelaxedFormat implements Format {
         // Fast Path: Check if 'c' is an "ordinary" character. This includes anything > 44 (standard text) or characters
         // <= 44 not in the special mask.
         // Java's shift operators natively mask the shift by 63 (c & 63). Thus, 1L << -1 cleanly wraps to bit 63.
-        // Mask 0x8000_1004_0000_2400L has bits set at: 10 (\n), 13 (\r), 34 ("), 44 (,), 63 (EOF).
-        if (c > ',' || ((1L << c) & 0x80_00_10_04_00_00_24_00L) == 0) {
+        // Mask 0x80_00_20_08_00_00_40_00L has bits at: 14 (\r), 35 ("), 45 (,), 63 (EOF).
+        if (c > ',' || ((1L << c) & 0x80_00_20_08_00_00_40_00L) == 0) {
             return 0;
         }
 
         // Special Path: Map the character to a 3-bit column index via bit-field extraction.
-        // We use (c + 1) to shift the range of potential inputs from [-1, 44] (that is [EOF, ',']) to [0, 45].
-        // Data Map 0x20_20_00_00_98_05L encodes:
-        // Bits [00-02]: 5 (EOF)  | Bits [11-13]: 3 (\n) | Bits [14-16]: 2 (\r)
-        // Bits [35-37]: 4 (")    | Bits [45-47]: 1 (,)
-        return (int) (0x00_00_20_20_00_00_98_05L >>> (c + 1L)) & 0x7;
+        // Data Map 0x00_00_20_18_00_00_80_04L encodes:
+        // Bits [00-02]: 4 (EOF)  | Bits [14-16]: 2 (\r) | Bits [35-37]: 3 (")
+        // Bits [45-47]: 1 (,)
+        return (int) (0x00_00_20_18_00_00_80_04L >> (c + 1)) & 0x7;
     }
 
     /**
      * {@inheritDoc}
      *
-     * @param s The current state as returned by a previous call to {@link Format#base()} or this method.
-     * @param c The character.
-     * @return An integer encoding both the next state and the action to perform.
+     * @param s {@inheritDoc}
+     * @param c {@inheritDoc}
+     * @return {@inheritDoc}
      */
     @Override
     public int consume(int s, int c) { // Bytecode size: 27 (OpenJDK 26)

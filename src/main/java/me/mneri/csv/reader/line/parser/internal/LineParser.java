@@ -16,24 +16,12 @@
  * limitations under the License.
  */
 
-package me.mneri.csv.reader;
+package me.mneri.csv.reader.line.parser.internal;
 
-import me.mneri.csv.writer.Serializer;
+import me.mneri.csv.exception.CsvException;
 
-/**
- * Deserialize objects.
- *
- * @param <T> the type of the objects.
- * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
- * @see Serializer
- */
-public interface Deserializer<T> {
-    /**
-     * Deserialize an object starting from csv line. The order of the strings is the same as found in the csv.
-     *
-     * @param line the csv line.
-     * @return An object.
-     * @throws Exception if anything goes wrong.
-     */
-    T deserialize(RecycledLine line) throws Exception;
+import java.io.IOException;
+
+public interface LineParser {
+    boolean parse() throws CsvException, IOException;
 }

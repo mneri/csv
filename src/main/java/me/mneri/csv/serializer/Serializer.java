@@ -16,19 +16,26 @@
  * limitations under the License.
  */
 
-package me.mneri.csv.reader;
+package me.mneri.csv.serializer;
 
-import java.util.ArrayList;
+import me.mneri.csv.deserializer.Deserializer;
+
 import java.util.List;
 
-public class StringListDeserializer implements Deserializer<List<String>> {
-    @Override
-    public List<String> deserialize(RecycledLine line) {
-        final int len = line.getFieldCount();
-        List<String> list = new ArrayList<>(len);
-        for (int i = 0; i < len; i++) {
-            list.add(line.getString(i));
-        }
-        return list;
-    }
+/**
+ * Serialize objects.
+ *
+ * @param <T> the type of the objects.
+ * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
+ * @see Deserializer
+ */
+public interface Serializer<T> {
+    /**
+     * Serialize an object into a list of strings. The strings should be added in order to the list passed as parameter.
+     *
+     * @param object the object to serialize.
+     * @param out    the list of strings representing the csv line.
+     * @throws Exception if anything goes wrong.
+     */
+    void serialize(T object, List<String> out) throws Exception;
 }
