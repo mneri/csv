@@ -18,9 +18,6 @@
 
 package me.mneri.csv.format;
 
-import jdk.incubator.vector.ShortVector;
-import jdk.incubator.vector.VectorSpecies;
-
 /**
  * A specific CSV dialect. Instances of this interface manage the state of the CSV parser and dictate the actions a
  * client must perform for each character in a stream.
@@ -119,40 +116,62 @@ public interface Format {
         T provide();
     }
 
-    interface Simd {
-        /**
-         * Given a {@link ShortVector} filled with CSV data, return a bitmask with bits set in state-changing positions.
-         * <p>
-         * The bitmask indicates which characters in the array must be processed by the {@code Format}, and which can be
-         * ignored. In the example below, bits are set at key positions (such as the commas). Passing only these characters
-         * to the {@link #consume(int, int)} or {@link #consumeSlow(int, int)} methods is all that is needed for the
-         * {@code Format}'s state machine to remain consistent, while the intermediate characters (i.e. the characters with
-         * bits set to zero) can be safely skipped.
-         * <pre>
-         * CSV chunk: a a a a , b b b b , c c c c \r\n
-         * Bitmask:   1 0 0 0 1 1 0 0 0 1 1 0 0 0 1 1
-         * </pre>
-         * The implementation uses SIMD (Single Instruction, Multiple Data) instructions to evaluate the entire vector
-         * concurrently, returning the bitmask in just a few CPU cycles.
-         * <p>
-         * <i>Please, note that the method can sometimes return false-positives, but never false-negatives.</i>
-         *
-         * @param s       The current state as returned by a previous call to {@link #base()}, {@link #consume(int, int)} or
-         *                {@link #consumeSlow(int, int)}.
-         * @param species The species of the CPU's SIMD registers.
-         * @param source  The source character array.
-         * @param offset  The offset in the source array.
-         * @return A bitmask.
-         */
-        long bitmask(int s, VectorSpecies<Short> species, char[] source, int offset);
-    }
-
     /**
      * Return the initial state.
      *
      * @return An integer encoding the initial state.
      */
     int base();
+
+    /**
+     * Given a {@code byte[]} filled with CSV data, return a bitmask with bits set in state-changing positions.
+     * <p>
+     * The bitmask indicates which characters in the array must be processed by the {@code Format}, and which can be
+     * ignored. In the example below, bits are set at key positions (such as the commas). Passing only these characters
+     * to the {@link #consume(int, int)} or {@link #consumeSlow(int, int)} methods is all that is needed for the
+     * {@code Format}'s state machine to remain consistent, while the intermediate characters (i.e. the characters with
+     * bits set to zero) can be safely skipped.
+     * <pre>
+     * CSV chunk: a a a a , b b b b , c c c c \r\n
+     * Bitmask:   1 0 0 0 1 1 0 0 0 1 1 0 0 0 1 1
+     * </pre>
+     * The implementation uses SIMD (Single Instruction, Multiple Data) instructions to evaluate the entire vector
+     * concurrently, returning the bitmask in just a few CPU cycles.
+     * <p>
+     * <i>Please, note that the method can sometimes return false-positives, but never false-negatives.</i>
+     *
+     * @param s      The current state as returned by a previous call to {@link #base()}, {@link #consume(int, int)} or
+     *               {@link #consumeSlow(int, int)}.
+     * @param source The source byte array.
+     * @param offset The offset in the source array.
+     * @return A bitmask.
+     */
+    long bitmask(int s, byte[] source, int offset);
+
+    /**
+     * Given a {@code char[]} filled with CSV data, return a bitmask with bits set in state-changing positions.
+     * <p>
+     * The bitmask indicates which characters in the array must be processed by the {@code Format}, and which can be
+     * ignored. In the example below, bits are set at key positions (such as the commas). Passing only these characters
+     * to the {@link #consume(int, int)} or {@link #consumeSlow(int, int)} methods is all that is needed for the
+     * {@code Format}'s state machine to remain consistent, while the intermediate characters (i.e. the characters with
+     * bits set to zero) can be safely skipped.
+     * <pre>
+     * CSV chunk: a a a a , b b b b , c c c c \r\n
+     * Bitmask:   1 0 0 0 1 1 0 0 0 1 1 0 0 0 1 1
+     * </pre>
+     * The implementation uses SIMD (Single Instruction, Multiple Data) instructions to evaluate the entire vector
+     * concurrently, returning the bitmask in just a few CPU cycles.
+     * <p>
+     * <i>Please, note that the method can sometimes return false-positives, but never false-negatives.</i>
+     *
+     * @param s      The current state as returned by a previous call to {@link #base()}, {@link #consume(int, int)} or
+     *               {@link #consumeSlow(int, int)}.
+     * @param source The source character array.
+     * @param offset The offset in the source array.
+     * @return A bitmask.
+     */
+    long bitmask(int s, char[] source, int offset);
 
     /**
      * Given the current state and a character, return an integer encoding both the next state and the actions to
@@ -179,13 +198,4 @@ public interface Format {
      * @return An integer encoding both the next state and the actions to perform.
      */
     int consumeSlow(int s, int c);
-
-    /**
-     * Return the {@code Format}'s SIMD extension.
-     * <p>
-     * <b>Warning:</b> calling this method when the Vector API is not enabled will result in a runtime exception.
-     *
-     * @return The SIMD extension.
-     */
-    Simd simd();
 }

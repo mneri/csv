@@ -19,7 +19,7 @@
 package me.mneri.csv.reader.line.parser.internal;
 
 import me.mneri.csv.exception.CsvException;
-import me.mneri.csv.reader.line.internal.RecycledLineImpl;
+import me.mneri.csv.reader.line.internal.InternalRecycledLine;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -28,5 +28,5 @@ public interface LineParser extends Closeable {
     @Override
     void close() throws IOException;
 
-    boolean next(RecycledLineImpl out) throws CsvException, IOException;
+    boolean next(InternalRecycledLine out) throws CsvException, IOException;
 }

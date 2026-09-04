@@ -27,7 +27,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
 
-public final class RecycledLineImpl implements RecycledLine {
+public final class InternalRecycledLine implements RecycledLine {
     private final RandomAccessStream reader;
 
     private long[] idx = new long[768];
@@ -38,7 +38,7 @@ public final class RecycledLineImpl implements RecycledLine {
 
     private char[] buff = new char[256];
 
-    public RecycledLineImpl(RandomAccessStream reader) {
+    public InternalRecycledLine(RandomAccessStream reader) {
         if (reader == null) {
             throw new IllegalArgumentException("Reader cannot be null");
         }

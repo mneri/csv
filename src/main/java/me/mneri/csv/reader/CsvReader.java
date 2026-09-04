@@ -20,14 +20,13 @@ package me.mneri.csv.reader;
 
 import me.mneri.csv.deserializer.Deserializer;
 import me.mneri.csv.deserializer.StringListDeserializer;
-import me.mneri.csv.exception.CsvConversionException;
 import me.mneri.csv.exception.CsvException;
 import me.mneri.csv.extension.Extensions;
 import me.mneri.csv.format.Format;
 import me.mneri.csv.format.Rfc4180FullyRelaxedFormat;
 import me.mneri.csv.io.internal.RandomAccessCharStream;
 import me.mneri.csv.io.internal.RandomAccessStream;
-import me.mneri.csv.reader.line.internal.RecycledLineImpl;
+import me.mneri.csv.reader.line.internal.InternalRecycledLine;
 import me.mneri.csv.reader.line.parser.internal.LineParser;
 import me.mneri.csv.reader.line.parser.internal.SequentialLineParser;
 import me.mneri.csv.reader.line.parser.internal.SimdLineParser;
@@ -63,7 +62,7 @@ public class CsvReader<T> implements AutoCloseable {
      * @return A new {@link CsvReader}, in open state.
      * @throws FileNotFoundException If the file does not exist.
      */
-    public static <T> CsvReader<T> open(File f, Format.Provider<?> p, Deserializer<T> des)
+    public static <T> CsvReader<T> open(File f, Format.Provider<? extends Format> p, Deserializer<T> des)
             throws FileNotFoundException {
         return open(new FileReader(f), p, des);
     }
@@ -77,7 +76,7 @@ public class CsvReader<T> implements AutoCloseable {
      * @return A new {@link CsvReader}, in open state.
      * @throws FileNotFoundException If the file does not exist.
      */
-    public static CsvReader<List<String>> open(File f, Format.Provider<?> p) throws FileNotFoundException {
+    public static CsvReader<List<String>> open(File f, Format.Provider<? extends Format> p) throws FileNotFoundException {
         return open(f, p, new StringListDeserializer());
     }
 
@@ -116,7 +115,7 @@ public class CsvReader<T> implements AutoCloseable {
      * @param <T> The type of object a CSV line should be mapped to.
      * @return A new {@link CsvReader}, in open state.
      */
-    public static <T> CsvReader<T> open(Reader rdr, Format.Provider<?> p, Deserializer<T> des) {
+    public static <T> CsvReader<T> open(Reader rdr, Format.Provider<? extends Format> p, Deserializer<T> des) {
         return new CsvReader<>(rdr, p, des);
     }
 
@@ -128,7 +127,7 @@ public class CsvReader<T> implements AutoCloseable {
      * @param p   A provider of {@link Format}s.
      * @return A new {@link CsvReader}, in open state.
      */
-    public static CsvReader<List<String>> open(Reader rdr, Format.Provider<?> p) {
+    public static CsvReader<List<String>> open(Reader rdr, Format.Provider<? extends Format> p) {
         return open(rdr, p, new StringListDeserializer());
     }
 
@@ -157,7 +156,7 @@ public class CsvReader<T> implements AutoCloseable {
     }
 
     private final Deserializer<T> deserializer;
-    private final RecycledLineImpl out;
+    private final InternalRecycledLine out;
     private final LineParser parser;
     private int state = ELEMENT_NOT_PREPARED;
 
@@ -166,7 +165,7 @@ public class CsvReader<T> implements AutoCloseable {
     }
 
     private CsvReader(RandomAccessStream reader, Provider<? extends Format> provider, Deserializer<T> deserializer) {
-        this.out = new RecycledLineImpl(reader);
+        this.out = new InternalRecycledLine(reader);
         this.deserializer = deserializer;
 
         if (Extensions.SIMD_SUPPORTED) {
@@ -229,41 +228,26 @@ public class CsvReader<T> implements AutoCloseable {
      * @throws CsvException if the csv is not properly formatted.
      * @throws IOException  if an I/O error occurs.
      */
-    public T next() throws CsvException, IOException { // Bytecode size: 38 (OpenJDK 26)
+    public T next() throws Exception, IOException { // Bytecode size: 38 (OpenJDK 26)
         // Optimization: In a typical while(hasNext())/next() loop, the state is already ELEMENT_PREPARED when this
         // method is called. We check this directly and delegate the rest to the cold-path method next2(), reducing the
         // bytecode size and making it more likely this method is inlined by the JIT compiler.
         if (state == ELEMENT_PREPARED) {
-            try {
-                state = ELEMENT_NOT_PREPARED;
-                return deserializer.deserialize(out);
-            } catch (Throwable e) {
-                csvConversionException(e);
-            }
+            state = ELEMENT_NOT_PREPARED;
+            return deserializer.deserialize(out);
         }
         return next2(); // Only called if the client doesn't follow the idiomatic pattern while(hasNext())/next()
     }
 
-    private T next2() throws CsvException, IOException {
+    private T next2() throws Exception {
         if (state == READER_CLOSED) {
             readerIsClosedException();
         }
         if (!hasNext()) {
             noSuchElementException();
         }
-        // The element is now prepared
-        T element = null;
-        try {
-            state = ELEMENT_NOT_PREPARED;
-            element = deserializer.deserialize(out);
-        } catch (Throwable e) {
-            csvConversionException(e);
-        }
-        return element;
-    }
-
-    private void csvConversionException(Throwable cause) throws CsvConversionException {
-        throw new CsvConversionException(out, cause);
+        state = ELEMENT_NOT_PREPARED;
+        return deserializer.deserialize(out);
     }
 
     private void noSuchElementException() {

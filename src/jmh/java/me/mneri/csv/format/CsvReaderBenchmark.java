@@ -41,7 +41,7 @@ public class CsvReaderBenchmark {
     @Benchmark
     @BenchmarkMode(Mode.AverageTime)
     @Measurement(timeUnit = TimeUnit.NANOSECONDS)
-    public void readRfc4180RelaxedFormat(Blackhole blackhole) throws IOException, CsvException {
+    public void readRfc4180RelaxedFormat(Blackhole blackhole) throws Exception {
         try (CsvReader<List<String>> reader = CsvReader.open(file, Rfc4180FullyRelaxedFormat.provider())) {
             while (reader.hasNext()) {
                 blackhole.consume(reader.next());
@@ -52,7 +52,7 @@ public class CsvReaderBenchmark {
     @Benchmark
     @BenchmarkMode(Mode.AverageTime)
     @Measurement(timeUnit = TimeUnit.NANOSECONDS)
-    public void readRfc4180HalfRelaxedFormat(Blackhole blackhole) throws IOException, CsvException {
+    public void readRfc4180HalfRelaxedFormat(Blackhole blackhole) throws Exception {
         try (CsvReader<List<String>> reader = CsvReader.open(file, Rfc4180HalfRelaxedFormat.provider())) {
             while (reader.hasNext()) {
                 blackhole.consume(reader.next());
@@ -63,7 +63,7 @@ public class CsvReaderBenchmark {
     @Benchmark
     @BenchmarkMode(Mode.AverageTime)
     @Measurement(timeUnit = TimeUnit.NANOSECONDS)
-    public void readRfc4180StrictFormat(Blackhole blackhole) throws IOException, CsvException {
+    public void readRfc4180StrictFormat(Blackhole blackhole) throws Exception {
         try (CsvReader<List<String>> reader = CsvReader.open(file, Rfc4180StrictFormat.provider())) {
             while (reader.hasNext()) {
                 blackhole.consume(reader.next());

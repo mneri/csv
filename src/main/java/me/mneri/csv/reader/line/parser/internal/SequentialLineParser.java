@@ -22,7 +22,7 @@ import me.mneri.csv.exception.CsvException;
 import me.mneri.csv.exception.UnexpectedCharacterException;
 import me.mneri.csv.format.Format;
 import me.mneri.csv.io.internal.RandomAccessStream;
-import me.mneri.csv.reader.line.internal.RecycledLineImpl;
+import me.mneri.csv.reader.line.internal.InternalRecycledLine;
 
 import java.io.IOException;
 
@@ -39,7 +39,7 @@ public class SequentialLineParser implements LineParser {
 
     private int pos;
 
-    public SequentialLineParser(Format.Provider<?> provider, RandomAccessStream reader) {
+    public SequentialLineParser(Provider<? extends Format> provider, RandomAccessStream reader) {
         this.format = provider.provide();
         this.reader = reader;
     }
@@ -50,7 +50,7 @@ public class SequentialLineParser implements LineParser {
     }
 
     @Override
-    public boolean next(RecycledLineImpl out) throws CsvException, IOException { // Bytecode size: 209 (OpenJDK 26)
+    public boolean next(InternalRecycledLine out) throws CsvException, IOException { // Bytecode size: 209 (OpenJDK 26)
         out.reset();
         reader.compact(pos);
 

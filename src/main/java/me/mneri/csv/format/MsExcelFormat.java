@@ -18,9 +18,6 @@
 
 package me.mneri.csv.format;
 
-import jdk.incubator.vector.ShortVector;
-import jdk.incubator.vector.VectorSpecies;
-
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
@@ -132,55 +129,6 @@ public final class MsExcelFormat implements Format {
        0,             0,               0,               0,               0,               0,               0,0};
     //@formatter:on
 
-    public static final class Simd implements Format.Simd {
-        private final int sep;
-
-        private Simd(int sep) {
-            this.sep = sep;
-        }
-
-        /**
-         * {@inheritDoc}
-         *
-         * @param s       {@inheritDoc}
-         * @param species {@inheritDoc}
-         * @param source  {@inheritDoc}
-         * @param offset  {@inheritDoc}
-         * @return {@inheritDoc}
-         */
-        @Override
-        public long bitmask(int s, VectorSpecies<Short> species, char[] source, int offset) {
-            // XXX: Unless all the ShortVector instructions (up until .toLong()) are placed one-after-the-other in the
-            //      same method, the escape analysis fails to prove these objects are short-lived and allocates them in
-            //      the heap. It'll probably stay this way until Project Valhalla comes to an end. This method is called
-            //      *very frequently* and heap allocations kill performances to a degree where SIMD processing becomes
-            //      10-20% *less* efficient than sequential processing.
-
-            // XXX: SIMD instructions for bitmasking must live inside Format because they're dependent on the Format and
-            //      its state: some Formats look for different special characters than others, and the rightmost bit is
-            //      dependent on the Format's current state!
-
-            ShortVector chunk = ShortVector.fromCharArray(species, source, offset);
-            long bitmask = chunk.eq((short) -1)
-                    .or(chunk.eq((short) '\n'))
-                    .or(chunk.eq((short) '\r'))
-                    .or(chunk.eq((short) '"'))
-                    .or(chunk.eq((short) sep))
-                    .toLong();
-
-            // A bitmask with 1's set at the positions of commas (or any other CSV special character) is not sufficient;
-            // for example, the Format needs to consume a comma to track the end of the current field and the character
-            // after to track the start of the next field (and the same goes for new lines and double quotes). So, after
-            // we first calculated a bitmask for the CSV special characters, we add 1's for the characters positioned
-            // after. This could spill into the bit outside the species window, so we need to mask it.
-            bitmask = (bitmask | (bitmask << 1)) & (~0L >>> -species.length());
-            // We also might need to set the first bit: the Format needs to consume the character at the start of field!
-            // We set it unless we're already inside a field (FLD or QOT). The states FLD and QOT are conveniently
-            // positioned at the top of the DFA, so anything greater is an outside-the-field state.
-            return (s & 0xFF_FF) >= (QOT + 8) ? (bitmask | 1L) : bitmask; // The QOT line is 8 integers
-        }
-    }
-
     /**
      * Return a provider of {@code MsExcelFormat} instances for the specified locale.
      *
@@ -194,7 +142,6 @@ public final class MsExcelFormat implements Format {
     private final int sep;
     private final long map;
     private final long mask;
-    private Simd simd;
 
     private MsExcelFormat(Locale locale) {
         int sep = DecimalFormatSymbols.getInstance(locale).getDecimalSeparator();
@@ -220,6 +167,54 @@ public final class MsExcelFormat implements Format {
     @Override
     public int base() { // Bytecode size: 3 (OpenJDK 26)
         return BFL;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param s      {@inheritDoc}
+     * @param source {@inheritDoc}
+     * @param offset {@inheritDoc}
+     * @return {@inheritDoc}
+     */
+    @Override
+    public long bitmask(int s, byte[] source, int offset) {
+        long bm = FormatHelper.bitmask(source, offset, (byte) -1, (byte) '\n', (byte) '\r', (byte) '"', (byte) sep);
+
+        // A bm with 1's set at the positions of commas or any other CSV special character is not sufficient; for
+        // example, the Format needs to consume a comma to track the end of the current field and the character after to
+        // track the start of the next field (and the same goes for new lines and double quotes). So, after we first
+        // calculated the bitmask of the CSV special characters, we add 1's for the characters positioned after them.
+        bm = bm | (bm << 1);
+
+        // We also might need to set the first bit: the Format needs to consume the character at the start of field! We
+        // set it unless we're already inside a field (FLD or QOT). The states FLD and QOT are conveniently positioned
+        // at the top of the DFA, so anything greater is an outside-the-field state.
+        return (s & 0xFF_FF) >= (QOT + 8) ? (bm | 1L) : bm; // The QOT line is 8 integers
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param s      {@inheritDoc}
+     * @param source {@inheritDoc}
+     * @param offset {@inheritDoc}
+     * @return {@inheritDoc}
+     */
+    @Override
+    public long bitmask(int s, char[] source, int offset) {
+        long bm = FormatHelper.bitmask(source, offset, (char) -1, '\n', '\r', '"', (char) sep);
+
+        // A bm with 1's set at the positions of commas or any other CSV special character is not sufficient; for
+        // example, the Format needs to consume a comma to track the end of the current field and the character after to
+        // track the start of the next field (and the same goes for new lines and double quotes). So, after we first
+        // calculated the bitmask of the CSV special characters, we add 1's for the characters positioned after them.
+        bm = bm | (bm << 1);
+
+        // We also might need to set the first bit: the Format needs to consume the character at the start of field! We
+        // set it unless we're already inside a field (FLD or QOT). The states FLD and QOT are conveniently positioned
+        // at the top of the DFA, so anything greater is an outside-the-field state.
+        return (s & 0xFF_FF) >= (QOT + 8) ? (bm | 1L) : bm; // The QOT line is 8 integers
     }
 
     /**
@@ -287,18 +282,5 @@ public final class MsExcelFormat implements Format {
         // carry. We mask with 0x7F (127) to stay within the 128-element DFA table; this hints to the JIT compiler to
         // eliminate array bounds checking.
         return DFA[(s | columnOf(c)) & 0x7F];
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @return {@inheritDoc}
-     */
-    @Override
-    public Format.Simd simd() {
-        if (simd == null) {
-            simd = new Simd(sep);
-        }
-        return simd;
     }
 }

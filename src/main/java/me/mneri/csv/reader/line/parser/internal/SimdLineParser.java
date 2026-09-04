@@ -18,13 +18,11 @@
 
 package me.mneri.csv.reader.line.parser.internal;
 
-import jdk.incubator.vector.ShortVector;
-import jdk.incubator.vector.VectorSpecies;
 import me.mneri.csv.exception.CsvException;
 import me.mneri.csv.exception.UnexpectedCharacterException;
 import me.mneri.csv.format.Format;
 import me.mneri.csv.io.internal.RandomAccessStream;
-import me.mneri.csv.reader.line.internal.RecycledLineImpl;
+import me.mneri.csv.reader.line.internal.InternalRecycledLine;
 
 import java.io.IOException;
 
@@ -32,10 +30,6 @@ import java.io.IOException;
  * Implementation of {@link LineParser} that leverages SIMD operations.
  */
 public class SimdLineParser implements LineParser {
-    private static final VectorSpecies<Short> SPECIES =
-            ShortVector.SPECIES_PREFERRED.vectorBitSize() <= 512 ? ShortVector.SPECIES_PREFERRED : ShortVector.SPECIES_MAX;
-    private static final int STRIDE = SPECIES.length();
-
     private static final int EFB_TRAILING_ZEROES = Integer.numberOfTrailingZeros(Format.EFB);
 
     private final Format format;
@@ -63,7 +57,7 @@ public class SimdLineParser implements LineParser {
      * @throws IOException  {@inheritDoc}
      */
     @Override
-    public boolean next(RecycledLineImpl out) throws CsvException, IOException {
+    public boolean next(InternalRecycledLine out) throws CsvException, IOException {
         int s = format.base();
         long bitmask = this.bitmask;
         long pos = this.pos;
@@ -79,10 +73,10 @@ public class SimdLineParser implements LineParser {
                 do {
                     if (pos >= strideEnd) {
                         pos = strideEnd;
-                        strideEnd += STRIDE;
+                        strideEnd += Long.SIZE;
                         // XXX: This is... Ugh. We are giving Format unrestricted access to the reader's internal
                         //      character buffer. This would be a no-no in any case other than this.
-                        bitmask = format.simd().bitmask(s, SPECIES, reader.array(pos, pos + STRIDE), reader.index(pos));
+                        bitmask = format.bitmask(s, reader.array(pos, pos + Long.SIZE), reader.index(pos));
                     }
                     int shift = Long.numberOfTrailingZeros(bitmask);
                     bitmask = (bitmask >>> shift) - 1;

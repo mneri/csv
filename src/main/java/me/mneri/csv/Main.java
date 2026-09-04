@@ -23,7 +23,7 @@ public class Main {
         return hashCode;
     };
 
-    public static void main(String... args) throws IOException, CsvException {
+    public static void main(String... args) throws Exception {
         Main main = new Main();
 
         long warmupTimeNanos = 0;
@@ -39,7 +39,7 @@ public class Main {
         System.out.println(TimeUnit.NANOSECONDS.toMillis(timeNanos / ROUNDS));
     }
 
-    private long execute() throws IOException, CsvException {
+    private long execute() throws Exception {
         File file = new File("/home/mneri/Downloads/worldcitiespop.csv");
 
         try (CsvReader<Integer> reader = CsvReader.open(file, Rfc4180FullyRelaxedFormat.provider(), deserializer)) {
