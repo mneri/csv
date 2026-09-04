@@ -21,7 +21,7 @@ package me.mneri.csv.reader.line.parser.internal;
 import me.mneri.csv.exception.CsvException;
 import me.mneri.csv.exception.UnexpectedCharacterException;
 import me.mneri.csv.format.Format;
-import me.mneri.csv.io.internal.RandomAccessStream;
+import me.mneri.csv.io.internal.RandomAccessReader;
 import me.mneri.csv.reader.line.internal.RecycledLineImpl;
 
 import java.io.IOException;
@@ -36,11 +36,11 @@ public class SequentialLineParser implements LineParser {
 
     private final Format format;
     private final RecycledLineImpl line;
-    private final RandomAccessStream reader;
+    private final RandomAccessReader reader;
 
     private int pos;
 
-    public SequentialLineParser(RandomAccessStream reader, Format format, RecycledLineImpl line) {
+    public SequentialLineParser(RandomAccessReader reader, Format format, RecycledLineImpl line) {
         this.reader = reader;
         this.format = format;
         this.line = line;

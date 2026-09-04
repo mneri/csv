@@ -9,11 +9,11 @@ import java.nio.BufferOverflowException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class RandomAccessCharStreamTest {
+class BufferedRandomAccessReaderTest {
     @Test
     void constructorRejectsNullReader() {
         assertThrows(IllegalArgumentException.class, () -> {
-            try (RandomAccessCharStream ignored = new RandomAccessCharStream(null, 1024)) {
+            try (BufferedRandomAccessReader ignored = new BufferedRandomAccessReader(null, 1024)) {
             }
         });
     }
@@ -21,7 +21,7 @@ class RandomAccessCharStreamTest {
     @Test
     void constructorRejectsZeroCapacity() {
         assertThrows(IllegalArgumentException.class, () -> {
-            try (RandomAccessCharStream ignored = new RandomAccessCharStream(new StringReader(""), 0)) {
+            try (BufferedRandomAccessReader ignored = new BufferedRandomAccessReader(new StringReader(""), 0)) {
             }
         });
     }
@@ -29,7 +29,7 @@ class RandomAccessCharStreamTest {
     @Test
     void constructorRejectsNegativeCapacity() {
         assertThrows(IllegalArgumentException.class, () -> {
-            try (RandomAccessCharStream ignored = new RandomAccessCharStream(new StringReader(""), -1)) {
+            try (BufferedRandomAccessReader ignored = new BufferedRandomAccessReader(new StringReader(""), -1)) {
             }
         });
     }
@@ -37,21 +37,21 @@ class RandomAccessCharStreamTest {
     @Test
     void constructorRejectsNonPowerOfTwoCapacity() {
         assertThrows(IllegalArgumentException.class, () -> {
-            try (RandomAccessCharStream ignored = new RandomAccessCharStream(new StringReader(""), 1000)) {
+            try (BufferedRandomAccessReader ignored = new BufferedRandomAccessReader(new StringReader(""), 1000)) {
             }
         });
     }
 
     @Test
     void constructorAcceptsPowerOfTwoCapacity() throws IOException {
-        try (RandomAccessCharStream ignored = new RandomAccessCharStream(new StringReader(""), 1024)) {
+        try (BufferedRandomAccessReader ignored = new BufferedRandomAccessReader(new StringReader(""), 1024)) {
         }
     }
 
     @Test
     void getCharReadsSequentially() throws IOException {
         String s = "Hello, world!";
-        try (RandomAccessCharStream reader = new RandomAccessCharStream(new StringReader(s), 16)) {
+        try (BufferedRandomAccessReader reader = new BufferedRandomAccessReader(new StringReader(s), 16)) {
             for (int i = 0; i < s.length(); i++) {
                 assertEquals(s.charAt(i), reader.getChar(i));
             }
@@ -61,7 +61,7 @@ class RandomAccessCharStreamTest {
     @Test
     void getCharSupportsRandomAccess() throws IOException {
         String s = "Hello, world!";
-        try (RandomAccessCharStream reader = new RandomAccessCharStream(new StringReader(s), 16)) {
+        try (BufferedRandomAccessReader reader = new BufferedRandomAccessReader(new StringReader(s), 16)) {
             assertEquals(s.charAt(5), reader.getChar(5));
             assertEquals(s.charAt(1), reader.getChar(1));
             assertEquals(s.charAt(7), reader.getChar(7));
@@ -71,7 +71,7 @@ class RandomAccessCharStreamTest {
     @Test
     void getCharAtEndOfStreamReturnsMinusOne() throws IOException {
         String s = "Hello, world!";
-        try (RandomAccessCharStream reader = new RandomAccessCharStream(new StringReader(s), 16)) {
+        try (BufferedRandomAccessReader reader = new BufferedRandomAccessReader(new StringReader(s), 16)) {
             assertEquals(-1, reader.getChar(s.length()));
         }
     }
@@ -79,7 +79,7 @@ class RandomAccessCharStreamTest {
     @Test
     void getCharPastEndOfStreamReturnsMinusOne() throws IOException {
         String s = "Hello, world!";
-        try (RandomAccessCharStream reader = new RandomAccessCharStream(new StringReader(s), 16)) {
+        try (BufferedRandomAccessReader reader = new BufferedRandomAccessReader(new StringReader(s), 16)) {
             assertEquals(-1, reader.getChar(s.length() + 1000));
         }
     }
@@ -87,7 +87,7 @@ class RandomAccessCharStreamTest {
     @Test
     void getStringReturnsRequestedRange() throws IOException {
         String s = "Hello, world!";
-        try (RandomAccessCharStream reader = new RandomAccessCharStream(new StringReader(s), 16)) {
+        try (BufferedRandomAccessReader reader = new BufferedRandomAccessReader(new StringReader(s), 16)) {
             assertEquals(s.substring(2, 5), reader.getString(2, 5));
         }
     }
@@ -95,7 +95,7 @@ class RandomAccessCharStreamTest {
     @Test
     void getStringWithEqualStartAndEndReturnsEmptyString() throws IOException {
         String s = "Hello, world!";
-        try (RandomAccessCharStream reader = new RandomAccessCharStream(new StringReader(s), 16)) {
+        try (BufferedRandomAccessReader reader = new BufferedRandomAccessReader(new StringReader(s), 16)) {
             assertEquals("", reader.getString(3, 3));
         }
     }
@@ -103,7 +103,7 @@ class RandomAccessCharStreamTest {
     @Test
     void getStringPastEndOfStreamThrowsIndexOutOfBounds() throws IOException {
         String s = "Hello, world!";
-        try (RandomAccessCharStream reader = new RandomAccessCharStream(new StringReader(s), 16)) {
+        try (BufferedRandomAccessReader reader = new BufferedRandomAccessReader(new StringReader(s), 16)) {
             assertThrows(IndexOutOfBoundsException.class, () -> {
                 String ignored = reader.getString(0, s.length() + 1);
             });
@@ -113,7 +113,7 @@ class RandomAccessCharStreamTest {
     @Test
     void getCharArrayCopiesRequestedRange() throws IOException {
         String s = "Hello, world!";
-        try (RandomAccessCharStream reader = new RandomAccessCharStream(new StringReader(s), 16)) {
+        try (BufferedRandomAccessReader reader = new BufferedRandomAccessReader(new StringReader(s), 16)) {
             char[] dest = new char[5];
             reader.getCharArray(dest, 0, 0, 5);
             assertEquals(s.substring(0, 5), new String(dest));
@@ -123,7 +123,7 @@ class RandomAccessCharStreamTest {
     @Test
     void getCharArrayRespectsDestPosOffset() throws IOException {
         String s = "Hello, world!";
-        try (RandomAccessCharStream reader = new RandomAccessCharStream(new StringReader(s), 16)) {
+        try (BufferedRandomAccessReader reader = new BufferedRandomAccessReader(new StringReader(s), 16)) {
             char[] dest = new char[10];
             reader.getCharArray(dest, 2, 6, 11);
             assertEquals(s.substring(6, 11), new String(dest, 2, 5));
@@ -133,7 +133,7 @@ class RandomAccessCharStreamTest {
     @Test
     void getCharArrayPastEndOfStreamThrowsIndexOutOfBounds() throws IOException {
         String s = "Hello, world!";
-        try (RandomAccessCharStream reader = new RandomAccessCharStream(new StringReader(s), 16)) {
+        try (BufferedRandomAccessReader reader = new BufferedRandomAccessReader(new StringReader(s), 16)) {
             char[] dest = new char[5];
             assertThrows(IndexOutOfBoundsException.class, () -> reader.getCharArray(dest, 0, 0, s.length() + 1));
         }
@@ -142,7 +142,7 @@ class RandomAccessCharStreamTest {
     @Test
     void compactAllowsReadingNextWindowAfterDiscardingOldOne() throws IOException {
         String s = "Hello, world!";
-        try (RandomAccessCharStream reader = new RandomAccessCharStream(new StringReader(s), 16)) {
+        try (BufferedRandomAccessReader reader = new BufferedRandomAccessReader(new StringReader(s), 16)) {
             assertEquals(s.substring(0, 4), reader.getString(0, 4));
             reader.compact(4);
             assertEquals(s.substring(4, 8), reader.getString(4, 8));
@@ -153,7 +153,7 @@ class RandomAccessCharStreamTest {
     void compactAheadOfUnreadDataSkipsForwardInStream() throws IOException {
         String s = "Hello, world!";
         // compact() to a position not yet read from the underlying stream.
-        try (RandomAccessCharStream reader = new RandomAccessCharStream(new StringReader(s), 16)) {
+        try (BufferedRandomAccessReader reader = new BufferedRandomAccessReader(new StringReader(s), 16)) {
             reader.compact(5);
             assertEquals(s.substring(5, 8), reader.getString(5, 8));
         }
@@ -162,7 +162,7 @@ class RandomAccessCharStreamTest {
     @Test
     void compactToAlreadyDiscardedPositionThrowsIndexOutOfBounds() throws IOException {
         String s = "Hello, world!";
-        try (RandomAccessCharStream reader = new RandomAccessCharStream(new StringReader(s), 16)) {
+        try (BufferedRandomAccessReader reader = new BufferedRandomAccessReader(new StringReader(s), 16)) {
             reader.compact(6);
             assertThrows(IndexOutOfBoundsException.class, () -> reader.compact(2));
         }
@@ -173,7 +173,7 @@ class RandomAccessCharStreamTest {
         String data = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
         int stride = 4;
         StringBuilder rebuilt = new StringBuilder();
-        try (RandomAccessCharStream reader = new RandomAccessCharStream(new StringReader(data), 8)) {
+        try (BufferedRandomAccessReader reader = new BufferedRandomAccessReader(new StringReader(data), 8)) {
             for (int i = 0; i < data.length(); i += stride) {
                 int end = Math.min(i + stride, data.length());
                 rebuilt.append(reader.getString(i, end));
@@ -186,7 +186,7 @@ class RandomAccessCharStreamTest {
     @Test
     void requestingSpanWiderThanCapacityThrowsBufferOverflow() {
         String s = "Hello, world!";
-        try (RandomAccessCharStream reader = new RandomAccessCharStream(new StringReader(s), 8)) {
+        try (BufferedRandomAccessReader reader = new BufferedRandomAccessReader(new StringReader(s), 8)) {
             assertThrows(BufferOverflowException.class, () -> reader.getString(0, s.length()));
         } catch (Exception e) {
             fail(e);
@@ -196,7 +196,7 @@ class RandomAccessCharStreamTest {
     @Test
     void regularCompactionKeepsWideStreamWithinSmallCapacity() throws IOException {
         String s = "1234567890";
-        try (RandomAccessCharStream reader = new RandomAccessCharStream(new StringReader(s), 4)) {
+        try (BufferedRandomAccessReader reader = new BufferedRandomAccessReader(new StringReader(s), 4)) {
             assertEquals(s.substring(0, 4), reader.getString(0, 4));
             reader.compact(4);
             assertEquals(s.substring(4, 8), reader.getString(4, 8));
@@ -207,14 +207,14 @@ class RandomAccessCharStreamTest {
 
     @Test
     void operationsAfterCloseThrowIOException() throws IOException {
-        RandomAccessCharStream reader = new RandomAccessCharStream(new StringReader("abc"), 8);
+        BufferedRandomAccessReader reader = new BufferedRandomAccessReader(new StringReader("abc"), 8);
         reader.close();
         assertThrows(IOException.class, () -> reader.getString(0, 1));
     }
 
     @Test
     void closeIsIdempotent() throws IOException {
-        RandomAccessCharStream r = new RandomAccessCharStream(new StringReader("abc"), 8);
+        BufferedRandomAccessReader r = new BufferedRandomAccessReader(new StringReader("abc"), 8);
         r.close();
         assertDoesNotThrow(r::close);
     }
@@ -228,7 +228,7 @@ class RandomAccessCharStreamTest {
                 closed[0] = true;
             }
         };
-        try (RandomAccessCharStream r = new RandomAccessCharStream(delegate, 8)) {
+        try (BufferedRandomAccessReader r = new BufferedRandomAccessReader(delegate, 8)) {
             assertEquals('a', r.getChar(0));
         }
         assertTrue(closed[0]);
@@ -246,7 +246,7 @@ class RandomAccessCharStreamTest {
             public void close() {
             }
         };
-        try (RandomAccessCharStream reader = new RandomAccessCharStream(failing, 8)) {
+        try (BufferedRandomAccessReader reader = new BufferedRandomAccessReader(failing, 8)) {
             IOException ex = assertThrows(IOException.class, () -> reader.getChar(0));
             assertEquals("Boom", ex.getMessage());
         } catch (IOException e) {

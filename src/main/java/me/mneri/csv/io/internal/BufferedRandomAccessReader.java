@@ -18,14 +18,11 @@
 
 package me.mneri.csv.io.internal;
 
-import jdk.incubator.vector.ShortVector;
-import jdk.incubator.vector.VectorSpecies;
-
 import java.io.IOException;
 import java.io.Reader;
 import java.nio.BufferOverflowException;
 
-public class RandomAccessCharStream implements RandomAccessStream {
+public class BufferedRandomAccessReader implements RandomAccessReader {
     // The class is architected to heavily exploit HotSpot JIT compiler, specifically targeting array range check
     // elimination and aggressive method inlining.
     //
@@ -58,7 +55,7 @@ public class RandomAccessCharStream implements RandomAccessStream {
      *                 between the oldest and newest positions that can be live at once; choosing it too small will
      *                 cause {@link BufferOverflowException} at runtime rather than at construction time.
      */
-    public RandomAccessCharStream(Reader in, int capacity) {
+    public BufferedRandomAccessReader(Reader in, int capacity) {
         if (in == null) {
             throw new IllegalArgumentException("Reader cannot be null");
         }
@@ -70,11 +67,6 @@ public class RandomAccessCharStream implements RandomAccessStream {
         this.mask = capacity - 1;
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @throws IOException {@inheritDoc}
-     */
     @Override
     public void close() throws IOException {
         if (state == STATE_CLOSED) {
@@ -89,91 +81,6 @@ public class RandomAccessCharStream implements RandomAccessStream {
             cb = null;
             state = STATE_CLOSED;
         }
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @param pos {@inheritDoc}
-     * @throws IOException {@inheritDoc}
-     */
-    @Override
-    public void compact(long pos) throws IOException { // Bytecode size: 32 (OpenJDK 26)
-        // Minimises fast-path bytecode size to enable aggressive method inlining by C2. Delegates stream checks, buffer
-        // loads, and exception throwing to the cold path on compact2().
-
-        if (pos >= first && pos <= last) { // Hot path
-            // Compaction drops old characters we no longer need to make room for new ones. This process is lazy: we do
-            // not free memory when compact() is called, but only when we run out of space (see read()).
-            first = pos;
-        } else {
-            compact2(pos); // Cold path: executed only if the client compacts characters that were never read
-        }
-    }
-
-    // XXX: Unless all the ShortVector instructions (up until .toLong()) are placed one after the other in the same
-    //      method, the escape analysis fails to prove these objects are short-lived and allocates them in the heap.
-    //      It'll probably stay this way until Project Valhalla comes to an end. This method is called *very frequently*
-    //      and heap allocations kill performances to a degree where SIMD processing becomes 10-20% *less* efficient
-    //      than sequential processing.
-
-    @Override
-    public long getBitmask(long pos, VectorSpecies<Short> species, char c1) {
-        if ((pos + offset) + species.length() > cb.length) {
-            return 0xFF_FF_FF_FF_FF_FF_FF_FFL; // TODO
-        }
-        ShortVector chunk = ShortVector.fromCharArray(species, cb, (int) (pos + offset));
-        return chunk.eq((short) c1).toLong();
-    }
-
-    @Override
-    public long getBitmask(long pos, VectorSpecies<Short> species, char c1, char c2) {
-        if ((pos + offset) + species.length() > cb.length) {
-            return 0xFF_FF_FF_FF_FF_FF_FF_FFL; // TODO
-        }
-        ShortVector chunk = ShortVector.fromCharArray(species, cb, (int) (pos + offset));
-        return chunk.eq((short) c1)
-                .or(chunk.eq((short) c2))
-                .toLong();
-    }
-
-    @Override
-    public long getBitmask(long pos, VectorSpecies<Short> species, char c1, char c2, char c3) {
-        if ((pos + offset) + species.length() > cb.length) {
-            return 0xFF_FF_FF_FF_FF_FF_FF_FFL; // TODO
-        }
-        ShortVector chunk = ShortVector.fromCharArray(species, cb, (int) (pos + offset));
-        return chunk.eq((short) c1)
-                .or(chunk.eq((short) c2))
-                .or(chunk.eq((short) c3))
-                .toLong();
-    }
-
-    @Override
-    public long getBitmask(long pos, VectorSpecies<Short> species, char c1, char c2, char c3, char c4) {
-        if ((pos + offset) + species.length() > cb.length) {
-            return 0xFF_FF_FF_FF_FF_FF_FF_FFL; // TODO
-        }
-        ShortVector chunk = ShortVector.fromCharArray(species, cb, (int) (pos + offset));
-        return chunk.eq((short) c1)
-                .or(chunk.eq((short) c2))
-                .or(chunk.eq((short) c3))
-                .or(chunk.eq((short) c4))
-                .toLong();
-    }
-
-    @Override
-    public long getBitmask(long pos, VectorSpecies<Short> species, char c1, char c2, char c3, char c4, char c5) {
-        if ((pos + offset) + species.length() > cb.length) {
-            return 0xFF_FF_FF_FF_FF_FF_FF_FFL; // TODO
-        }
-        ShortVector chunk = ShortVector.fromCharArray(species, cb, (int) (pos + offset));
-        return chunk.eq((short) c1)
-                .or(chunk.eq((short) c2))
-                .or(chunk.eq((short) c3))
-                .or(chunk.eq((short) c4))
-                .or(chunk.eq((short) c5))
-                .toLong();
     }
 
     /**
@@ -202,6 +109,21 @@ public class RandomAccessCharStream implements RandomAccessStream {
         return getChar2(pos);
     }
 
+    private int getChar2(long pos) throws IOException {
+        if (state == STATE_CLOSED) {
+            readerIsClosedException();
+        }
+        if (pos < first) {
+            indexOutOfBoundsException(pos);
+        }
+        // At this point: pos >= last
+        read(pos);
+        if (pos >= last) { // If the requested position is still >= last we've reached EOF
+            return -1;
+        }
+        return cb[((int) (pos + offset)) & mask];
+    }
+
     /**
      * {@inheritDoc}
      *
@@ -209,7 +131,7 @@ public class RandomAccessCharStream implements RandomAccessStream {
      * @param destPos {@inheritDoc}
      * @param start   {@inheritDoc}
      * @param end     {@inheritDoc}
-     * @return {@inheritDoc}
+     * @return
      * @throws IOException {@inheritDoc}
      */
     @Override
@@ -224,6 +146,19 @@ public class RandomAccessCharStream implements RandomAccessStream {
             return (int) (end - start);
         }
         return getCharArray2(dest, destPos, start, end); // Cold path: executed when the requested chars were never read
+    }
+
+    private int getCharArray2(char[] dest, int destPos, long start, long end) throws IOException {
+        if (state == STATE_CLOSED) {
+            readerIsClosedException();
+        }
+        if (start < first) {
+            indexOutOfBoundsException(start);
+        }
+        // At this point: end > last
+        read(end - 1);
+        System.arraycopy(cb, (int) (start + offset), dest, destPos, (int) (end - start));
+        return (int) (end - start);
     }
 
     /**
@@ -251,46 +186,6 @@ public class RandomAccessCharStream implements RandomAccessStream {
         return getString2(start, end); // Cold path: executed when the requested chars were never read
     }
 
-    private void compact2(long pos) throws IOException {
-        if (state == STATE_CLOSED) {
-            readerIsClosedException();
-        }
-        if (pos < first) {
-            indexOutOfBoundsException(pos);
-        }
-        // Here, pos > last. The client is trying to compact() to a position that hasn't been read yet. This is very
-        // expensive, as we need to consume characters from the underlying stream.
-        skipTo(pos); // Might skip less if EOF happens prematurely
-    }
-
-    private int getChar2(long pos) throws IOException {
-        if (state == STATE_CLOSED) {
-            readerIsClosedException();
-        }
-        if (pos < first) {
-            indexOutOfBoundsException(pos);
-        }
-        // At this point: pos >= last
-        read(pos);
-        if (pos >= last) { // If the requested position is still >= last we've reached EOF
-            return -1;
-        }
-        return cb[((int) (pos + offset)) & mask];
-    }
-
-    private int getCharArray2(char[] dest, int destPos, long start, long end) throws IOException {
-        if (state == STATE_CLOSED) {
-            readerIsClosedException();
-        }
-        if (start < first) {
-            indexOutOfBoundsException(start);
-        }
-        // At this point: end > last
-        read(end - 1);
-        System.arraycopy(cb, (int) (start + offset), dest, destPos, (int) (end - start));
-        return (int) (end - start);
-    }
-
     private String getString2(long start, long end) throws IOException {
         if (state == STATE_CLOSED) {
             readerIsClosedException();
@@ -304,6 +199,66 @@ public class RandomAccessCharStream implements RandomAccessStream {
             indexOutOfBoundsException(end);
         }
         return new String(cb, (int) (start + offset), (int) (end - start));
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param pos {@inheritDoc}
+     * @throws IOException {@inheritDoc}
+     */
+    @Override
+    public void compact(long pos) throws IOException { // Bytecode size: 32 (OpenJDK 26)
+        // Minimises fast-path bytecode size to enable aggressive method inlining by C2. Delegates stream checks, buffer
+        // loads, and exception throwing to the cold path on compact2().
+
+        if (pos >= first && pos <= last) { // Hot path
+            // Compaction drops old characters we no longer need to make room for new ones. This process is lazy: we do
+            // not free memory when compact() is called, but only when we run out of space (see read()).
+            first = pos;
+        } else {
+            compact2(pos); // Cold path: executed only if the client compacts characters that were never read
+        }
+    }
+
+    private void compact2(long pos) throws IOException {
+        if (state == STATE_CLOSED) {
+            readerIsClosedException();
+        }
+        if (pos < first) {
+            indexOutOfBoundsException(pos);
+        }
+        // Here, pos > last. The client is trying to compact() to a position that hasn't been read yet. This is very
+        // expensive, as we need to consume characters from the underlying stream.
+        skipTo(pos - last); // Might skip less if EOF happens prematurely
+    }
+
+    private void skipTo(long pos) throws IOException {
+        if (pos < last) {
+            return;
+        }
+
+        long toSkip = pos - last;
+        long remaining = toSkip;
+        while (remaining > 0L) {
+            long chunk = Math.min(remaining, READ_SIZE); // Skip the stream in chunks of READ_SIZE.
+            long skipped = in.skip(chunk); // skip() returns 0 on stream not ready or EOF (unlike read() which returns 0 and -1)
+            if (skipped > 0L) {
+                remaining -= skipped;
+            } else {
+                // Since in.skip() returns 0 on stream not ready or EOF we have no way of knowing which one happened,
+                // so we force a read() and if it's -1 we assume the stream has ended.
+                if (in.read() == -1) {
+                    break;
+                }
+                remaining--;
+            }
+        }
+        long skipped = toSkip - remaining;
+
+        first = last = last + skipped;
+        offset = -first;
+        limit = 0;
     }
 
     private void read(long pos) throws IOException {
@@ -344,34 +299,6 @@ public class RandomAccessCharStream implements RandomAccessStream {
         return cb.length - limit;
     }
 
-    private void skipTo(long pos) throws IOException {
-        if (pos < last) {
-            return;
-        }
-
-        long toSkip = pos - last;
-        long remaining = toSkip;
-        while (remaining > 0L) {
-            long chunk = Math.min(remaining, READ_SIZE); // Skip the stream in chunks of READ_SIZE.
-            long skipped = in.skip(chunk); // skip() returns 0 on stream not ready or EOF (unlike read() which returns 0 and -1)
-            if (skipped > 0L) {
-                remaining -= skipped;
-            } else {
-                // Since in.skip() returns 0 on stream not ready or EOF we have no way of knowing which one happened,
-                // so we force a read() and if it's -1 we assume the stream has ended.
-                if (in.read() == -1) {
-                    break;
-                }
-                remaining--;
-            }
-        }
-        long skipped = toSkip - remaining;
-
-        first = last = last + skipped;
-        offset = -first;
-        limit = 0;
-    }
-
     private void bufferOverflowException() {
         throw new BufferOverflowException();
     }
@@ -382,5 +309,29 @@ public class RandomAccessCharStream implements RandomAccessStream {
 
     private void readerIsClosedException() throws IOException {
         throw new IOException("Stream closed");
+    }
+
+    @Override
+    public char[] array(long start, long end) throws IOException {
+        if (end <= last) {
+            return cb;
+        }
+        return array2(start, end);
+    }
+
+    private char[] array2(long start, long end) throws IOException {
+        if (state == STATE_CLOSED) {
+            readerIsClosedException();
+        }
+        if (start < first) {
+            indexOutOfBoundsException(start);
+        }
+        read(end - 1);
+        return cb;
+    }
+
+    @Override
+    public int index(long pos) {
+        return (int) (pos + offset);
     }
 }
