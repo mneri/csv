@@ -21,7 +21,7 @@ package me.mneri.csv.reader.line.parser.internal;
 import me.mneri.csv.exception.CsvException;
 import me.mneri.csv.exception.UnexpectedCharacterException;
 import me.mneri.csv.format.Format;
-import me.mneri.csv.io.internal.RandomAccessReader;
+import me.mneri.csv.io.internal.RandomAccessStream;
 import me.mneri.csv.reader.line.internal.RecycledLineImpl;
 
 import java.io.IOException;
@@ -35,19 +35,23 @@ public class SequentialLineParser implements LineParser {
     private static final int EFB_TRAILING_ZEROES = Integer.numberOfTrailingZeros(EFB);
 
     private final Format format;
-    private final RecycledLineImpl line;
-    private final RandomAccessReader reader;
+    private final RandomAccessStream reader;
 
     private int pos;
 
-    public SequentialLineParser(RandomAccessReader reader, Format format, RecycledLineImpl line) {
+    public SequentialLineParser(Format.Provider<?> provider, RandomAccessStream reader) {
+        this.format = provider.provide();
         this.reader = reader;
-        this.format = format;
-        this.line = line;
     }
 
-    public boolean parse() throws CsvException, IOException { // Bytecode size: 209 (OpenJDK 26)
-        line.clear();
+    @Override
+    public void close() throws IOException {
+        reader.close();
+    }
+
+    @Override
+    public boolean next(RecycledLineImpl out) throws CsvException, IOException { // Bytecode size: 209 (OpenJDK 26)
+        out.reset();
         reader.compact(pos);
 
         final Format format = this.format;
@@ -62,10 +66,10 @@ public class SequentialLineParser implements LineParser {
                     pos = pos + 1;
                 }
                 if (isStartOfField(s)) {
-                    line.startField(pos);
+                    out.startField(pos);
                 }
                 if (isEndOfField(s)) {
-                    line.endField(pos - ((s & EFB) >>> EFB_TRAILING_ZEROES));
+                    out.endField(pos - ((s & EFB) >>> EFB_TRAILING_ZEROES));
                 }
                 pos = pos + 1;
             } while (isJustStartOfFieldOrEndOfField(s));
@@ -73,7 +77,7 @@ public class SequentialLineParser implements LineParser {
             // operation, and if one of the bits is set we check again singularly.
             if (isPastDirtyOrReplay(s)) {
                 if (isPastDirty(s)) {
-                    line.dirty(pos - 2); // -1: refers to previous position; -1: pos was already incremented
+                    out.dirty(pos - 2); // -1: refers to previous position; -1: pos was already incremented
                 }
                 if (isReplay(s)) {
                     pos = pos - 2; // -1: go back one; -1: pos was already incremented

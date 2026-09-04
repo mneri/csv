@@ -22,15 +22,15 @@ import me.mneri.csv.deserializer.Deserializer;
 import me.mneri.csv.deserializer.StringListDeserializer;
 import me.mneri.csv.exception.CsvConversionException;
 import me.mneri.csv.exception.CsvException;
+import me.mneri.csv.extension.Extensions;
 import me.mneri.csv.format.Format;
 import me.mneri.csv.format.Rfc4180FullyRelaxedFormat;
-import me.mneri.csv.io.internal.BufferedRandomAccessReader;
-import me.mneri.csv.io.internal.RandomAccessReader;
+import me.mneri.csv.io.internal.RandomAccessCharStream;
+import me.mneri.csv.io.internal.RandomAccessStream;
 import me.mneri.csv.reader.line.internal.RecycledLineImpl;
 import me.mneri.csv.reader.line.parser.internal.LineParser;
 import me.mneri.csv.reader.line.parser.internal.SequentialLineParser;
 import me.mneri.csv.reader.line.parser.internal.SimdLineParser;
-import me.mneri.csv.extension.Extensions;
 
 import java.io.*;
 import java.util.List;
@@ -157,24 +157,22 @@ public class CsvReader<T> implements AutoCloseable {
     }
 
     private final Deserializer<T> deserializer;
-    private final RecycledLineImpl line;
+    private final RecycledLineImpl out;
     private final LineParser parser;
-    private final RandomAccessReader reader;
     private int state = ELEMENT_NOT_PREPARED;
 
     private CsvReader(Reader reader, Provider<? extends Format> provider, Deserializer<T> deserializer) {
-        this(new BufferedRandomAccessReader(reader, MAX_LINE_SIZE), provider, deserializer);
+        this(new RandomAccessCharStream(reader, MAX_LINE_SIZE), provider, deserializer);
     }
 
-    private CsvReader(RandomAccessReader reader, Provider<? extends Format> provider, Deserializer<T> deserializer) {
-        this.reader = reader;
-        this.line = new RecycledLineImpl(reader);
+    private CsvReader(RandomAccessStream reader, Provider<? extends Format> provider, Deserializer<T> deserializer) {
+        this.out = new RecycledLineImpl(reader);
         this.deserializer = deserializer;
 
         if (Extensions.SIMD_SUPPORTED) {
-            this.parser = new SimdLineParser(reader, provider.provide(), line);
+            this.parser = new SimdLineParser(provider, reader);
         } else {
-            this.parser = new SequentialLineParser(reader, provider.provide(), line);
+            this.parser = new SequentialLineParser(provider, reader);
         }
     }
 
@@ -191,7 +189,7 @@ public class CsvReader<T> implements AutoCloseable {
             return;
         }
         state = READER_CLOSED;
-        reader.close();
+        parser.close();
     }
 
     /**
@@ -207,7 +205,7 @@ public class CsvReader<T> implements AutoCloseable {
         // ELEMENT_NOT PREPARED. We check if this is the case, and delegate the rest to the cold-path method hasNext2(),
         // reducing the bytecode size and making it more likely this method is inlined by the JIT compiler.
         if (state == ELEMENT_NOT_PREPARED) {
-            if (parser.parse()) {
+            if (parser.next(out)) {
                 state = ELEMENT_PREPARED;
                 return true;
             } else {
@@ -238,7 +236,7 @@ public class CsvReader<T> implements AutoCloseable {
         if (state == ELEMENT_PREPARED) {
             try {
                 state = ELEMENT_NOT_PREPARED;
-                return deserializer.deserialize(line);
+                return deserializer.deserialize(out);
             } catch (Throwable e) {
                 csvConversionException(e);
             }
@@ -257,7 +255,7 @@ public class CsvReader<T> implements AutoCloseable {
         T element = null;
         try {
             state = ELEMENT_NOT_PREPARED;
-            element = deserializer.deserialize(line);
+            element = deserializer.deserialize(out);
         } catch (Throwable e) {
             csvConversionException(e);
         }
@@ -265,7 +263,7 @@ public class CsvReader<T> implements AutoCloseable {
     }
 
     private void csvConversionException(Throwable cause) throws CsvConversionException {
-        throw new CsvConversionException(line, cause);
+        throw new CsvConversionException(out, cause);
     }
 
     private void noSuchElementException() {

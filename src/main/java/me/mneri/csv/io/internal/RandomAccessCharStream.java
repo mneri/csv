@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.nio.BufferOverflowException;
 
-public class BufferedRandomAccessReader implements RandomAccessReader {
+public class RandomAccessCharStream implements RandomAccessStream {
     // The class is architected to heavily exploit HotSpot JIT compiler, specifically targeting array range check
     // elimination and aggressive method inlining.
     //
@@ -55,7 +55,7 @@ public class BufferedRandomAccessReader implements RandomAccessReader {
      *                 between the oldest and newest positions that can be live at once; choosing it too small will
      *                 cause {@link BufferOverflowException} at runtime rather than at construction time.
      */
-    public BufferedRandomAccessReader(Reader in, int capacity) {
+    public RandomAccessCharStream(Reader in, int capacity) {
         if (in == null) {
             throw new IllegalArgumentException("Reader cannot be null");
         }

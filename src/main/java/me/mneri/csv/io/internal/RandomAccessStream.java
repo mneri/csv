@@ -45,7 +45,7 @@ import java.nio.BufferOverflowException;
  * To maximise raw I/O throughput, this class is inherently thread-unsafe. Exposing a single instance to concurrent
  * threads will result in immediate state tearing of the cursor offsets and data corruption.
  */
-public interface RandomAccessReader extends AutoCloseable {
+public interface RandomAccessStream extends AutoCloseable {
     /**
      * Compact the backing buffer, moving the start of the window to the specified position.
      * <p>

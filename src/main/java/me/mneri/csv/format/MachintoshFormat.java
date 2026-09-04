@@ -111,20 +111,23 @@ public final class MachintoshFormat implements Format {
             //      its state: some Formats look for different special characters than others, and the rightmost bit is
             //      dependent on the Format's current state!
 
-            // A bitmask with 1's set at the positions of commas (or any other CSV special character) is not sufficient;
-            // for example, the Format needs to consume a comma to track the end of the current field and the character
-            // after to track the start of the next field (and the same goes for new lines and double quotes). So, we
-            // first calculate a bitmask for the CSV special characters, and then we add 1's for the characters
-            // positioned after. We also might need to set the first bit: the Format needs to consume the character at
-            // the start of field! We set it unless we're already inside a field (FLD or QOT). The states FLD and QOT
-            // are conveniently positioned at the top of the DFA, so anything greater is an outside-the-field state.
             ShortVector chunk = ShortVector.fromCharArray(species, source, offset);
             long bitmask = chunk.eq((short) -1)
                     .or(chunk.eq((short) '\r'))
                     .or(chunk.eq((short) '"'))
                     .or(chunk.eq((short) ','))
                     .toLong();
-            return bitmask | (bitmask << 1) | ((s & 0xFFFF) >= (QOT + 8) ? 1L : 0L); // The QOT line is 8 integers
+
+            // A bitmask with 1's set at the positions of commas (or any other CSV special character) is not sufficient;
+            // for example, the Format needs to consume a comma to track the end of the current field and the character
+            // after to track the start of the next field (and the same goes for new lines and double quotes). So, after
+            // we first calculated a bitmask for the CSV special characters, we add 1's for the characters positioned
+            // after. This could spill into the bit outside the species window, so we need to mask it.
+            bitmask = (bitmask | (bitmask << 1)) & (~0L >>> -species.length());
+            // We also might need to set the first bit: the Format needs to consume the character at the start of field!
+            // We set it unless we're already inside a field (FLD or QOT). The states FLD and QOT are conveniently
+            // positioned at the top of the DFA, so anything greater is an outside-the-field state.
+            return (s & 0xFF_FF) >= (QOT + 8) ? (bitmask | 1L) : bitmask; // The QOT line is 8 integers
         }
     }
 

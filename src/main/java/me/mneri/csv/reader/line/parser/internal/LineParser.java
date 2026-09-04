@@ -19,9 +19,14 @@
 package me.mneri.csv.reader.line.parser.internal;
 
 import me.mneri.csv.exception.CsvException;
+import me.mneri.csv.reader.line.internal.RecycledLineImpl;
 
+import java.io.Closeable;
 import java.io.IOException;
 
-public interface LineParser {
-    boolean parse() throws CsvException, IOException;
+public interface LineParser extends Closeable {
+    @Override
+    void close() throws IOException;
+
+    boolean next(RecycledLineImpl out) throws CsvException, IOException;
 }
