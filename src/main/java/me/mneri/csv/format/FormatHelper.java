@@ -35,8 +35,13 @@ public final class FormatHelper {
     static long bitmask(byte[] cb, int offset, byte c1, byte c2, byte c3, byte c4) {
         long bitmask = 0L;
         for (int i = 0; i < Long.SIZE; i += BYTE_STRIDE) {
-            ByteVector v = ByteVector.fromArray(BYTE_SPECIES, cb, offset + i);
-            bitmask |= v.eq(c1).or(v.eq(c2)).or(v.eq(c3)).or(v.eq(c4)).toLong() << i;
+            ByteVector vector = ByteVector.fromArray(BYTE_SPECIES, cb, offset + i);
+            bitmask |= vector
+                    .eq(c1)
+                    .or(vector.eq(c2))
+                    .or(vector.eq(c3))
+                    .or(vector.eq(c4)).
+                    toLong() << i;
         }
         return bitmask;
     }
@@ -44,8 +49,14 @@ public final class FormatHelper {
     static long bitmask(byte[] cb, int offset, byte c1, byte c2, byte c3, byte c4, byte c5) {
         long bitmask = 0L;
         for (int i = 0; i < Long.SIZE; i += BYTE_STRIDE) {
-            ByteVector v = ByteVector.fromArray(BYTE_SPECIES, cb, offset + i);
-            bitmask |= v.eq(c1).or(v.eq(c2)).or(v.eq(c3)).or(v.eq(c4)).or(v.eq(c5)).toLong() << i;
+            ByteVector vector = ByteVector.fromArray(BYTE_SPECIES, cb, offset + i);
+            bitmask |= vector
+                    .eq(c1)
+                    .or(vector.eq(c2))
+                    .or(vector.eq(c3))
+                    .or(vector.eq(c4))
+                    .or(vector.eq(c5))
+                    .toLong() << i;
         }
         return bitmask;
     }
@@ -53,8 +64,13 @@ public final class FormatHelper {
     static long bitmask(char[] cb, int offset, char c1, char c2, char c3, char c4) {
         long bitmask = 0L;
         for (int i = 0; i < Long.SIZE; i += SHORT_STRIDE) {
-            ShortVector v = ShortVector.fromCharArray(SHORT_SPECIES, cb, offset + i);
-            bitmask |= v.eq((short) c1).or(v.eq((short) c2)).or(v.eq((short) c3)).or(v.eq((short) c4)).toLong() << i;
+            ShortVector vector = ShortVector.fromCharArray(SHORT_SPECIES, cb, offset + i);
+            bitmask |= vector
+                    .eq((short) c1)
+                    .or(vector.eq((short) c2))
+                    .or(vector.eq((short) c3))
+                    .or(vector.eq((short) c4))
+                    .toLong() << i;
         }
         return bitmask;
     }
@@ -62,9 +78,14 @@ public final class FormatHelper {
     static long bitmask(char[] cb, int offset, char c1, char c2, char c3, char c4, char c5) {
         long bitmask = 0L;
         for (int i = 0; i < Long.SIZE; i += SHORT_STRIDE) {
-            ShortVector v = ShortVector.fromCharArray(SHORT_SPECIES, cb, offset + i);
-            bitmask |= v.eq((short) c1).or(v.eq((short) c2)).or(v.eq((short) c3)).or(v.eq((short) c4))
-                    .or(v.eq((short) c5)).toLong() << i;
+            ShortVector vector = ShortVector.fromCharArray(SHORT_SPECIES, cb, offset + i);
+            bitmask |= vector
+                    .eq((short) c1)
+                    .or(vector.eq((short) c2))
+                    .or(vector.eq((short) c3))
+                    .or(vector.eq((short) c4))
+                    .or(vector.eq((short) c5))
+                    .toLong() << i;
         }
         return bitmask;
     }

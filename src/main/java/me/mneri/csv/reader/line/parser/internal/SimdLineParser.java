@@ -33,20 +33,25 @@ public class SimdLineParser implements LineParser {
     private static final int EFB_TRAILING_ZEROES = Integer.numberOfTrailingZeros(Format.EFB);
 
     private final Format format;
-    private final RandomAccessStream reader;
+    private final RandomAccessStream stream;
 
     private long bitmask;
     private long strideEnd;
-    private long pos;
+    private long strideStart;
 
-    public SimdLineParser(Format.Provider<?> provider, RandomAccessStream reader) {
+    public SimdLineParser(Format.Provider<?> provider, RandomAccessStream stream) {
         this.format = provider.provide();
-        this.reader = reader;
+        this.stream = stream;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws IOException {@inheritDoc}
+     */
     @Override
     public void close() throws IOException {
-        reader.close();
+        stream.close();
     }
 
     /**
@@ -60,30 +65,30 @@ public class SimdLineParser implements LineParser {
     public boolean next(InternalRecycledLine out) throws CsvException, IOException {
         int s = format.base();
         long bitmask = this.bitmask;
-        long pos = this.pos;
+        long strideStart = this.strideStart;
         long strideEnd = this.strideEnd;
 
         out.reset();
-        reader.compact(pos);
+        stream.compact(strideStart);
         do {
+            long pos;
+            int shift;
+
             // Optimization: The most frequent actions are to start and to end a field. For example, in a line with 5
             // fields there are 10 field-start/field-stop and only 1 end-of-line. We inserted a tighter loop , saving a
             // comparison per outer-loop iteration.
             do {
-                do {
-                    if (pos >= strideEnd) {
-                        pos = strideEnd;
-                        strideEnd += Long.SIZE;
-                        // XXX: This is... Ugh. We are giving Format unrestricted access to the reader's internal
-                        //      character buffer. This would be a no-no in any case other than this.
-                        bitmask = format.bitmask(s, reader.array(pos, pos + Long.SIZE), reader.index(pos));
-                    }
-                    int shift = Long.numberOfTrailingZeros(bitmask);
-                    bitmask = (bitmask >>> shift) - 1;
-                    pos += shift;
-                } while (pos >= strideEnd);
+                // Calculate a bitmask with 1's set on the characters of interest and loop only on them.
+                while (bitmask == 0L) {
+                    strideStart = strideEnd;
+                    strideEnd += Long.SIZE;
+                    bitmask = format.bitmask(s, stream.array(strideStart, strideEnd), stream.index(strideStart));
+                }
+                shift = Long.numberOfTrailingZeros(bitmask);
+                bitmask &= bitmask - 1L;
+                pos = strideStart + shift;
 
-                s = format.consumeSlow(s, reader.getChar(pos));
+                s = format.consumeSlow(s, stream.getChar(pos));
 
                 if (isStartOfField(s)) {
                     out.startField(pos);
@@ -96,16 +101,16 @@ public class SimdLineParser implements LineParser {
             // operation, and if one of the bits is set we check again singularly.
             if (isPastDirtyOrReplay(s)) {
                 if (isPastDirty(s)) {
-                    out.dirty(pos - 1);
+                    out.dirty(pos - 1L);
                 }
                 if (isReplay(s)) {
-                    bitmask |= 1L;
+                    bitmask |= 1L << shift;
                 }
             }
         } while (isNotEndOfLineAndNotEndOfFileAndNotError(s));
         this.strideEnd = strideEnd;
+        this.strideStart = strideStart;
         this.bitmask = bitmask;
-        this.pos = pos;
 
         if (isNotEndOfFileAndNotError(s)) {
             return true;

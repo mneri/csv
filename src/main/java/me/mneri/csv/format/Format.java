@@ -142,11 +142,11 @@ public interface Format {
      *
      * @param s      The current state as returned by a previous call to {@link #base()}, {@link #consume(int, int)} or
      *               {@link #consumeSlow(int, int)}.
-     * @param source The source byte array.
+     * @param buff   The source byte array.
      * @param offset The offset in the source array.
      * @return A bitmask.
      */
-    long bitmask(int s, byte[] source, int offset);
+    long bitmask(int s, byte[] buff, int offset);
 
     /**
      * Given a {@code char[]} filled with CSV data, return a bitmask with bits set in state-changing positions.
@@ -167,11 +167,11 @@ public interface Format {
      *
      * @param s      The current state as returned by a previous call to {@link #base()}, {@link #consume(int, int)} or
      *               {@link #consumeSlow(int, int)}.
-     * @param source The source character array.
+     * @param buff   The source character array.
      * @param offset The offset in the source array.
      * @return A bitmask.
      */
-    long bitmask(int s, char[] source, int offset);
+    long bitmask(int s, char[] buff, int offset);
 
     /**
      * Given the current state and a character, return an integer encoding both the next state and the actions to

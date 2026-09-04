@@ -107,13 +107,13 @@ public final class MachintoshFormat implements Format {
      * {@inheritDoc}
      *
      * @param s      {@inheritDoc}
-     * @param source {@inheritDoc}
+     * @param buff   {@inheritDoc}
      * @param offset {@inheritDoc}
      * @return {@inheritDoc}
      */
     @Override
-    public long bitmask(int s, byte[] source, int offset) {
-        long bm = FormatHelper.bitmask(source, offset, (byte) -1, (byte) '\r', (byte) '"', (byte) ',');
+    public long bitmask(int s, byte[] buff, int offset) {
+        long bm = FormatHelper.bitmask(buff, offset, (byte) -1, (byte) '\r', (byte) '"', (byte) ',');
 
         // A bm with 1's set at the positions of commas or any other CSV special character is not sufficient; for
         // example, the Format needs to consume a comma to track the end of the current field and the character after to
@@ -131,13 +131,13 @@ public final class MachintoshFormat implements Format {
      * {@inheritDoc}
      *
      * @param s      {@inheritDoc}
-     * @param source {@inheritDoc}
+     * @param buff   {@inheritDoc}
      * @param offset {@inheritDoc}
      * @return {@inheritDoc}
      */
     @Override
-    public long bitmask(int s, char[] source, int offset) {
-        long bm = FormatHelper.bitmask(source, offset, (char) -1, '\r', '"', ',');
+    public long bitmask(int s, char[] buff, int offset) {
+        long bm = FormatHelper.bitmask(buff, offset, (char) -1, '\r', '"', ',');
 
         // A bm with 1's set at the positions of commas or any other CSV special character is not sufficient; for
         // example, the Format needs to consume a comma to track the end of the current field and the character after to

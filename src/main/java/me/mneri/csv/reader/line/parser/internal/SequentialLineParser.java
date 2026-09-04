@@ -44,6 +44,11 @@ public class SequentialLineParser implements LineParser {
         this.reader = reader;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws IOException {@inheritDoc}
+     */
     @Override
     public void close() throws IOException {
         reader.close();
