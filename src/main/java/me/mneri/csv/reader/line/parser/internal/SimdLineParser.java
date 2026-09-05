@@ -145,7 +145,7 @@ public class SimdLineParser implements LineParser {
 
     private boolean isNotEndOfLineAndNotEndOfFileAndNotError(int s) {
         return (s & (ELH | ERH | STP)) == 0;
-    }
+    }   
 
     private boolean isPastDirty(int s) {
         return (s & RMB) != 0;

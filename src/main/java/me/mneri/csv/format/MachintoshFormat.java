@@ -112,30 +112,6 @@ public final class MachintoshFormat implements Format {
      * @return {@inheritDoc}
      */
     @Override
-    public long bitmask(int s, byte[] buff, int offset) {
-        long bm = FormatHelper.bitmask(buff, offset, (byte) -1, (byte) '\r', (byte) '"', (byte) ',');
-
-        // A bm with 1's set at the positions of commas or any other CSV special character is not sufficient; for
-        // example, the Format needs to consume a comma to track the end of the current field and the character after to
-        // track the start of the next field (and the same goes for new lines and double quotes). So, after we first
-        // calculated the bitmask of the CSV special characters, we add 1's for the characters positioned after them.
-        bm = bm | (bm << 1);
-
-        // We also might need to set the first bit: the Format needs to consume the character at the start of field! We
-        // set it unless we're already inside a field (FLD or QOT). The states FLD and QOT are conveniently positioned
-        // at the top of the DFA, so anything greater is an outside-the-field state.
-        return (s & 0xFF_FF) >= (QOT + 8) ? (bm | 1L) : bm; // The QOT line is 8 integers
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @param s      {@inheritDoc}
-     * @param buff   {@inheritDoc}
-     * @param offset {@inheritDoc}
-     * @return {@inheritDoc}
-     */
-    @Override
     public long bitmask(int s, char[] buff, int offset) {
         long bm = FormatHelper.bitmask(buff, offset, (char) -1, '\r', '"', ',');
 
@@ -218,5 +194,25 @@ public final class MachintoshFormat implements Format {
         // carry. We mask with 0x7F (127) to stay within the 128-element DFA table; this hints to the JIT compiler to
         // eliminate array bounds checking.
         return DFA[(s | columnOf(c)) & 0x7F];
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public int delimiter() {
+        return ',';
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public int qualifier() {
+        return '"';
     }
 }

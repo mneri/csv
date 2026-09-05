@@ -32,35 +32,6 @@ public final class FormatHelper {
     private FormatHelper() {
     }
 
-    static long bitmask(byte[] cb, int offset, byte c1, byte c2, byte c3, byte c4) {
-        long bitmask = 0L;
-        for (int i = 0; i < Long.SIZE; i += BYTE_STRIDE) {
-            ByteVector vector = ByteVector.fromArray(BYTE_SPECIES, cb, offset + i);
-            bitmask |= vector
-                    .eq(c1)
-                    .or(vector.eq(c2))
-                    .or(vector.eq(c3))
-                    .or(vector.eq(c4)).
-                    toLong() << i;
-        }
-        return bitmask;
-    }
-
-    static long bitmask(byte[] cb, int offset, byte c1, byte c2, byte c3, byte c4, byte c5) {
-        long bitmask = 0L;
-        for (int i = 0; i < Long.SIZE; i += BYTE_STRIDE) {
-            ByteVector vector = ByteVector.fromArray(BYTE_SPECIES, cb, offset + i);
-            bitmask |= vector
-                    .eq(c1)
-                    .or(vector.eq(c2))
-                    .or(vector.eq(c3))
-                    .or(vector.eq(c4))
-                    .or(vector.eq(c5))
-                    .toLong() << i;
-        }
-        return bitmask;
-    }
-
     static long bitmask(char[] cb, int offset, char c1, char c2, char c3, char c4) {
         long bitmask = 0L;
         for (int i = 0; i < Long.SIZE; i += SHORT_STRIDE) {

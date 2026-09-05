@@ -70,7 +70,7 @@ import java.util.Locale;
  *         </samp>
  *     </li>
  *     <li>
- *         <b>Locale-dependent separator</b>: the field separator is {@code ,} in some locales, while is {@code ;} in
+ *         <b>Locale-dependent delimiter</b>: the field delimiter is {@code ,} in some locales, while is {@code ;} in
  *         others. For example:<br/>
  *         <samp>
  *             aaa;bbb;"ccc EOF ; interpreted as &lt;aaa&gt;, &lt;bbb&gt; and &lt;ccc&gt; if the locale is IT-it<br/>
@@ -139,24 +139,24 @@ public final class MsExcelFormat implements Format {
         return () -> new MsExcelFormat(locale);
     }
 
-    private final int sep;
+    private final int del;
     private final long map;
     private final long mask;
 
     private MsExcelFormat(Locale locale) {
-        int sep = DecimalFormatSymbols.getInstance(locale).getDecimalSeparator();
-        this.sep = sep;
+        int del = DecimalFormatSymbols.getInstance(locale).getDecimalSeparator();
+        this.del = del;
 
         // Java's shift operators natively mask the shift by 63 (c & 63). Thus, 1L << -1 cleanly wraps to bit 63.
         // Mask 0x80_00_00_04_00_00_24_00L has bits set at: 10 (\n), 13 (\r), 34 ("), 63 (EOF), then we set the bit
-        // for the separator (e.g. 44 (','), or 59 (';')).
-        this.mask = 0x80_00_00_04_00_00_24_00L | (1L << sep);
+        // for the delimiter (e.g. 44 (,), or 59 (;)).
+        this.mask = 0x80_00_00_04_00_00_24_00L | (1L << del);
 
         // Data Map 0x00_00_00_20_00_00_98_05L encodes:
         // Bits [00-02]: 5 (EOF)  | Bits [11-13]: 3 (\n) | Bits [14-16]: 2 (\r)
         // Bits [35-37]: 4 (")
-        // Then, we add the bits for the separator.
-        this.map = 0x00_00_00_20_00_00_98_05L | (0x01L << (sep + 1));
+        // Then, we add the bits for the delimiter.
+        this.map = 0x00_00_00_20_00_00_98_05L | (0x01L << (del + 1));
     }
 
     /**
@@ -178,32 +178,8 @@ public final class MsExcelFormat implements Format {
      * @return {@inheritDoc}
      */
     @Override
-    public long bitmask(int s, byte[] buff, int offset) {
-        long bm = FormatHelper.bitmask(buff, offset, (byte) -1, (byte) '\n', (byte) '\r', (byte) '"', (byte) sep);
-
-        // A bm with 1's set at the positions of commas or any other CSV special character is not sufficient; for
-        // example, the Format needs to consume a comma to track the end of the current field and the character after to
-        // track the start of the next field (and the same goes for new lines and double quotes). So, after we first
-        // calculated the bitmask of the CSV special characters, we add 1's for the characters positioned after them.
-        bm = bm | (bm << 1);
-
-        // We also might need to set the first bit: the Format needs to consume the character at the start of field! We
-        // set it unless we're already inside a field (FLD or QOT). The states FLD and QOT are conveniently positioned
-        // at the top of the DFA, so anything greater is an outside-the-field state.
-        return (s & 0xFF_FF) >= (QOT + 8) ? (bm | 1L) : bm; // The QOT line is 8 integers
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @param s      {@inheritDoc}
-     * @param buff   {@inheritDoc}
-     * @param offset {@inheritDoc}
-     * @return {@inheritDoc}
-     */
-    @Override
     public long bitmask(int s, char[] buff, int offset) {
-        long bm = FormatHelper.bitmask(buff, offset, (char) -1, '\n', '\r', '"', (char) sep);
+        long bm = FormatHelper.bitmask(buff, offset, (char) -1, '\n', '\r', '"', (char) del);
 
         // A bm with 1's set at the positions of commas or any other CSV special character is not sufficient; for
         // example, the Format needs to consume a comma to track the end of the current field and the character after to
@@ -241,7 +217,7 @@ public final class MsExcelFormat implements Format {
 
         // Fast Path: Check if 'c' is an "ordinary" character. This includes anything > sep (standard text) or
         // characters <= sep not in the special mask.
-        if (c > sep || ((1L << c) & mask) == 0) {
+        if (c > del || ((1L << c) & mask) == 0) {
             return 0;
         }
 
@@ -262,7 +238,7 @@ public final class MsExcelFormat implements Format {
         // Super-Hot Path: Standard CSV data (letters, numbers, etc.) is the most common case. If the current state is
         // FLD (Inside Field) and the character is 'ordinary' (> sep), we bypass the bit-masking and array lookup
         // entirely to return the FLD state. This turns a potential memory access into a simple register comparison.
-        if (s == FLD && c > sep) {
+        if (s == FLD && c > del) {
             return FLD;
         }
         return consumeSlow(s, c);
@@ -282,5 +258,25 @@ public final class MsExcelFormat implements Format {
         // carry. We mask with 0x7F (127) to stay within the 128-element DFA table; this hints to the JIT compiler to
         // eliminate array bounds checking.
         return DFA[(s | columnOf(c)) & 0x7F];
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public int delimiter() {
+        return del;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public int qualifier() {
+        return '"';
     }
 }

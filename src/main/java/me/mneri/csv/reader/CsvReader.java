@@ -38,7 +38,7 @@ import java.util.NoSuchElementException;
 import static me.mneri.csv.format.Format.Provider;
 
 /**
- * Read csv streams and automatically transform lines into Java objects.
+ * Read CSV streams and automatically transform lines into Java objects.
  *
  * @param <T> The type of the Java objects to read.
  * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;

@@ -19,40 +19,87 @@
 package me.mneri.csv.writer;
 
 import me.mneri.csv.exception.CsvConversionException;
+import me.mneri.csv.format.Format;
+import me.mneri.csv.format.Rfc4180StrictFormat;
 import me.mneri.csv.serializer.Serializer;
 
-import java.io.Closeable;
-import java.io.Flushable;
-import java.io.IOException;
-import java.io.Writer;
+import java.io.*;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**
- * Default implementation of {@link CsvWriter}.
+ * Accept Java objects and serialize them into CSV streams.
  *
  * @param <T> The type of the Java objects to write.
  * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
  */
 public class CsvWriter<T> implements Closeable, Flushable {
-    private static final int OPENED = 0;
+    private static final int OPEN = 0;
     private static final int CLOSED = 1;
 
-    private final int del;
+    /**
+     * Return a new {@link CsvWriter} in open state, writing to the specified file.
+     *
+     * @param file The file.
+     * @param p    A provider of {@link Format}s.
+     * @param ser  The serializer, mapping Java objects to CSV lines.
+     * @param <T>  The type of object to map to a CSV line.
+     * @return A new {@link CsvWriter}, in open state.
+     * @throws IOException If an I/O error occurs.
+     */
+    public static <T> CsvWriter<T> open(File file, Format.Provider<? extends Format> p, Serializer<T> ser)
+            throws IOException {
+        return open(new FileWriter(file), p, ser);
+    }
+
+    /**
+     * Return a new {@link CsvWriter} in open state, writing to the specified file in {@link Rfc4180StrictFormat}.
+     *
+     * @param file The file.
+     * @param ser  The serializer, mapping Java objects to CSV lines.
+     * @param <T>  The type of object to map to a CSV line.
+     * @return A new {@link CsvWriter}, in open state.
+     */
+    public static <T> CsvWriter<T> open(File file, Serializer<T> ser) throws IOException {
+        return open(file, Rfc4180StrictFormat.provider(), ser);
+    }
+
+    /**
+     * Return a new {@link CsvWriter} in open state, writing to the specified writer.
+     *
+     * @param writer The writer.
+     * @param p      A provider of {@link Format}s.
+     * @param ser    The serializer, mapping Java objects to CSV lines.
+     * @param <T>    The type of object to map to a CSV line.
+     * @return A new {@link CsvWriter}, in open state.
+     */
+    public static <T> CsvWriter<T> open(Writer writer, Format.Provider<? extends Format> p, Serializer<T> ser) {
+        return new CsvWriter<>(writer, p, ser);
+    }
+
+    /**
+     * Return a new {@link CsvWriter} in open state, writing to the specified writer in {@link Rfc4180StrictFormat}.
+     *
+     * @param writer The writer.
+     * @param ser    The serializer, mapping Java objects to CSV lines.
+     * @param <T>    The type of object to map to a CSV line.
+     * @return A new {@link CsvWriter}, in open state.
+     */
+    public static <T> CsvWriter<T> open(Writer writer, Serializer<T> ser) {
+        return open(writer, Rfc4180StrictFormat.provider(), ser);
+    }
+
+    private final Format format;
     private final List<String> line;
-    private final int qual;
     private final Serializer<T> ser;
-    private int state = OPENED;
-    private final Writer wtr;
+    private int state = OPEN;
+    private Writer writer;
 
-    CsvWriter(Writer wtr, Serializer<T> ser) {
-        this.wtr = wtr;
+    private CsvWriter(Writer writer, Format.Provider<? extends Format> p, Serializer<T> ser) {
+        this.writer = writer;
+        this.format = p.provide();
         this.ser = ser;
-
-        line = new ArrayList<>();
-        del = ',';
-        qual = '"';
+        this.line = new ArrayList<>();
     }
 
     private void isOpenOrThrow() {
@@ -66,23 +113,26 @@ public class CsvWriter<T> implements Closeable, Flushable {
         if (state == CLOSED) {
             return;
         }
-        state = CLOSED;
-        line.clear();
-        wtr.flush();
-        wtr.close();
+        try {
+            state = CLOSED;
+            writer.flush();
+            writer.close();
+        } finally {
+            writer = null;
+        }
     }
 
     @Override
     public void flush() throws IOException {
         isOpenOrThrow();
-        wtr.flush();
+        writer.flush();
     }
 
     private boolean isQuotingNeeded(String string) {
         for (int i = 0; i < string.length(); i++) {
             int c = string.charAt(i);
 
-            if (c == del || c == qual) {
+            if (c == format.delimiter() || c == format.qualifier()) {
                 return true;
             }
         }
@@ -92,20 +142,17 @@ public class CsvWriter<T> implements Closeable, Flushable {
 
     public void write(T object) throws CsvConversionException, IOException {
         isOpenOrThrow();
-
         try {
             line.clear();
             ser.serialize(object, line);
+            writeLine();
         } catch (Exception e) {
             throw new CsvConversionException(line, e);
         }
-
-        writeLine();
     }
 
-    public void writeAll(Collection<T> objects) throws CsvConversionException, IOException {
+    public void writeAll(List<T> objects) throws CsvConversionException, IOException {
         isOpenOrThrow();
-
         for (T object : objects) {
             write(object);
         }
@@ -116,35 +163,31 @@ public class CsvWriter<T> implements Closeable, Flushable {
             return;
         }
 
+        int q = format.qualifier();
         if (isQuotingNeeded(string)) {
-            wtr.write(qual);
-
+            writer.write(q);
             for (int i = 0; i < string.length(); i++) {
                 int c = string.charAt(i);
 
-                if (c == qual) {
-                    wtr.write(qual);
-                    wtr.write(qual);
+                if (c == q) {
+                    writer.write(q);
+                    writer.write(q);
                 } else {
-                    wtr.write(c);
+                    writer.write(c);
                 }
             }
-
-            wtr.write(qual);
+            writer.write(q);
         } else {
-            wtr.write(string);
+            writer.write(string);
         }
     }
 
     private void writeLine() throws IOException {
-        for (int i = 0; i < line.size(); i++) {
+        for (int i = 0; i < line.size() - 1; i++) {
             writeField(line.get(i));
-
-            if (i != line.size() - 1) {
-                wtr.write(del);
-            }
+            writer.write(format.delimiter());
         }
-
-        wtr.write("\r\n");
+        writeField(line.get(line.size() - 1));
+        writer.write("\r\n");
     }
 }
