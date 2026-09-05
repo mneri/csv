@@ -64,8 +64,8 @@ public class SequentialLineParser implements LineParser {
         int pos = this.pos;
         do {
             // Optimization: The most frequent actions are to start and to end a field. For example, in a line with 5
-            // fields there are 10 field-start/field-stop and only 1 end-of-line. We inserted a tighter loop on this,
-            // saving a comparison per outer-loop.
+            // fields there are 10 field-start/field-stop and only 1 end-of-line. We inserted a tighter loop, saving a
+            // comparison per outer loop iteration.
             do {
                 while (!isAny(s = format.consume(s, reader.getChar(pos)))) {
                     pos = pos + 1;

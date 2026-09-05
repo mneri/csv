@@ -6,9 +6,9 @@ plugins {
 group = 'me.mneri.csv'
 version = '2.0-SNAPSHOT'
 java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(26) // or your target Java version
-    }
+//    toolchain {
+//        languageVersion = JavaLanguageVersion.of(26) // or your target Java version
+//    }
 }
 
 repositories {

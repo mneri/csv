@@ -229,14 +229,14 @@ public class CsvReader<T> implements AutoCloseable {
      * @throws IOException  if an I/O error occurs.
      */
     public T next() throws Exception, IOException { // Bytecode size: 38 (OpenJDK 26)
-        // Optimization: In a typical while(hasNext())/next() loop, the state is already ELEMENT_PREPARED when this
-        // method is called. We check this directly and delegate the rest to the cold-path method next2(), reducing the
-        // bytecode size and making it more likely this method is inlined by the JIT compiler.
+        // Optimization: In a typical hasNext()/next() loop, the state is already ELEMENT_PREPARED when this method is
+        // called. We check this directly and delegate the rest to the cold-path method next2(), reducing the bytecode
+        // size and making it more likely this method is inlined by the JIT compiler.
         if (state == ELEMENT_PREPARED) {
             state = ELEMENT_NOT_PREPARED;
             return deserializer.deserialize(out);
         }
-        return next2(); // Only called if the client doesn't follow the idiomatic pattern while(hasNext())/next()
+        return next2(); // Only called if the client doesn't follow the idiomatic pattern hasNext()/next()
     }
 
     private T next2() throws Exception {

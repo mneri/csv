@@ -26,11 +26,14 @@ import me.mneri.csv.reader.line.internal.InternalRecycledLine;
 
 import java.io.IOException;
 
+import static me.mneri.csv.format.Format.*;
+
 /**
  * Implementation of {@link LineParser} that leverages SIMD operations.
  */
 public class SimdLineParser implements LineParser {
-    private static final int EFB_TRAILING_ZEROES = Integer.numberOfTrailingZeros(Format.EFB);
+    private static final int EFB_TRAILING_ZEROES = Integer.numberOfTrailingZeros(EFB);
+    private static final int STRIDE = Long.SIZE;
 
     private final Format format;
     private final RandomAccessStream stream;
@@ -39,7 +42,7 @@ public class SimdLineParser implements LineParser {
     private long strideEnd;
     private long strideStart;
 
-    public SimdLineParser(Format.Provider<?> provider, RandomAccessStream stream) {
+    public SimdLineParser(Format.Provider<? extends Format> provider, RandomAccessStream stream) {
         this.format = provider.provide();
         this.stream = stream;
     }
@@ -75,14 +78,14 @@ public class SimdLineParser implements LineParser {
             int shift;
 
             // Optimization: The most frequent actions are to start and to end a field. For example, in a line with 5
-            // fields there are 10 field-start/field-stop and only 1 end-of-line. We inserted a tighter loop , saving a
-            // comparison per outer-loop iteration.
+            // fields there are 10 field-start/field-stop and only 1 end-of-line. We inserted a tighter loop, saving a
+            // comparison per outer loop iteration.
             do {
                 // Calculate a bitmask with 1's set on the characters of interest and loop only on them.
                 while (bitmask == 0L) {
                     strideStart = strideEnd;
-                    strideEnd += Long.SIZE;
-                    bitmask = format.bitmask(s, stream.array(strideStart, strideEnd), stream.index(strideStart));
+                    strideEnd += STRIDE;
+                    bitmask = bitmask(s, strideStart, strideEnd);
                 }
                 shift = Long.numberOfTrailingZeros(bitmask);
                 bitmask &= bitmask - 1L;
@@ -94,7 +97,7 @@ public class SimdLineParser implements LineParser {
                     out.startField(pos);
                 }
                 if (isEndOfField(s)) {
-                    out.endField(pos - ((s & Format.EFB) >>> EFB_TRAILING_ZEROES));
+                    out.endField(pos - ((s & EFB) >>> EFB_TRAILING_ZEROES));
                 }
             } while (isJustStartOfFieldOrEndOfField(s));
             // Optimization: Dirty characters and replays are rare. Here we check for both with a single bitwise
@@ -120,40 +123,44 @@ public class SimdLineParser implements LineParser {
         return false;
     }
 
+    private long bitmask(int s, long strideStart, long strideEnd) throws IOException {
+        return format.bitmask(s, stream.array(strideStart, strideEnd), stream.index(strideStart));
+    }
+
     private boolean isEndOfField(int s) {
-        return (s & (Format.EFH | Format.EFB)) != 0;
+        return (s & (EFH | EFB)) != 0;
     }
 
     private boolean isError(int s) {
-        return (s & Format.ERH) != 0;
+        return (s & ERH) != 0;
     }
 
     private boolean isJustStartOfFieldOrEndOfField(int s) {
-        return (s & (Format.RMB | Format.RPL | Format.ELH | Format.ERH | Format.STP)) == 0;
+        return (s & (RMB | RPL | ELH | ERH | STP)) == 0;
     }
 
     private boolean isNotEndOfFileAndNotError(int s) {
-        return (s & (Format.ERH | Format.STP)) == 0;
+        return (s & (ERH | STP)) == 0;
     }
 
     private boolean isNotEndOfLineAndNotEndOfFileAndNotError(int s) {
-        return (s & (Format.ELH | Format.ERH | Format.STP)) == 0;
+        return (s & (ELH | ERH | STP)) == 0;
     }
 
     private boolean isPastDirty(int s) {
-        return (s & Format.RMB) != 0;
+        return (s & RMB) != 0;
     }
 
     private boolean isPastDirtyOrReplay(int s) {
-        return (s & (Format.RMB | Format.RPL)) != 0;
+        return (s & (RMB | RPL)) != 0;
     }
 
     private boolean isReplay(int s) {
-        return (s & Format.RPL) != 0;
+        return (s & RPL) != 0;
     }
 
     private boolean isStartOfField(int s) {
-        return (s & Format.SFH) != 0;
+        return (s & SFH) != 0;
     }
 
     private void unexpectedCharacterException() throws UnexpectedCharacterException {

@@ -41,11 +41,11 @@ package me.mneri.csv.format;
 public final class MachintoshFormat implements Format {
     private static final int FLD = 0; // Field
     private static final int QOT = 8; // Quotation
-    private static final int BFF = 16;  // Before field
+    private static final int BFF = 16; // Before field
     private static final int SQT = 24; // Start quotation
     private static final int ESC = 32; // Escape
     private static final int SQE = 40; // Escape at start quotation
-    private static final int BFL = 48;  // Before line
+    private static final int BFL = 48; // Before line
     private static final int EOF = 56; // End of file
     private static final int ERR = 64; // Error
 
