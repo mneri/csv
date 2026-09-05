@@ -21,7 +21,7 @@ package me.mneri.csv.reader;
 import me.mneri.csv.deserializer.Deserializer;
 import me.mneri.csv.deserializer.StringListDeserializer;
 import me.mneri.csv.exception.CsvException;
-import me.mneri.csv.extension.Extensions;
+import me.mneri.csv.extension.internal.Extensions;
 import me.mneri.csv.format.Format;
 import me.mneri.csv.format.Rfc4180FullyRelaxedFormat;
 import me.mneri.csv.io.internal.RandomAccessCharStream;

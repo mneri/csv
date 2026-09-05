@@ -49,7 +49,6 @@ public final class InternalRecycledLine implements RecycledLine {
         if (idxSize + 3 > idx.length) {
             growIdx();
         }
-
         idx[idxSize] = pos;
         idx[idxSize + 2] = -1; // Initially marked as not dirty
     }

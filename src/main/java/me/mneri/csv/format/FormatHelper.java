@@ -18,14 +18,10 @@
 
 package me.mneri.csv.format;
 
-import jdk.incubator.vector.ByteVector;
 import jdk.incubator.vector.ShortVector;
 import jdk.incubator.vector.VectorSpecies;
 
 public final class FormatHelper {
-    private static final VectorSpecies<Byte> BYTE_SPECIES = ByteVector.SPECIES_PREFERRED;
-    private static final int BYTE_STRIDE = BYTE_SPECIES.length();
-
     private static final VectorSpecies<Short> SHORT_SPECIES = ShortVector.SPECIES_PREFERRED;
     private static final int SHORT_STRIDE = SHORT_SPECIES.length();
 

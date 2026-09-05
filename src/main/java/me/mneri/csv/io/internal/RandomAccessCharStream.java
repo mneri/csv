@@ -26,9 +26,6 @@ public class RandomAccessCharStream implements RandomAccessStream {
     // The class is architected to heavily exploit HotSpot JIT compiler, specifically targeting array range check
     // elimination and aggressive method inlining.
     //
-    // We restrict the buffer capacity to a power of two, so we can calculate array indices using a simple bitwise AND
-    // mask. The JIT compiler should this mask and should remove the array bounds checks from the machine code.
-    //
     // Hot methods like getChar() are kept tiny so the JIT compiler can inline them easily. We strip out all checks,
     // exception throwing, and file I/O, pushing that heavy logic into separate "cold" methods like getChar2() that
     // only run when needed.
@@ -39,7 +36,6 @@ public class RandomAccessCharStream implements RandomAccessStream {
     private static final int READ_SIZE = 8_192;
 
     private char[] cb;
-    private final int mask;
     private long first; // Absolute index of the first buffered character
     private long last; // Absolute index (exclusive) of the last buffered character
     private long offset; // Offset of cb[0] (i.e. if cb[0] contains 100th character on the stream, offset is -100)
@@ -64,7 +60,6 @@ public class RandomAccessCharStream implements RandomAccessStream {
         }
         this.in = in;
         this.cb = new char[capacity];
-        this.mask = capacity - 1;
     }
 
     @Override
@@ -102,7 +97,7 @@ public class RandomAccessCharStream implements RandomAccessStream {
         if (/*pos >= first &&*/ pos < last) { // Hot path
             // If the reader is closed, accessing cb throws a NullPointerException; rough, but OK. Avoiding the check on
             // state is giving another nice boost in performance.
-            return cb[((int) (pos + offset)) & mask]; // Mask to avoid Java's boundary check; NOT a circular buffer!
+            return cb[(int) (pos + offset)];
         }
         // Cold path: executed when the client requests characters that have not yet been read from the underlying
         // reader; roughly once every READ_SIZE invocations of this method, if the client reads characters sequentially.
@@ -121,7 +116,7 @@ public class RandomAccessCharStream implements RandomAccessStream {
         if (pos >= last) { // If the requested position is still >= last we've reached EOF
             return -1;
         }
-        return cb[((int) (pos + offset)) & mask];
+        return cb[(int) (pos + offset)];
     }
 
     /**
@@ -212,7 +207,7 @@ public class RandomAccessCharStream implements RandomAccessStream {
         // Minimises fast-path bytecode size to enable aggressive method inlining by C2. Delegates stream checks, buffer
         // loads, and exception throwing to the cold path on compact2().
 
-        if (pos >= first && pos <= last) { // Hot path
+        if (/*pos >= first &&*/ pos <= last) { // Hot path
             // Compaction drops old characters we no longer need to make room for new ones. This process is lazy: we do
             // not free memory when compact() is called, but only when we run out of space (see read()).
             first = pos;
