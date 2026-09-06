@@ -24,9 +24,27 @@ import me.mneri.csv.reader.internal.InternalRecycledLine;
 import java.io.Closeable;
 import java.io.IOException;
 
+/**
+ * Parse the internal character stream and return CSV lines.
+ */
 public interface LineParser extends Closeable {
+    /**
+     * Closes the stream and releases any system resources associated with it. Once the stream has been closed, further
+     * {@link #next(InternalRecycledLine)} invocations will throw an {@link IOException}. Closing a previously closed
+     * stream has no effect.
+     *
+     * @throws IOException If an I/O error occurs.
+     */
     @Override
     void close() throws IOException;
 
+    /**
+     * Advance the internal character stream and parse the next CSV line.
+     *
+     * @param out The output parameter where the next CSV line is saved.
+     * @return {@code true} if a line has been returned, {@code false} otherwise.
+     * @throws CsvException If a parsing error occurs.
+     * @throws IOException  If an I/O error occurs.
+     */
     boolean next(InternalRecycledLine out) throws CsvException, IOException;
 }

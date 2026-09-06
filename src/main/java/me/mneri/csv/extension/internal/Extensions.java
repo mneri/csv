@@ -23,6 +23,11 @@ public final class Extensions {
     private Extensions() {
     }
 
+    /**
+     * Return {@code true} if the Vector API is available, {@code false} otherwise.
+     *
+     * @return {@code true} if the Vector API is available, {@code false} otherwise.
+     */
     private static boolean isSimdSupported() {
         try {
             Class.forName("jdk.incubator.vector.Vector"); // The SIMD extension is currently in the incubator

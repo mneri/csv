@@ -60,6 +60,7 @@ public class SimdLineParser implements LineParser {
     /**
      * {@inheritDoc}
      *
+     * @param out {@inheritDoc}
      * @return {@inheritDoc}
      * @throws CsvException {@inheritDoc}
      * @throws IOException  {@inheritDoc}

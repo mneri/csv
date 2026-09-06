@@ -54,6 +54,14 @@ public class SequentialLineParser implements LineParser {
         reader.close();
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param out {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CsvException {@inheritDoc}
+     * @throws IOException  {@inheritDoc}
+     */
     @Override
     public boolean next(InternalRecycledLine out) throws CsvException, IOException { // Bytecode size: 209 (OpenJDK 26)
         out.reset();
