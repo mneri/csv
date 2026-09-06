@@ -1,12 +1,10 @@
 package me.mneri.csv;
 
 import me.mneri.csv.deserializer.Deserializer;
-import me.mneri.csv.exception.CsvException;
 import me.mneri.csv.format.Rfc4180FullyRelaxedFormat;
 import me.mneri.csv.reader.CsvReader;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 public class Main {

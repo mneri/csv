@@ -16,9 +16,7 @@
  * limitations under the License.
  */
 
-package me.mneri.csv.reader.line;
-
-import me.mneri.csv.reader.CsvReader;
+package me.mneri.csv.reader;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -173,6 +171,7 @@ public interface RecycledLine {
 
     /**
      * Return the value of the field at the specified index as an unsigned {@link Integer}.
+     *
      * @param i The index of the field.
      * @return The value of the field.
      * @throws IOException If an I/O error occurs.
@@ -181,6 +180,7 @@ public interface RecycledLine {
 
     /**
      * Return the value of the field at the specified index as an unsigned {@link Long}.
+     *
      * @param i The index of the field.
      * @return The value of the field.
      * @throws IOException If an I/O error occurs.

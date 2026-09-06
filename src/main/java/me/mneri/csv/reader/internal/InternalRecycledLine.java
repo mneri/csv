@@ -16,11 +16,11 @@
  * limitations under the License.
  */
 
-package me.mneri.csv.reader.line.internal;
+package me.mneri.csv.reader.internal;
 
 import me.mneri.csv.exception.NoSuchFieldException;
 import me.mneri.csv.io.internal.RandomAccessStream;
-import me.mneri.csv.reader.line.RecycledLine;
+import me.mneri.csv.reader.RecycledLine;
 
 import java.io.IOException;
 import java.math.BigDecimal;

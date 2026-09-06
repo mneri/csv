@@ -16,13 +16,13 @@
  * limitations under the License.
  */
 
-package me.mneri.csv.reader.line.parser.internal;
+package me.mneri.csv.reader.parser.internal;
 
 import me.mneri.csv.exception.CsvException;
 import me.mneri.csv.exception.UnexpectedCharacterException;
 import me.mneri.csv.format.Format;
 import me.mneri.csv.io.internal.RandomAccessStream;
-import me.mneri.csv.reader.line.internal.InternalRecycledLine;
+import me.mneri.csv.reader.internal.InternalRecycledLine;
 
 import java.io.IOException;
 
@@ -146,7 +146,7 @@ public class SimdLineParser implements LineParser {
 
     private boolean isNotEndOfLineAndNotEndOfFileAndNotError(int s) {
         return (s & (ELH | ERH | STP)) == 0;
-    }   
+    }
 
     private boolean isPastDirty(int s) {
         return (s & RMB) != 0;

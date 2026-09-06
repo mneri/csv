@@ -18,11 +18,6 @@
 
 package me.mneri.csv.format;
 
-import me.mneri.csv.deserializer.Deserializer;
-import me.mneri.csv.exception.UnexpectedCharacterException;
-import me.mneri.csv.reader.CsvReader;
-import me.mneri.csv.reader.line.RecycledLine;
-
 /**
  * Implements a strict interpretation of the RFC4180 standard for CSV files, with one simple variation:
  * <ul>
@@ -35,18 +30,6 @@ import me.mneri.csv.reader.line.RecycledLine;
  *         </samp>
  *     </li>
  * </ul>
- * If the number of fields is a strict requirement, clients shall perform the validation in
- * {@link Deserializer#deserialize(RecycledLine)}, on the deserializer instance given to the {@link CsvReader}.
- * <p>
- * This strict interpretation forces the {@link CsvReader} to throw a {@link UnexpectedCharacterException} whenever one
- * of the rules specified in RFC4180 is broken (with the exclusion of the variable number of fields, as explained
- * above).
- * <p>
- * There are two progressively relaxed variations of the {@code Rfc4180StrictFormat}:
- * {@link Rfc4180HalfRelaxedFormat} which relaxes some of the rules but still throws
- * {@link UnexpectedCharacterException} under a number of circumstances, and {@link Rfc4180FullyRelaxedFormat} which
- * always guarantees to have a <i>best-effort</i> interpretation of a non-compliant CSV file and never throw an
- * exception.
  */
 @SuppressWarnings({"Duplicates", "unused"})
 public final class Rfc4180StrictFormat implements Format {

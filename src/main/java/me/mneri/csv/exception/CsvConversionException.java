@@ -18,7 +18,7 @@
 
 package me.mneri.csv.exception;
 
-import me.mneri.csv.reader.line.RecycledLine;
+import me.mneri.csv.reader.RecycledLine;
 
 import java.util.List;
 

@@ -26,10 +26,10 @@ import me.mneri.csv.format.Format;
 import me.mneri.csv.format.Rfc4180FullyRelaxedFormat;
 import me.mneri.csv.io.internal.RandomAccessCharStream;
 import me.mneri.csv.io.internal.RandomAccessStream;
-import me.mneri.csv.reader.line.internal.InternalRecycledLine;
-import me.mneri.csv.reader.line.parser.internal.LineParser;
-import me.mneri.csv.reader.line.parser.internal.SequentialLineParser;
-import me.mneri.csv.reader.line.parser.internal.SimdLineParser;
+import me.mneri.csv.reader.internal.InternalRecycledLine;
+import me.mneri.csv.reader.parser.internal.LineParser;
+import me.mneri.csv.reader.parser.internal.SequentialLineParser;
+import me.mneri.csv.reader.parser.internal.SimdLineParser;
 
 import java.io.*;
 import java.util.List;

@@ -18,7 +18,7 @@
 
 package me.mneri.csv.deserializer;
 
-import me.mneri.csv.reader.line.RecycledLine;
+import me.mneri.csv.reader.RecycledLine;
 
 import java.io.IOException;
 import java.util.ArrayList;

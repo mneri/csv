@@ -16,10 +16,10 @@
  * limitations under the License.
  */
 
-package me.mneri.csv.reader.line.parser.internal;
+package me.mneri.csv.reader.parser.internal;
 
 import me.mneri.csv.exception.CsvException;
-import me.mneri.csv.reader.line.internal.InternalRecycledLine;
+import me.mneri.csv.reader.internal.InternalRecycledLine;
 
 import java.io.Closeable;
 import java.io.IOException;
