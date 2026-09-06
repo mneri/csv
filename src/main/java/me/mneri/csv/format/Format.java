@@ -135,10 +135,14 @@ public interface Format {
      * CSV chunk: a a a a , b b b b , c c c c \r\n
      * Bitmask:   1 0 0 0 1 1 0 0 0 1 1 0 0 0 1 1
      * </pre>
-     * The implementation uses SIMD (Single Instruction, Multiple Data) instructions to evaluate the entire vector
-     * concurrently, returning the bitmask in just a few CPU cycles.
+     * <p>
+     * Implementations of {@code Format} must guarantee that processing a CSV stream via {@link #consume(int, int)} and
+     * {@link #consumeSlow(int, int)} yields the same result whether every single character is processed sequentially or
+     * only the subset of characters indicated by the bitmask returned by this method.
      * <p>
      * <i>Please, note that the method can sometimes return false-positives, but never false-negatives.</i>
+     * Known implementations of {@code Format} use SIMD (Single Instruction, Multiple Data) instructions to evaluate the
+     * entire vector concurrently, returning the bitmask in just a few CPU cycles.
      *
      * @param s      The current state as returned by a previous call to {@link #base()}, {@link #consume(int, int)} or
      *               {@link #consumeSlow(int, int)}.
