@@ -109,8 +109,8 @@ public final class Rfc4180FullyRelaxedFormat implements Format {
        QOT|SFH,       QOT,             QOT,             QOT,             SQE,             EOF|SFH|EFH|STP, 0,0,               // SQT
        FLD|RMB,       BFF|EFB,         CAR|EFB,         BFL|EFB|ELH,     QOT|RMB,         EOF|EFB|STP,     0,0,               // ESC
        FLD|SFH,       BFF|SFH|EFH,     CAR|SFH|EFH,     BFL|SFH|EFH,     QOT|SFH,         EOF|SFH|EFH|STP, 0,0,               // SQE
-       FLD|SFH,       BFF|SFH|EFH,     CAR|SFH|EFH,     BFL|SFH|EFH|ELH, SQT,             EOF|STP,         0,0,               // BFL
-       BFL|RPL,       BFL|ELH|RPL,     BFL|ELH|RPL,     BFL|ELH,         BFL|ELH|RPL,     EOF|STP,         0,0,               // CAR
+       FLD|SFH,       BFF|SFH|EFH,     CAR|SFH|EFH,     BFL|SFH|EFH|ELH, SQT,             EOF|STP,         0,0,               // BFL *
+       BFL|ELH|RPL,   BFL|ELH|RPL,     BFL|ELH|RPL,     BFL|ELH,         BFL|ELH|RPL,     EOF|STP,         0,0,               // CAR
        ERR|ERH,       ERR|ERH,         ERR|ERH,         ERR|ERH,         ERR|ERH,         ERR|ERH,         0,0,               // EOF
        ERR|ERH,       ERR|ERH,         ERR|ERH,         ERR|ERH,         ERR|ERH,         ERR|ERH,         0,0,               // ERR
        0,             0,               0,               0,               0,               0,               0,0,

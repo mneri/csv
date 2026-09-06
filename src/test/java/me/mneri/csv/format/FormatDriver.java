@@ -22,8 +22,8 @@ class FormatDriver {
         int start = 0;
         int s = format.base();
 
-        while (i < input.length() && (s & STP) == 0) {
-            char c = input.charAt(i);
+        while (i <= input.length()) { // Loop one over to add the EOF character
+            int c = i < input.length() ? input.charAt(i) : -1;
             s = format.consume(s, c);
 
             if ((s & SFH) != 0) {
@@ -49,13 +49,15 @@ class FormatDriver {
                 i = i - 1;
             }
             if ((s & RMB) != 0) {
-                input = input.substring(0, i) + input.substring(i + 1);
+                input = input.substring(0, i - 1) + input.substring(i);
                 i = i - 1;
             }
             if (((s & ERH) != 0)) {
                 throw new UnexpectedCharacterException(result.size());
             }
-
+            if ((s & STP) != 0) {
+                break;
+            }
             i = i + 1;
         }
 

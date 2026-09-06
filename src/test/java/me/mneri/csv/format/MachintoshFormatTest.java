@@ -9,12 +9,12 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-class Rfc4180StrictFormatTest {
+class MachintoshFormatTest {
     private FormatDriver driver;
 
     @BeforeEach
     public void beforeEach() {
-        Format format = Rfc4180StrictFormat.provider().provide();
+        Format format = MachintoshFormat.provider().provide();
         driver = new FormatDriver(format);
     }
 
@@ -32,21 +32,31 @@ class Rfc4180StrictFormatTest {
     }
 
     @Test
-    void parseOneLineEndingWithCr() {
+    void parseOneLineEndingWithCr() throws UnexpectedCharacterException {
         // Given
         String input = "apple,banana,cherry\r";
+        List<List<String>> expected = List.of(
+                List.of("apple", "banana", "cherry"));
 
-        // When/Then
-        assertThrows(UnexpectedCharacterException.class, () -> driver.parse(input));
+        // When
+        List<List<String>> result = driver.parse(input);
+
+        // Then
+        assertEquals(expected, result);
     }
 
     @Test
-    void parseOneLineEndingWithLf() {
+    void parseOneLineEndingWithLf() throws UnexpectedCharacterException {
         // Given
         String input = "apple,banana,cherry\n";
+        List<List<String>> expected = List.of(
+                List.of("apple", "banana", "cherry\n"));
 
-        // When/Then
-        assertThrows(UnexpectedCharacterException.class, () -> driver.parse(input));
+        // When
+        List<List<String>> result = driver.parse(input);
+
+        // Then
+        assertEquals(expected, result);
     }
 
     @Test
@@ -54,7 +64,8 @@ class Rfc4180StrictFormatTest {
         // Given
         String input = "apple,banana,cherry\r\n";
         List<List<String>> expected = List.of(
-                List.of("apple", "banana", "cherry"));
+                List.of("apple", "banana", "cherry"),
+                List.of("\n"));
 
         // When
         List<List<String>> result = driver.parse(input);
@@ -78,27 +89,9 @@ class Rfc4180StrictFormatTest {
     }
 
     @Test
-    void parseTwoLinesWithCr() {
+    void parseTwoLinesWithCr() throws UnexpectedCharacterException {
         // Given
         String input = "apple,banana,cherry\rdate,elderberry,fig\r";
-
-        // When/Then
-        assertThrows(UnexpectedCharacterException.class, () -> driver.parse(input));
-    }
-
-    @Test
-    void parseTwoLinesWithLf() {
-        // Given
-        String input = "apple,banana,cherry\ndate,elderberry,fig\n";
-
-        // When/Then
-        assertThrows(UnexpectedCharacterException.class, () -> driver.parse(input));
-    }
-
-    @Test
-    void parseTwoLinesWithCrLf() throws UnexpectedCharacterException {
-        // Given
-        String input = "apple,banana,cherry\r\ndate,elderberry,fig\r\n";
         List<List<String>> expected = List.of(
                 List.of("apple", "banana", "cherry"),
                 List.of("date", "elderberry", "fig"));
@@ -111,27 +104,39 @@ class Rfc4180StrictFormatTest {
     }
 
     @Test
-    void parseEmptyLineWithCr() {
+    void parseTwoLinesWithLf() throws UnexpectedCharacterException {
+        // Given
+        String input = "apple,banana,cherry\ndate,elderberry,fig\n";
+        List<List<String>> expected = List.of(
+                List.of("apple", "banana", "cherry\ndate", "elderberry", "fig\n"));
+
+        // When
+        List<List<String>> result = driver.parse(input);
+
+        // Then
+        assertEquals(expected, result);
+    }
+
+    @Test
+    void parseTwoLinesWithCrLf() throws UnexpectedCharacterException {
+        // Given
+        String input = "apple,banana,cherry\r\ndate,elderberry,fig\r\n";
+        List<List<String>> expected = List.of(
+                List.of("apple", "banana", "cherry"),
+                List.of("\ndate", "elderberry", "fig"),
+                List.of("\n"));
+
+        // When
+        List<List<String>> result = driver.parse(input);
+
+        // Then
+        assertEquals(expected, result);
+    }
+
+    @Test
+    void parseEmptyLineWithCr() throws UnexpectedCharacterException {
         // Given
         String input = "\r";
-
-        // When/Then
-        assertThrows(UnexpectedCharacterException.class, () -> driver.parse(input));
-    }
-
-    @Test
-    void parseEmptyLineWithLf() {
-        // Given
-        String input = "\n";
-
-        // When/Then
-        assertThrows(UnexpectedCharacterException.class, () -> driver.parse(input));
-    }
-
-    @Test
-    void parseEmptyLineWithCrLf() throws UnexpectedCharacterException {
-        // Given
-        String input = "\r\n";
         List<List<String>> expected = List.of(
                 List.of(""));
 
@@ -143,9 +148,38 @@ class Rfc4180StrictFormatTest {
     }
 
     @Test
+    void parseEmptyLineWithLf() throws UnexpectedCharacterException {
+        // Given
+        String input = "\n";
+        List<List<String>> expected = List.of(
+                List.of("\n"));
+
+        // When
+        List<List<String>> result = driver.parse(input);
+
+        // Then
+        assertEquals(expected, result);
+    }
+
+    @Test
+    void parseEmptyLineWithCrLf() throws UnexpectedCharacterException {
+        // Given
+        String input = "\r\n";
+        List<List<String>> expected = List.of(
+                List.of(""),
+                List.of("\n"));
+
+        // When
+        List<List<String>> result = driver.parse(input);
+
+        // Then
+        assertEquals(expected, result);
+    }
+
+    @Test
     void parseVariableNumberOfFields() throws UnexpectedCharacterException {
         // Given
-        String input = "apple,banana\r\ndate,elderberry,fig\r\ngrapefruit\r\n";
+        String input = "apple,banana\rdate,elderberry,fig\rgrapefruit\r";
         List<List<String>> expected = List.of(
                 List.of("apple", "banana"),
                 List.of("date", "elderberry", "fig"),
@@ -161,7 +195,7 @@ class Rfc4180StrictFormatTest {
     @Test
     void parseEmptyField() throws UnexpectedCharacterException {
         // Given
-        String input = "apple,,cherry\r\n";
+        String input = "apple,,cherry\r";
         List<List<String>> expected = List.of(
                 List.of("apple", "", "cherry"));
 
@@ -175,7 +209,7 @@ class Rfc4180StrictFormatTest {
     @Test
     void parseEmptyFieldAtStartOfLine() throws UnexpectedCharacterException {
         // Given
-        String input = ",banana,cherry\r\n";
+        String input = ",banana,cherry\r";
         List<List<String>> expected = List.of(
                 List.of("", "banana", "cherry"));
 
@@ -189,7 +223,7 @@ class Rfc4180StrictFormatTest {
     @Test
     void parseEmptyFieldAtEndOfLine() throws UnexpectedCharacterException {
         // Given
-        String input = "apple,banana,\r\n";
+        String input = "apple,banana,\r";
         List<List<String>> expected = List.of(
                 List.of("apple", "banana", ""));
 
@@ -217,7 +251,7 @@ class Rfc4180StrictFormatTest {
     @Test
     void parseFieldWithDoubleQuotes() {
         // Given
-        String input = "apple,ban\"ana,cherry\r\n";
+        String input = "apple,ban\"ana,cherry\r";
 
         // When/Then
         assertThrows(UnexpectedCharacterException.class, () -> driver.parse(input));
@@ -226,7 +260,7 @@ class Rfc4180StrictFormatTest {
     @Test
     void parseQualifiedField() throws UnexpectedCharacterException {
         // Given
-        String input = "apple,\"banana\",cherry\r\n";
+        String input = "apple,\"banana\",cherry\r";
         List<List<String>> expected = List.of(
                 List.of("apple", "banana", "cherry"));
 
@@ -240,7 +274,7 @@ class Rfc4180StrictFormatTest {
     @Test
     void parseQuotedAtStartOfLine() throws UnexpectedCharacterException {
         // Given
-        String input = "\"apple\",banana,cherry\r\n";
+        String input = "\"apple\",banana,cherry\r";
         List<List<String>> expected = List.of(
                 List.of("apple", "banana", "cherry"));
 
@@ -254,7 +288,7 @@ class Rfc4180StrictFormatTest {
     @Test
     void parseQualifiedFieldAtEndOfLine() throws UnexpectedCharacterException {
         // Given
-        String input = "apple,banana,\"cherry\"\r\n";
+        String input = "apple,banana,\"cherry\"\r";
         List<List<String>> expected = List.of(
                 List.of("apple", "banana", "cherry"));
 
@@ -268,7 +302,7 @@ class Rfc4180StrictFormatTest {
     @Test
     void parseQualifiedFieldWithComma() throws UnexpectedCharacterException {
         // Given
-        String input = "apple,\"banana,cherry\"\r\n";
+        String input = "apple,\"banana,cherry\"\r";
         List<List<String>> expected = List.of(
                 List.of("apple", "banana,cherry"));
 
@@ -280,9 +314,93 @@ class Rfc4180StrictFormatTest {
     }
 
     @Test
+    void parseQualifiedFieldWithCommaAtStart() throws UnexpectedCharacterException {
+        // Given
+        String input = "apple,\",banana\",cherry\r";
+        List<List<String>> expected = List.of(
+                List.of("apple", ",banana", "cherry"));
+
+        // When
+        List<List<String>> result = driver.parse(input);
+
+        // Then
+        assertEquals(expected, result);
+    }
+
+    @Test
+    void parseQualifiedFieldWithCommaAtEnd() throws UnexpectedCharacterException {
+        // Given
+        String input = "apple,\"banana,\",cherry\r";
+        List<List<String>> expected = List.of(
+                List.of("apple", "banana,", "cherry"));
+
+        // When
+        List<List<String>> result = driver.parse(input);
+
+        // Then
+        assertEquals(expected, result);
+    }
+
+    @Test
+    void parseQualifiedFieldWithCrAtStart() throws UnexpectedCharacterException {
+        // Given
+        String input = "apple,\"\rbanana\",cherry\r";
+        List<List<String>> expected = List.of(
+                List.of("apple", "\rbanana", "cherry"));
+
+        // When
+        List<List<String>> result = driver.parse(input);
+
+        // Then
+        assertEquals(expected, result);
+    }
+
+    @Test
+    void parseQualifiedFieldWithCrAtEnd() throws UnexpectedCharacterException {
+        // Given
+        String input = "apple,\"banana\r\",cherry\r";
+        List<List<String>> expected = List.of(
+                List.of("apple", "banana\r", "cherry"));
+
+        // When
+        List<List<String>> result = driver.parse(input);
+
+        // Then
+        assertEquals(expected, result);
+    }
+
+    @Test
+    void parseQualifiedFieldWithLfAtStart() throws UnexpectedCharacterException {
+        // Given
+        String input = "apple,\"\nbanana\",cherry\r";
+        List<List<String>> expected = List.of(
+                List.of("apple", "\nbanana", "cherry"));
+
+        // When
+        List<List<String>> result = driver.parse(input);
+
+        // Then
+        assertEquals(expected, result);
+    }
+
+    @Test
+    void parseQualifiedFieldWithLfAtEnd() throws UnexpectedCharacterException {
+        // Given
+        String input = "apple,\"banana\n\",cherry\r";
+        List<List<String>> expected = List.of(
+                List.of("apple", "banana\n", "cherry"));
+
+        // When
+        List<List<String>> result = driver.parse(input);
+
+        // Then
+        assertEquals(expected, result);
+    }
+
+    @Test
     void parseQualifiedFieldWithQuotes() throws UnexpectedCharacterException {
         // Given
-        String input = "apple,\"ba\"\"na\"\"na\",cherry\r\n";
+        String input = "apple,\"ba\"\"na\"\"na\",cherry\r";
         List<List<String>> expected = List.of(
                 List.of("apple", "ba\"na\"na", "cherry"));
 
@@ -296,7 +414,7 @@ class Rfc4180StrictFormatTest {
     @Test
     void parseQualifiedFieldWithQuotesAtStart() throws UnexpectedCharacterException {
         // Given
-        String input = "apple,\"\"\"banana\",cherry\r\n";
+        String input = "apple,\"\"\"banana\",cherry\r";
         List<List<String>> expected = List.of(
                 List.of("apple", "\"banana", "cherry"));
 
@@ -310,7 +428,7 @@ class Rfc4180StrictFormatTest {
     @Test
     void parseQualifiedFieldWithQuotesAtEnd() throws UnexpectedCharacterException {
         // Given
-        String input = "apple,\"banana\"\"\",cherry\r\n";
+        String input = "apple,\"banana\"\"\",cherry\r";
         List<List<String>> expected = List.of(
                 List.of("apple", "banana\"", "cherry"));
 
@@ -324,7 +442,7 @@ class Rfc4180StrictFormatTest {
     @Test
     void parseQualifiedFieldWithTwoConsecutiveQuotes() throws UnexpectedCharacterException {
         // Given
-        String input = "apple,\"ban\"\"\"\"ana\",cherry\r\n";
+        String input = "apple,\"ban\"\"\"\"ana\",cherry\r";
         List<List<String>> expected = List.of(
                 List.of("apple", "ban\"\"ana", "cherry"));
 
@@ -338,7 +456,7 @@ class Rfc4180StrictFormatTest {
     @Test
     void parseQualifiedFieldWithCr() throws UnexpectedCharacterException {
         // Given
-        String input = "apple,\"ban\rana\",cherry\r\n";
+        String input = "apple,\"ban\rana\",cherry\r";
         List<List<String>> expected = List.of(
                 List.of("apple", "ban\rana", "cherry"));
 
@@ -352,7 +470,7 @@ class Rfc4180StrictFormatTest {
     @Test
     void parseQualifiedFieldWithLn() throws UnexpectedCharacterException {
         // Given
-        String input = "apple,\"ban\nana\",cherry\r\n";
+        String input = "apple,\"ban\nana\",cherry\r";
         List<List<String>> expected = List.of(
                 List.of("apple", "ban\nana", "cherry"));
 
@@ -366,7 +484,7 @@ class Rfc4180StrictFormatTest {
     @Test
     void parseQualifiedFieldWithCrLn() throws UnexpectedCharacterException {
         // Given
-        String input = "apple,\"ban\r\nana\",cherry\r\n";
+        String input = "apple,\"ban\r\nana\",cherry\r";
         List<List<String>> expected = List.of(
                 List.of("apple", "ban\r\nana", "cherry"));
 
@@ -380,7 +498,7 @@ class Rfc4180StrictFormatTest {
     @Test
     void parseQualifiedFieldWithTextAfter() {
         // Given
-        String input = "apple,\"ban\"ana,cherry\r\n";
+        String input = "apple,\"ban\"ana,cherry\r";
 
         // When/Then
         assertThrows(UnexpectedCharacterException.class, () -> driver.parse(input));

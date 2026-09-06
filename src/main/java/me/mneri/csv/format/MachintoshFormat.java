@@ -68,22 +68,22 @@ public final class MachintoshFormat implements Format {
 
     //@formatter:off
     private static final int[] DFA = {
-    // *                ,                \r               "                EOF              padding
-       FLD,             BFF|EFH,         ERR|ERH,         ERR|ERH,         EOF|EFH|STP,     0,0,0,           // FLD
-       QOT,             QOT,             QOT,             ESC,             ERR|ERH,         0,0,0,           // QOT
-       FLD|SFH,         BFF|SFH|EFH,     ERR|ERH,         SQT,             EOF|SFH|EFH|ELH, 0,0,0,           // BFF
-       QOT|SFH,         QOT,             QOT,             SQE,             ERR|ERH,         0,0,0,           // SQT
-       ERR|ERH,         BFF|EFB,         ERR|ERH,         QOT|RMB,         EOF|EFB|ELH|STP, 0,0,0,           // ESC
-       ERR|ERH,         BFF|SFH|EFH,     ERR|ERH,         QOT|SFH,         EOF|SFH|EFH|STP, 0,0,0,           // SQE
-       FLD|SFH,         BFF|SFH|EFH,     ERR|ERH,         SQT,             EOF|STP,         0,0,0,           // BFL
-       ERR|ERH,         ERR|ERH,         ERR|ERH,         ERR|ERH,         ERR|ERH,         0,0,0,           // EOF
-       ERR|ERH,         ERR|ERH,         ERR|ERH,         ERR|ERH,         ERR|ERH,         0,0,0,           // ERR
-       0,               0,               0,               0,               0,               0,0,0,
-       0,               0,               0,               0,               0,               0,0,0,
-       0,               0,               0,               0,               0,               0,0,0,
-       0,               0,               0,               0,               0,               0,0,0,
-       0,               0,               0,               0,               0,               0,0,0,
-       0,               0,               0,               0,               0,               0,0,0};
+    // *                    ,                    \r                   "                    EOF                  padding
+       FLD,                 BFF|EFH,             BFL|EFH|ELH,         ERR|ERH,             EOF|EFH|STP,         0,0,0,           // FLD
+       QOT,                 QOT,                 QOT,                 ESC,                 ERR|ERH,             0,0,0,           // QOT
+       FLD|SFH,             BFF|SFH|EFH,         BFL|SFH|EFH|ELH,     SQT,                 EOF|SFH|EFH|ELH|STP, 0,0,0,           // BFF
+       QOT|SFH,             QOT|SFH,             QOT|SFH,             SQE,                 ERR|ERH,             0,0,0,           // SQT
+       ERR|ERH,             BFF|EFB,             BFL|EFB|ELH,         QOT|RMB,             EOF|EFB|ELH|STP,     0,0,0,           // ESC
+       ERR|ERH,             BFF|SFH|EFH,         ERR|ERH,             QOT|SFH,             EOF|SFH|EFH|STP,     0,0,0,           // SQE
+       FLD|SFH,             BFF|SFH|EFH,         BFL|EFH|ELH,         SQT,                 EOF|STP,             0,0,0,           // BFL *
+       ERR|ERH,             ERR|ERH,             ERR|ERH,             ERR|ERH,             ERR|ERH,             0,0,0,           // EOF
+       ERR|ERH,             ERR|ERH,             ERR|ERH,             ERR|ERH,             ERR|ERH,             0,0,0,           // ERR
+       0,                   0,                   0,                   0,                   0,                   0,0,0,
+       0,                   0,                   0,                   0,                   0,                   0,0,0,
+       0,                   0,                   0,                   0,                   0,                   0,0,0,
+       0,                   0,                   0,                   0,                   0,                   0,0,0,
+       0,                   0,                   0,                   0,                   0,                   0,0,0,
+       0,                   0,                   0,                   0,                   0,                   0,0,0};
     //@formatter:on
 
     public static Format.Provider<MachintoshFormat> provider() {
@@ -150,8 +150,8 @@ public final class MachintoshFormat implements Format {
         // Fast Path: Check if 'c' is an "ordinary" character. This includes anything > 44 (standard text) or characters
         // <= 44 not in the special mask.
         // Java's shift operators natively mask the shift by 63 (c & 63). Thus, 1L << -1 cleanly wraps to bit 63.
-        // Mask 0x80_00_20_08_00_00_40_00L has bits at: 14 (\r), 35 ("), 45 (,), 63 (EOF).
-        if (c > ',' || ((1L << c) & 0x80_00_20_08_00_00_40_00L) == 0) {
+        // Mask 0x80_00_10_04_00_00_20_00 has bits at: 13 (\r), 34 ("), 44 (,), 63 (EOF).
+        if (c > ',' || ((1L << c) & 0x80_00_10_04_00_00_20_00L) == 0) {
             return 0;
         }
 
