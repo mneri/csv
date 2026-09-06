@@ -139,19 +139,24 @@ public final class MsExcelFormat implements Format {
         return () -> new MsExcelFormat(locale);
     }
 
-    private final int del;
-    private final long map;
-    private final long mask;
+    private int del;
+    private int high;
+    private long map;
+    private long mask;
 
     private MsExcelFormat(Locale locale) {
-        int del = DecimalFormatSymbols.getInstance(locale).getDecimalSeparator();
-        this.del = del;
+        int ds = DecimalFormatSymbols.getInstance(locale).getDecimalSeparator();
+        int del = (ds != ',') ? ',' : ';';
+        init(del);
+    }
 
+    private void init(int del) {
+        this.del = del;
+        this.high = Math.min(del, Long.SIZE - 1);
         // Java's shift operators natively mask the shift by 63 (c & 63). Thus, 1L << -1 cleanly wraps to bit 63.
         // Mask 0x80_00_00_04_00_00_24_00L has bits set at: 10 (\n), 13 (\r), 34 ("), 63 (EOF), then we set the bit
         // for the delimiter (e.g. 44 (,), or 59 (;)).
         this.mask = 0x80_00_00_04_00_00_24_00L | (1L << del);
-
         // Data Map 0x00_00_00_20_00_00_98_05L encodes:
         // Bits [00-02]: 5 (EOF)  | Bits [11-13]: 3 (\n) | Bits [14-16]: 2 (\r)
         // Bits [35-37]: 4 (")
@@ -217,7 +222,7 @@ public final class MsExcelFormat implements Format {
 
         // Fast Path: Check if 'c' is an "ordinary" character. This includes anything > sep (standard text) or
         // characters <= sep not in the special mask.
-        if (c > del || ((1L << c) & mask) == 0) {
+        if (c > high || ((1L << c) & mask) == 0) {
             return 0;
         }
 
