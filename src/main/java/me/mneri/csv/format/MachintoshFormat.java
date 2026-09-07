@@ -28,8 +28,8 @@ package me.mneri.csv.format;
  * The following features and variations are supported:
  * <ul>
  *     <li>
- *         <b>Variable number of fields</b>: Unlike the strictest interpretations of CSV, this format allows lines to
- *         contain a different number of fields from one another. For example:<br/>
+ *         <strong>Variable number of fields</strong>: Unlike the strictest interpretations of CSV, this format allows
+ *         lines to contain a different number of fields from one another. For example:<br/>
  *         <samp>
  *             aaa,bbb,ccc CR<br/>
  *             xxx,yyy CR

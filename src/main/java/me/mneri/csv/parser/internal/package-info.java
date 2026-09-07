@@ -30,6 +30,12 @@
  *   </li>
  * </ul>
  * <p>
+ * {@link me.mneri.csv.parser.internal.SimdLineParser} makes use of the Vector API, which is an incubator feature not
+ * yet available in standard Java installations, but can be enabled by adding the JVM flag
+ * {@code --add-modules jdk.incubator.vector}. When the flag is active, CSV files are parsed by
+ * {@link me.mneri.csv.parser.internal.SimdLineParser}; when not active
+ * {@link me.mneri.csv.parser.internal.SequentialLineParser} is used instead.
+ * <p>
  * <strong>Note:</strong> Classes in this package are internal implementation details and should not be used directly by
  * external code.</p>
  *

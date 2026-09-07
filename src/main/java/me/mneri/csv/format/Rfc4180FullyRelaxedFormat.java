@@ -27,15 +27,15 @@ package me.mneri.csv.format;
  * The following features are supported:
  * <ul>
  *     <li>
- *         <b>Variable number of fields</b>: lines may contain a different number of fields from one another. For
- *         example:<br/>
+ *         <strong>Variable number of fields</strong>: lines may contain a different number of fields from one another.
+ *         For example:<br/>
  *         <samp>
  *             aaa,bbb,ccc CRLF<br/>
  *             xxx,yyy CRLF
  *         </samp>
  *     </li>
  *     <li>
- *         <b>Line termination</b>: lines can end with {@code \r\n}, {@code \r}, or {@code \n}; files can be
+ *         <strong>Line termination</strong>: lines can end with {@code \r\n}, {@code \r}, or {@code \n}; files can be
  *         inconsistent in their line termination, using different line terminators on different lines, any number of
  *         times. For example:<br/>
  *         <samp>
@@ -44,26 +44,28 @@ package me.mneri.csv.format;
  *         </samp>
  *     </li>
  *     <li>
- *         <b>Fields containing double quotes</b>: fields that do not begin with a double quotes character ({@code "})
- *         may contain double quotes; in such cases, double quotes are treated as ordinary characters. For example:<br/>
+ *         <strong>Fields containing double quotes</strong>: fields that do not begin with a double quotes character
+ *         ({@code "}) may contain double quotes; in such cases, double quotes are treated as ordinary characters. For
+ *         example:<br/>
  *         <samp>
  *             aaa,b"b"b,ccc CRLF ; interpreted as &lt;aaa&gt;, &lt;b"b"b&gt; and &lt;ccc&gt;<br/>
  *             xxx,y"y,zzz CRLF   ; interpreted as &lt;xxx&gt;, &lt;y"y&gt; and &lt;zzz&gt;
  *         </samp>
  *     </li>
  *     <li>
- *         <b>Extra text after a double quoted field</b>: fields that begin with a double quotes character ({@code "})
- *         may include additional text after the closing double quotes and before the comma delimiter ({@code ,}); this
- *         additional text is treated as part of the field, following the rules for unquoted fields. For example:<br/>
+ *         <strong>Extra text after a double quoted field</strong>: fields that begin with a double quotes character
+ *         ({@code "}) may include additional text after the closing double quotes and before the comma delimiter
+ *         ({@code ,}); this additional text is treated as part of the field, following the rules for unquoted fields.
+ *         For example:<br/>
  *         <samp>
  *             aaa,"bb"b,ccc CRLF ; interpreted as &lt;aaa&gt;, &lt;bbb&gt; and &lt;ccc&gt;<br/>
  *             xxx,"y"yy",zzz CRLF ; interpreted as &lt;xxx&gt;, &lt;yyy"&gt; and &lt;zzz&gt;
  *         </samp>
  *     </li>
  *     <li>
- *         <b>Termination of double quoted fields</b>: if a field starts with a double quote character ({@code "}) and
- *         the end of file is reached prior to the corresponding closing double quote, the field shall still be regarded
- *         as correctly terminated. For example:<br/>
+ *         <strong>Termination of double quoted fields</strong>: if a field starts with a double quote character
+ *         ({@code "}) and the end of file is reached prior to the corresponding closing double quote, the field shall
+ *         still be regarded as correctly terminated. For example:<br/>
  *         <samp>
  *             aaa,bbb,"ccc EOF ; interpreted as &lt;aaa&gt;, &lt;bbb&gt; and &lt;ccc&gt;<br/>
  *         </samp>

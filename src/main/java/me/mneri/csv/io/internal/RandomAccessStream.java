@@ -23,10 +23,10 @@ import java.io.Reader;
 import java.nio.BufferOverflowException;
 
 /**
- * A high-throughput, character reader that provides absolute random access over a strictly sequential underlying
+ * A high-throughput, character stream that provides absolute random access over a strictly sequential underlying
  * {@link Reader}.
  * <p>
- * To provide random access, this reader uses a finite memory buffer. Because the buffer capacity is bounded, the client
+ * To provide random access, the stream uses a finite memory buffer. Because the buffer capacity is bounded, the client
  * must continuously advance the accessible data window by calling {@link #compact(long)}. This signals that older
  * characters are no longer required, discarding them to free capacity for new data from the stream. Attempting to read
  * an index prior to the compaction point will result in an unspecified behaviour.

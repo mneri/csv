@@ -22,8 +22,8 @@ package me.mneri.csv.format;
  * Implements a strict interpretation of the RFC4180 standard for CSV files, with one simple variation:
  * <ul>
  *     <li>
- *         <b>Variable number of fields</b>: lines may contain a different number of fields from one another. For
- *         example:<br/>
+ *         <strong>Variable number of fields</strong>: lines may contain a different number of fields from one another.
+ *         For example:<br/>
  *         <samp>
  *             aaa,bbb,ccc CRLF<br/>
  *             xxx,yyy CRLF

@@ -24,24 +24,26 @@ package me.mneri.csv.format;
  * The following features are supported:
  * <ul>
  *     <li>
- *         <b>Variable number of fields</b>: lines may contain a different number of fields from one another. For
- *         example:<br/>
+ *         <strong>Variable number of fields</strong>: lines may contain a different number of fields from one another.
+ *         For example:<br/>
  *         <samp>
  *             aaa,bbb,ccc CRLF<br/>
  *             xxx,yyy CRLF
  *         </samp>
  *     </li>
  *     <li>
- *         <b>Line termination</b>: lines can end with {@code \r\n} or {@code \n}; files can be inconsistent in their
- *         line termination, using different line terminators on different lines, any number of times. For example:<br/>
+ *         <strong>Line termination</strong>: lines can end with {@code \r\n} or {@code \n}; files can be inconsistent
+ *         in their line termination, using different line terminators on different lines, any number of times. For
+ *         example:<br/>
  *         <samp>
  *             aaa,bbb,ccc CRLF<br/>
  *             xxx,yyy,zzz LF
  *         </samp>
  *     </li>
  *     <li>
- *         <b>Fields containing double quotes</b>: fields that do not begin with a double quotes character ({@code "})
- *         may contain double quotes; in such cases, double quotes are treated as ordinary characters. For example:<br/>
+ *         <strong>Fields containing double quotes</strong>: fields that do not begin with a double quotes character
+ *         ({@code "}) may contain double quotes; in such cases, double quotes are treated as ordinary characters. For
+ *         example:<br/>
  *         <samp>
  *             aaa,b"b"b,ccc CRLF ; interpreted as &lt;aaa&gt;, &lt;b"b"b&gt; and &lt;ccc&gt;<br/>
  *             xxx,y"y,zzz CRLF   ; interpreted as &lt;xxx&gt;, &lt;y"y&gt; and &lt;zzz&gt;
