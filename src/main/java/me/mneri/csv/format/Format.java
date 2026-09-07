@@ -49,6 +49,8 @@ package me.mneri.csv.format;
  *     // ...
  * }
  * }</pre>
+ *
+ * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
  */
 public interface Format {
     /**

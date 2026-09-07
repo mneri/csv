@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package me.mneri.csv.reader.parser.internal;
+package me.mneri.csv.parser.internal;
 
 import me.mneri.csv.exception.CsvException;
 import me.mneri.csv.line.internal.InternalRecycledLine;
@@ -26,6 +26,8 @@ import java.io.IOException;
 
 /**
  * Parse the internal character stream and return CSV lines.
+ *
+ * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
  */
 public interface LineParser extends Closeable {
     /**

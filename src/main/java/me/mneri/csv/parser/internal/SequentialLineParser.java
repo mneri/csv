@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package me.mneri.csv.reader.parser.internal;
+package me.mneri.csv.parser.internal;
 
 import me.mneri.csv.exception.CsvException;
 import me.mneri.csv.exception.UnexpectedCharacterException;
@@ -29,22 +29,21 @@ import java.io.IOException;
 import static me.mneri.csv.format.Format.*;
 
 /**
- * Implementation of {@link LineParser} that leverages SIMD operations.
+ * Parse CSV lines processing one character after the other.
+ *
+ * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
  */
-public class SimdLineParser implements LineParser {
+public class SequentialLineParser implements LineParser {
     private static final int EFB_TRAILING_ZEROES = Integer.numberOfTrailingZeros(EFB);
-    private static final int STRIDE = Long.SIZE;
 
     private final Format format;
-    private final RandomAccessStream stream;
+    private final RandomAccessStream reader;
 
-    private long bitmask;
-    private long strideEnd;
-    private long strideStart;
+    private int pos;
 
-    public SimdLineParser(Format.Provider<? extends Format> provider, RandomAccessStream stream) {
+    public SequentialLineParser(Provider<? extends Format> provider, RandomAccessStream reader) {
         this.format = provider.provide();
-        this.stream = stream;
+        this.reader = reader;
     }
 
     /**
@@ -54,7 +53,7 @@ public class SimdLineParser implements LineParser {
      */
     @Override
     public void close() throws IOException {
-        stream.close();
+        reader.close();
     }
 
     /**
@@ -66,55 +65,41 @@ public class SimdLineParser implements LineParser {
      * @throws IOException  {@inheritDoc}
      */
     @Override
-    public boolean next(InternalRecycledLine out) throws CsvException, IOException {
-        int s = format.base();
-        long bitmask = this.bitmask;
-        long strideStart = this.strideStart;
-        long strideEnd = this.strideEnd;
-
+    public boolean next(InternalRecycledLine out) throws CsvException, IOException { // Bytecode size: 209 (OpenJDK 26)
         out.reset();
-        stream.compact(strideStart);
-        do {
-            long pos;
-            int shift;
+        reader.compact(pos);
 
+        final Format format = this.format;
+        int s = format.base();
+        int pos = this.pos;
+        do {
             // Optimization: The most frequent actions are to start and to end a field. For example, in a line with 5
             // fields there are 10 field-start/field-stop and only 1 end-of-line. We inserted a tighter loop, saving a
             // comparison per outer loop iteration.
             do {
-                // Calculate a bitmask with 1's set on the characters of interest and loop only on them.
-                while (bitmask == 0L) {
-                    strideStart = strideEnd;
-                    strideEnd += STRIDE;
-                    bitmask = bitmask(s, strideStart, strideEnd);
+                while (!isAny(s = format.consume(s, reader.getChar(pos)))) {
+                    pos = pos + 1;
                 }
-                shift = Long.numberOfTrailingZeros(bitmask);
-                bitmask &= bitmask - 1L;
-                pos = strideStart + shift;
-
-                s = format.consumeSlow(s, stream.getChar(pos));
-
                 if (isStartOfField(s)) {
                     out.startField(pos);
                 }
                 if (isEndOfField(s)) {
                     out.endField(pos - ((s & EFB) >>> EFB_TRAILING_ZEROES));
                 }
+                pos = pos + 1;
             } while (isJustStartOfFieldOrEndOfField(s));
             // Optimization: Dirty characters and replays are rare. Here we check for both with a single bitwise
             // operation, and if one of the bits is set we check again singularly.
             if (isPastDirtyOrReplay(s)) {
                 if (isPastDirty(s)) {
-                    out.dirty(pos - 1L);
+                    out.dirty(pos - 2); // -1: refers to previous position; -1: pos was already incremented
                 }
                 if (isReplay(s)) {
-                    bitmask |= 1L << shift;
+                    pos = pos - 2; // -1: go back one; -1: pos was already incremented
                 }
             }
         } while (isNotEndOfLineAndNotEndOfFileAndNotError(s));
-        this.strideEnd = strideEnd;
-        this.strideStart = strideStart;
-        this.bitmask = bitmask;
+        this.pos = pos;
 
         if (isNotEndOfFileAndNotError(s)) {
             return true;
@@ -124,9 +109,8 @@ public class SimdLineParser implements LineParser {
         return false;
     }
 
-    private long bitmask(int s, long strideStart, long strideEnd) throws IOException {
-        // FIXME: This is... Ugh. We're giving the Format free access to the internal array of the stream.
-        return format.bitmask(s, stream.array(strideStart, strideEnd), stream.index(strideStart));
+    private boolean isAny(int s) {
+        return (s & ANY) != 0;
     }
 
     private boolean isEndOfField(int s) {

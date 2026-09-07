@@ -30,6 +30,8 @@ package me.mneri.csv.format;
  *         </samp>
  *     </li>
  * </ul>
+ *
+ * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
  */
 @SuppressWarnings({"Duplicates", "unused"})
 public final class Rfc4180StrictFormat implements Format {

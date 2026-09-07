@@ -23,6 +23,8 @@ import jdk.incubator.vector.VectorSpecies;
 
 /**
  * Helper class for {@link Format} implementations.
+ *
+ * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
  */
 public final class FormatHelper {
     private static final VectorSpecies<Short> SHORT_SPECIES = ShortVector.SPECIES_PREFERRED;
@@ -49,7 +51,7 @@ public final class FormatHelper {
      * @param c4     A character.
      * @return A bitmask with 1's set in the positions of the specified characters.
      */
-    static long bitmask(char[] cb, int offset, char c1, char c2, char c3, char c4) {
+    static public long bitmask(char[] cb, int offset, char c1, char c2, char c3, char c4) {
         long bitmask = 0L;
         for (int i = 0; i < Long.SIZE; i += SHORT_STRIDE) {
             ShortVector vector = ShortVector.fromCharArray(SHORT_SPECIES, cb, offset + i);
@@ -82,7 +84,7 @@ public final class FormatHelper {
      * @param c5     A character.
      * @return A bitmask with 1's set in the positions of the specified characters.
      */
-    static long bitmask(char[] cb, int offset, char c1, char c2, char c3, char c4, char c5) {
+    static public long bitmask(char[] cb, int offset, char c1, char c2, char c3, char c4, char c5) {
         long bitmask = 0L;
         for (int i = 0; i < Long.SIZE; i += SHORT_STRIDE) {
             ShortVector vector = ShortVector.fromCharArray(SHORT_SPECIES, cb, offset + i);

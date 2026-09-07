@@ -77,6 +77,8 @@ import java.util.Locale;
  *         </samp>
  *     </li>
  * </ul>
+ *
+ * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
  */
 @SuppressWarnings({"Duplicates", "unused"})
 public final class MsExcelFormat implements Format {
