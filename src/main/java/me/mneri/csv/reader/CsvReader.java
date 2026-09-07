@@ -26,7 +26,7 @@ import me.mneri.csv.format.Format;
 import me.mneri.csv.format.Rfc4180FullyRelaxedFormat;
 import me.mneri.csv.io.internal.RandomAccessCharStream;
 import me.mneri.csv.io.internal.RandomAccessStream;
-import me.mneri.csv.reader.internal.InternalRecycledLine;
+import me.mneri.csv.line.internal.InternalRecycledLine;
 import me.mneri.csv.reader.parser.internal.LineParser;
 import me.mneri.csv.reader.parser.internal.SequentialLineParser;
 import me.mneri.csv.reader.parser.internal.SimdLineParser;

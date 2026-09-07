@@ -22,7 +22,7 @@ import me.mneri.csv.exception.CsvException;
 import me.mneri.csv.exception.UnexpectedCharacterException;
 import me.mneri.csv.format.Format;
 import me.mneri.csv.io.internal.RandomAccessStream;
-import me.mneri.csv.reader.internal.InternalRecycledLine;
+import me.mneri.csv.line.internal.InternalRecycledLine;
 
 import java.io.IOException;
 

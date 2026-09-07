@@ -18,23 +18,26 @@
 
 package me.mneri.csv.deserializer;
 
-import me.mneri.csv.reader.RecycledLine;
+import me.mneri.csv.line.RecycledLine;
 import me.mneri.csv.serializer.Serializer;
 
 /**
  * Deserialize objects.
  *
- * @param <T> the type of the objects.
+ * @param <T> The type of the objects.
  * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
  * @see Serializer
  */
 public interface Deserializer<T> {
     /**
-     * Deserialize an object starting from csv line. The order of the strings is the same as found in the csv.
+     * Given a {@link RecycledLine}, construct an object. The order of the fields is the same as found in the CSV.
+     * <i>
+     * Implementations of this interface should never store, return or otherwise use the {@link RecycledLine} instance
+     * outside the scope of this method.
      *
-     * @param line the csv line.
+     * @param line The CSV line.
      * @return An object.
-     * @throws Exception if anything goes wrong.
+     * @throws Exception If anything goes wrong.
      */
     T deserialize(RecycledLine line) throws Exception;
 }

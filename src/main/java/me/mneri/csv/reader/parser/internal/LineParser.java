@@ -19,7 +19,7 @@
 package me.mneri.csv.reader.parser.internal;
 
 import me.mneri.csv.exception.CsvException;
-import me.mneri.csv.reader.internal.InternalRecycledLine;
+import me.mneri.csv.line.internal.InternalRecycledLine;
 
 import java.io.Closeable;
 import java.io.IOException;
