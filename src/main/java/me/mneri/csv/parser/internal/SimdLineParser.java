@@ -153,7 +153,7 @@ public class SimdLineParser implements LineParser {
     }
 
     private boolean isJustStartOfFieldOrEndOfField(int s) {
-        return (s & (RMB | RPL | ELH | ERH | STP)) == 0;
+        return (s & (RMB | RPL | ELH | ELB | ERH | STP)) == 0;
     }
 
     private boolean isNotEndOfFileAndNotError(int s) {
@@ -161,7 +161,7 @@ public class SimdLineParser implements LineParser {
     }
 
     private boolean isNotEndOfLineAndNotEndOfFileAndNotError(int s) {
-        return (s & (ELH | ERH | STP)) == 0;
+        return (s & (ELH | ELB | ERH | STP)) == 0;
     }
 
     private boolean isPastDirty(int s) {

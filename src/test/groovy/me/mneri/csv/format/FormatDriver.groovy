@@ -38,7 +38,7 @@ class FormatDriver {
                 }
                 line.add(input.substring(start, pos - 1))
             }
-            if ((s & ELH) != 0) {
+            if ((s & (ELH | ELB)) != 0) {
                 result.add(line)
                 line = null
             }

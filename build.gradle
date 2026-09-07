@@ -1,24 +1,24 @@
 plugins {
+    id 'groovy'
     id 'java'
     id 'me.champeau.jmh' version '0.6.8'
 }
 
 group = 'me.mneri.csv'
 version = '2.0-SNAPSHOT'
-java {
-//    toolchain {
-//        languageVersion = JavaLanguageVersion.of(26) // or your target Java version
-//    }
-}
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.11.1'
     jmh 'org.openjdk.jmh:jmh-core:1.37'
     jmhAnnotationProcessor 'org.openjdk.jmh:jmh-generator-annprocess:1.37'
+
+    testImplementation 'org.spockframework:spock-core:2.4-M1-groovy-4.0'
+    testImplementation 'org.apache.groovy:groovy:4.0.18'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.2'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 test {
@@ -26,13 +26,13 @@ test {
 }
 
 tasks.withType(JavaCompile).configureEach {
-    options.compilerArgs += ['--enable-preview', '--add-modules=jdk.incubator.vector']
-}
-
-tasks.withType(Test).configureEach {
-    jvmArgs += ['--enable-preview', '--add-modules=jdk.incubator.vector']
+    options.compilerArgs += ['--add-modules=jdk.incubator.vector']
 }
 
 tasks.withType(JavaExec).configureEach {
-    jvmArgs += ['--enable-preview', '--add-modules=jdk.incubator.vector']
+    jvmArgs += ['--add-modules=jdk.incubator.vector']
+}
+
+tasks.withType(Test).configureEach {
+    jvmArgs += ['--add-modules=jdk.incubator.vector']
 }

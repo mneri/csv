@@ -122,7 +122,7 @@ public final class MsExcelFormat implements Format {
        FLD|RMB,           BFF|EFB,             CAR|EFB,             BFL|EFB|ELH,         QOT|RMB,             EOF|EFB|ELH|STP,     0,0,  // ESC
        FLD|SFH,           BFF|SFH|EFH,         CAR|SFH|EFH,         BFL|SFH|EFH|ELH,     QOT|SFH,             EOF|SFH|EFH|ELH|STP, 0,0,  // SQE
        FLD|SFH,           BFF|SFH|EFH,         CAR|SFH|EFH,         BFL|SFH|EFH|ELH,     SQT,                 EOF|STP,             0,0,  // BFL *
-       BFL|ELH|RPL,       BFL|ELH|RPL,         BFL|ELH|RPL,         BFL|ELH,             BFL|ELH|RPL,         EOF|ELH|STP,         0,0,  // CAR
+       BFL|ELB|RPL,       BFL|ELB|RPL,         BFL|ELB|RPL,         BFL|ELH,             BFL|ELB|RPL,         EOF|ELB|STP,         0,0,  // CAR
        ERR|ERH,           ERR|ERH,             ERR|ERH,             ERR|ERH,             ERR|ERH,             ERR|ERH,             0,0,  // EOF
        ERR|ERH,           ERR|ERH,             ERR|ERH,             ERR|ERH,             ERR|ERH,             ERR|ERH,             0,0,  // ERR
        0,                 0,                   0,                   0,                   0,                   0,                   0,0,

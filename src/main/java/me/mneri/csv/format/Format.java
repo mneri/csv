@@ -77,24 +77,29 @@ public interface Format {
     int ELH = 1 << 19;
 
     /**
+     * When this flag is set, the client must take action to end the line at the <i>previous</i> character's position.
+     */
+    int ELB = 1 << 20;
+
+    /**
      * When this flag is set, the client must take action to go back one character in the stream.
      */
-    int RPL = 1 << 20;
+    int RPL = 1 << 21;
 
     /**
      * When this flag is set, the client must take action to remove the character at <i>previous</i> position.
      */
-    int RMB = 1 << 21;
+    int RMB = 1 << 22;
 
     /**
      * When this flag is set, the client is advised that the end-of-file has been reached successfully.
      */
-    int STP = 1 << 22;
+    int STP = 1 << 23;
 
     /**
      * When this flag is set, the client must take action to report the CSV was invalid and contains format errors.
      */
-    int ERH = 1 << 23;
+    int ERH = 1 << 24;
 
     /**
      * Convenience mask to check if any action flag is set. Since the vast majority of characters in a stream don't
