@@ -60,7 +60,7 @@ public class SequentialLineParser implements LineParser {
      *
      * @param out {@inheritDoc}
      * @return {@inheritDoc}
-     * @throws IOException  {@inheritDoc}
+     * @throws IOException {@inheritDoc}
      */
     @Override
     public boolean next(InternalRecycledLine out) throws IOException { // Bytecode size: 209 (OpenJDK 26)

@@ -15,12 +15,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 /**
  * CSV format definitions and implementations.
  * <p>
  * This package provides a pluggable architecture for defining and implementing various CSV dialects and standards.
  * Each format encodes the rules for parsing CSV data, including field delimiters, quote characters, escape sequences,
- * line termination conventions, and errors.
+ * line termination conventions, and error tolerance.
  *
  * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
  */

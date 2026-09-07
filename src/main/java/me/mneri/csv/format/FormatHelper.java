@@ -23,6 +23,9 @@ import jdk.incubator.vector.VectorSpecies;
 
 /**
  * Helper class for {@link Format} implementations.
+ * <p>
+ * This class uses the Vector API, which is an incubator feature not yet available in standard Java installations, but
+ * can be enabled by adding the JVM flag {@code --add-modules jdk.incubator.vector}.
  *
  * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
  */
@@ -37,8 +40,8 @@ public final class FormatHelper {
      * Given an array, read a chunk of 64 characters and return a bitmask with 1's set in the positions of the specified
      * characters.
      * <p>
-     * Clients must guarantee that {@code cb.length - offset} is at least 64; in other words, clients must guarantee#
-     * that there are at least 64 characters to read.
+     * Clients must guarantee that {@code cb.length - offset} is at least 64; in other words, clients must guarantee
+     * that there are at least 64 characters available to read.
      * <p>
      * The implementation uses SIMD (Single Instruction, Multiple Data) instructions to evaluate the entire vector
      * concurrently, returning the bitmask in just a few CPU cycles.
@@ -69,8 +72,8 @@ public final class FormatHelper {
      * Given an array, read a chunk of 64 characters and return a bitmask with 1's set in the positions of the specified
      * characters.
      * <p>
-     * Clients must guarantee that {@code cb.length - offset} is at least 64; in other words, clients must guarantee#
-     * that there are at least 64 characters to read.
+     * Clients must guarantee that {@code cb.length - offset} is at least 64; in other words, clients must guarantee
+     * that there are at least 64 characters available to read.
      * <p>
      * The implementation uses SIMD (Single Instruction, Multiple Data) instructions to evaluate the entire vector
      * concurrently, returning the bitmask in just a few CPU cycles.

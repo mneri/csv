@@ -28,7 +28,14 @@ import java.io.IOException;
 import static me.mneri.csv.format.Format.*;
 
 /**
- * Implementation of {@link LineParser} that leverages SIMD operations.
+ * An implementation of {@link LineParser} that accelerates parsing through SIMD instructions (Single Instruction,
+ * Multiple Data) and bit-manipulation.
+ * <p>
+ * Streams are processed in fixed 64-character strides and using bitmasks to jump and only process CSV special
+ * characters.
+ * <p>
+ * This parser uses the Vector API, which is an incubator feature not yet available in standard Java installations, but
+ * can be enabled by adding the JVM flag {@code --add-modules jdk.incubator.vector}.
  *
  * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
  */
@@ -63,7 +70,7 @@ public class SimdLineParser implements LineParser {
      *
      * @param out {@inheritDoc}
      * @return {@inheritDoc}
-     * @throws IOException  {@inheritDoc}
+     * @throws IOException {@inheritDoc}
      */
     @Override
     public boolean next(InternalRecycledLine out) throws IOException {
