@@ -18,7 +18,9 @@
 
 package me.mneri.csv.exception;
 
-public class NoSuchFieldException extends RuntimeException {
+import java.io.IOException;
+
+public class NoSuchFieldException extends IOException {
     public NoSuchFieldException(String message) {
         super(message);
     }

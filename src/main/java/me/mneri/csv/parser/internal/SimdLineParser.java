@@ -18,7 +18,6 @@
 
 package me.mneri.csv.parser.internal;
 
-import me.mneri.csv.exception.CsvException;
 import me.mneri.csv.exception.UnexpectedCharacterException;
 import me.mneri.csv.format.Format;
 import me.mneri.csv.io.internal.RandomAccessStream;
@@ -64,11 +63,10 @@ public class SimdLineParser implements LineParser {
      *
      * @param out {@inheritDoc}
      * @return {@inheritDoc}
-     * @throws CsvException {@inheritDoc}
      * @throws IOException  {@inheritDoc}
      */
     @Override
-    public boolean next(InternalRecycledLine out) throws CsvException, IOException {
+    public boolean next(InternalRecycledLine out) throws IOException {
         int s = format.base();
         long bitmask = this.bitmask;
         long strideStart = this.strideStart;

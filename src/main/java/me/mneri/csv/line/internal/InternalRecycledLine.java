@@ -332,7 +332,7 @@ public final class InternalRecycledLine implements RecycledLine {
         return value == null ? null : Long.parseUnsignedLong(value);
     }
 
-    private void noSuchFieldException(int n) {
+    private void noSuchFieldException(int n) throws IOException {
         throw new NoSuchFieldException("No such field: " + n);
     }
 }

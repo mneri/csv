@@ -18,7 +18,6 @@
 
 package me.mneri.csv.parser.internal;
 
-import me.mneri.csv.exception.CsvException;
 import me.mneri.csv.line.internal.InternalRecycledLine;
 
 import java.io.Closeable;
@@ -45,8 +44,7 @@ public interface LineParser extends Closeable {
      *
      * @param out The output parameter where the next CSV line is saved.
      * @return {@code true} if a line has been returned, {@code false} otherwise.
-     * @throws CsvException If a parsing error occurs.
-     * @throws IOException  If an I/O error occurs.
+     * @throws IOException If an I/O error occurs.
      */
-    boolean next(InternalRecycledLine out) throws CsvException, IOException;
+    boolean next(InternalRecycledLine out) throws IOException;
 }

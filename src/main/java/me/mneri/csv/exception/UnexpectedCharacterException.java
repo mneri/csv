@@ -18,13 +18,15 @@
 
 package me.mneri.csv.exception;
 
+import java.io.IOException;
+
 /**
  * This exception is thrown when on an invalid character.
  *
  * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
  */
-public class UnexpectedCharacterException extends IllegalCsvFormatException {
-    public UnexpectedCharacterException(int line) {
-        super(line, "unexpected character code.");
+public class UnexpectedCharacterException extends IOException {
+    public UnexpectedCharacterException(int position) {
+        super("Unexpected character at position " + position);
     }
 }

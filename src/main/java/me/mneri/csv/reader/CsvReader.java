@@ -20,7 +20,6 @@ package me.mneri.csv.reader;
 
 import me.mneri.csv.deserializer.Deserializer;
 import me.mneri.csv.deserializer.StringListDeserializer;
-import me.mneri.csv.exception.CsvException;
 import me.mneri.csv.extension.internal.Extensions;
 import me.mneri.csv.format.Format;
 import me.mneri.csv.format.Rfc4180FullyRelaxedFormat;
@@ -196,10 +195,9 @@ public class CsvReader<T> implements AutoCloseable {
      * {@link CsvReader#next()} would return an element rather than throwing an exception).
      *
      * @return {@code true} if the reader has more elements.
-     * @throws CsvException if the csv is not properly formatted.
-     * @throws IOException  if an I/O error occurs.
+     * @throws IOException if an I/O error occurs.
      */
-    public boolean hasNext() throws CsvException, IOException { // Bytecode size: 36 (OpenJDK 26)
+    public boolean hasNext() throws IOException { // Bytecode size: 36 (OpenJDK 26)
         // Optimization: In a typical hasNext()/next() loop, the state at the beginning of the call is always
         // ELEMENT_NOT PREPARED. We check if this is the case, and delegate the rest to the cold-path method hasNext2(),
         // reducing the bytecode size and making it more likely this method is inlined by the JIT compiler.
@@ -225,10 +223,9 @@ public class CsvReader<T> implements AutoCloseable {
      * Return the next element in the reader.
      *
      * @return The next element.
-     * @throws CsvException if the csv is not properly formatted.
-     * @throws IOException  if an I/O error occurs.
+     * @throws IOException If an I/O error occurs.
      */
-    public T next() throws Exception, IOException { // Bytecode size: 38 (OpenJDK 26)
+    public T next() throws IOException { // Bytecode size: 38 (OpenJDK 26)
         // Optimization: In a typical hasNext()/next() loop, the state is already ELEMENT_PREPARED when this method is
         // called. We check this directly and delegate the rest to the cold-path method next2(), reducing the bytecode
         // size and making it more likely this method is inlined by the JIT compiler.
@@ -239,7 +236,7 @@ public class CsvReader<T> implements AutoCloseable {
         return next2(); // Only called if the client doesn't follow the idiomatic pattern hasNext()/next()
     }
 
-    private T next2() throws Exception {
+    private T next2() throws IOException {
         if (state == READER_CLOSED) {
             readerIsClosedException();
         }

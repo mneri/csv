@@ -20,6 +20,7 @@ package me.mneri.csv.serializer;
 
 import me.mneri.csv.deserializer.Deserializer;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -35,7 +36,7 @@ public interface Serializer<T> {
      *
      * @param object the object to serialize.
      * @param out    the list of strings representing the csv line.
-     * @throws Exception if anything goes wrong.
+     * @throws IOException If an I/O error occurs.
      */
-    void serialize(T object, List<String> out) throws Exception;
+    void serialize(T object, List<String> out) throws IOException;
 }

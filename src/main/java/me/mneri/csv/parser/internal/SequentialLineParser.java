@@ -18,7 +18,6 @@
 
 package me.mneri.csv.parser.internal;
 
-import me.mneri.csv.exception.CsvException;
 import me.mneri.csv.exception.UnexpectedCharacterException;
 import me.mneri.csv.format.Format;
 import me.mneri.csv.io.internal.RandomAccessStream;
@@ -61,11 +60,10 @@ public class SequentialLineParser implements LineParser {
      *
      * @param out {@inheritDoc}
      * @return {@inheritDoc}
-     * @throws CsvException {@inheritDoc}
      * @throws IOException  {@inheritDoc}
      */
     @Override
-    public boolean next(InternalRecycledLine out) throws CsvException, IOException { // Bytecode size: 209 (OpenJDK 26)
+    public boolean next(InternalRecycledLine out) throws IOException { // Bytecode size: 209 (OpenJDK 26)
         out.reset();
         reader.compact(pos);
 

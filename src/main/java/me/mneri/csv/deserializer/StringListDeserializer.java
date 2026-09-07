@@ -24,6 +24,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Simple implementation of the {@link Deserializer} interface returning a {@code List} of {@code String}s.
+ *
+ * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
+ */
 public class StringListDeserializer implements Deserializer<List<String>> {
     @Override
     public List<String> deserialize(RecycledLine line) throws IOException {

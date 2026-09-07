@@ -18,7 +18,6 @@
 
 package me.mneri.csv.writer;
 
-import me.mneri.csv.exception.CsvConversionException;
 import me.mneri.csv.format.Format;
 import me.mneri.csv.format.Rfc4180StrictFormat;
 import me.mneri.csv.serializer.Serializer;
@@ -140,18 +139,14 @@ public class CsvWriter<T> implements Closeable, Flushable {
         return false;
     }
 
-    public void write(T object) throws CsvConversionException, IOException {
+    public void write(T object) throws IOException {
         isOpenOrThrow();
-        try {
-            line.clear();
-            ser.serialize(object, line);
-            writeLine();
-        } catch (Exception e) {
-            throw new CsvConversionException(line, e);
-        }
+        line.clear();
+        ser.serialize(object, line);
+        writeLine();
     }
 
-    public void writeAll(List<T> objects) throws CsvConversionException, IOException {
+    public void writeAll(List<T> objects) throws IOException {
         isOpenOrThrow();
         for (T object : objects) {
             write(object);

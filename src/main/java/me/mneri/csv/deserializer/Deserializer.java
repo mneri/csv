@@ -21,6 +21,8 @@ package me.mneri.csv.deserializer;
 import me.mneri.csv.line.RecycledLine;
 import me.mneri.csv.serializer.Serializer;
 
+import java.io.IOException;
+
 /**
  * Deserialize objects.
  *
@@ -37,7 +39,7 @@ public interface Deserializer<T> {
      *
      * @param line The CSV line.
      * @return An object.
-     * @throws Exception If anything goes wrong.
+     * @throws IOException If an I/O error occurs.
      */
-    T deserialize(RecycledLine line) throws Exception;
+    T deserialize(RecycledLine line) throws IOException;
 }
