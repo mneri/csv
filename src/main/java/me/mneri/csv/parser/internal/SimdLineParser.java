@@ -50,6 +50,14 @@ public class SimdLineParser implements LineParser {
     private long strideEnd;
     private long strideStart;
 
+    /**
+     * Create a new {@code SimdLineParser} instance.
+     *
+     * @param provider The format provider. Because formats may maintain an internal state, sharing them across multiple
+     *                 parsers could cause issues. Providers are used to guarantee that parsers receive fresh
+     *                 {@code Format} instances.
+     * @param stream   The character stream.
+     */
     public SimdLineParser(Format.Provider<? extends Format> provider, RandomAccessStream stream) {
         this.format = provider.provide();
         this.stream = stream;

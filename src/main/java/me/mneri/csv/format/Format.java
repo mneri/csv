@@ -103,7 +103,10 @@ public interface Format {
     int ANY = 0x0FFF << 16;
 
     /**
-     * Provide instances of {@code Format}.
+     * Provide fresh instances of {@code Format}.
+     * <p>
+     * Because formats may maintain an internal state, sharing them across multiple parsers could cause issues.
+     * Providers are used to guarantee that parsers receive fresh {@code Format} instances.
      *
      * @param <T> The {@code Format} class.
      */

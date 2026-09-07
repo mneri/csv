@@ -36,13 +36,21 @@ public class SequentialLineParser implements LineParser {
     private static final int EFB_TRAILING_ZEROES = Integer.numberOfTrailingZeros(EFB);
 
     private final Format format;
-    private final RandomAccessStream reader;
+    private final RandomAccessStream stream;
 
     private int pos;
 
-    public SequentialLineParser(Provider<? extends Format> provider, RandomAccessStream reader) {
+    /**
+     * Create a new {@code SequentialLineParser} instance.
+     *
+     * @param provider The format provider. Because formats may maintain an internal state, sharing them across multiple
+     *                 parsers could cause issues. Providers are used to guarantee that parsers receive fresh
+     *                 {@code Format} instances.
+     * @param stream   The character stream.
+     */
+    public SequentialLineParser(Provider<? extends Format> provider, RandomAccessStream stream) {
         this.format = provider.provide();
-        this.reader = reader;
+        this.stream = stream;
     }
 
     /**
@@ -52,7 +60,7 @@ public class SequentialLineParser implements LineParser {
      */
     @Override
     public void close() throws IOException {
-        reader.close();
+        stream.close();
     }
 
     /**
@@ -65,7 +73,7 @@ public class SequentialLineParser implements LineParser {
     @Override
     public boolean next(InternalRecycledLine out) throws IOException { // Bytecode size: 209 (OpenJDK 26)
         out.reset();
-        reader.compact(pos);
+        stream.compact(pos);
 
         final Format format = this.format;
         int s = format.base();
@@ -75,7 +83,7 @@ public class SequentialLineParser implements LineParser {
             // fields there are 10 field-start/field-stop and only 1 end-of-line. We inserted a tighter loop, saving a
             // comparison per outer loop iteration.
             do {
-                while (!isAny(s = format.consume(s, reader.getChar(pos)))) {
+                while (!isAny(s = format.consume(s, stream.getChar(pos)))) {
                     pos = pos + 1;
                 }
                 if (isStartOfField(s)) {
