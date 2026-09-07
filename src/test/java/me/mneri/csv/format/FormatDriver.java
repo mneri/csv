@@ -14,43 +14,43 @@ class FormatDriver {
         this.format = format;
     }
 
-    public List<List<String>> parse(String input) throws UnexpectedCharacterException {
+    List<List<String>> parse(String input) throws UnexpectedCharacterException {
         List<List<String>> result = new ArrayList<>();
         List<String> line = null;
 
-        int i = 0;
+        int pos = 0;
         int start = 0;
         int s = format.base();
 
-        while (i <= input.length()) { // Loop one over to add the EOF character
-            int c = i < input.length() ? input.charAt(i) : -1;
+        while (pos <= input.length()) { // Loop one over to add the EOF character
+            int c = pos < input.length() ? input.charAt(pos) : -1;
             s = format.consume(s, c);
 
             if ((s & SFH) != 0) {
-                start = i;
+                start = pos;
             }
             if ((s & EFH) != 0) {
                 if (line == null) {
                     line = new ArrayList<>();
                 }
-                line.add(input.substring(start, i));
+                line.add(input.substring(start, pos));
             }
             if ((s & EFB) != 0) {
                 if (line == null) {
                     line = new ArrayList<>();
                 }
-                line.add(input.substring(start, i - 1));
+                line.add(input.substring(start, pos - 1));
             }
             if ((s & ELH) != 0) {
                 result.add(line);
                 line = null;
             }
             if ((s & RPL) != 0) {
-                i = i - 1;
+                pos = pos - 1;
             }
             if ((s & RMB) != 0) {
-                input = input.substring(0, i - 1) + input.substring(i);
-                i = i - 1;
+                input = input.substring(0, pos - 1) + input.substring(pos);
+                pos = pos - 1;
             }
             if (((s & ERH) != 0)) {
                 throw new UnexpectedCharacterException(result.size());
@@ -58,7 +58,7 @@ class FormatDriver {
             if ((s & STP) != 0) {
                 break;
             }
-            i = i + 1;
+            pos = pos + 1;
         }
 
         if (line != null) {

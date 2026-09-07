@@ -210,6 +210,12 @@ public final class Rfc4180HalfRelaxedFormat implements Format {
         // of 8, meaning the lower 3 bits are 0. indexOf(c) returns 0-7. Using '|' effectively performs addition without
         // carry. We mask with 0x7F (127) to stay within the 128-element DFA table; this hints to the JIT compiler to
         // eliminate array bounds checking.
+
+        // columnOf() is fully inlined, the bounds check is genuinely gone, and the DFA array's address is folded into a
+        // literal operand rather than reloaded per call:
+        //     and $0x7f,%r11d
+        //     movabs $0x71329e2a0,%r10  ;   {oop([I{0x000000071329e2a0})}
+        //     mov 0x10(%r10,%r11,4),%eax
         return DFA[(s | columnOf(c)) & 0x7F];
     }
 
