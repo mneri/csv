@@ -31,9 +31,7 @@ public class PersonDeserializer implements Deserializer<Person> {
 Writing to a csv file is easy, too.
 
 ```java
-CsvWriterFactory factory = new DefaultCsvWriterFactory();
-
-try (CsvWriter<Person> writer = factory.open(new File("people.csv"), new PersonSerializer())) {
+try (CsvWriter<Person> writer = CsvWriter.open(new File("people.csv"), new PersonSerializer())) {
     for (Person person : persons) {
         writer.put(person);
     }
