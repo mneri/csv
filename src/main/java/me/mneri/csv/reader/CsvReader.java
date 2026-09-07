@@ -42,7 +42,6 @@ import static me.mneri.csv.format.Format.Provider;
  * @param <T> The type of the Java objects to read.
  * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
  */
-@SuppressWarnings("unused")
 public class CsvReader<T> implements AutoCloseable {
     private static final int ELEMENT_NOT_PREPARED = 0;
     private static final int ELEMENT_PREPARED = 1;

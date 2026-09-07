@@ -71,15 +71,15 @@ public final class MachintoshFormat implements Format {
     //@formatter:off
     private static final int[] DFA = {
     // *                    ,                    \r                   "                    EOF                  padding
-       FLD,                 BFF|EFH,             BFL|EFH|ELH,         ERR|ERH,             EOF|EFH|STP,         0,0,0,           // FLD
-       QOT,                 QOT,                 QOT,                 ESC,                 ERR|ERH,             0,0,0,           // QOT
-       FLD|SFH,             BFF|SFH|EFH,         BFL|SFH|EFH|ELH,     SQT,                 EOF|SFH|EFH|ELH|STP, 0,0,0,           // BFF
-       QOT|SFH,             QOT|SFH,             QOT|SFH,             SQE,                 ERR|ERH,             0,0,0,           // SQT
-       ERR|ERH,             BFF|EFB,             BFL|EFB|ELH,         QOT|RMB,             EOF|EFB|ELH|STP,     0,0,0,           // ESC
-       ERR|ERH,             BFF|SFH|EFH,         ERR|ERH,             QOT|SFH,             EOF|SFH|EFH|STP,     0,0,0,           // SQE
-       FLD|SFH,             BFF|SFH|EFH,         BFL|EFH|ELH,         SQT,                 EOF|STP,             0,0,0,           // BFL *
-       ERR|ERH,             ERR|ERH,             ERR|ERH,             ERR|ERH,             ERR|ERH,             0,0,0,           // EOF
-       ERR|ERH,             ERR|ERH,             ERR|ERH,             ERR|ERH,             ERR|ERH,             0,0,0,           // ERR
+       FLD,                 BFF|EFH,             BFL|EFH|ELH,         ERR|ERH,             EOF|EFH|ELH|STP,     0,0,0,  // FLD
+       QOT,                 QOT,                 QOT,                 ESC,                 ERR|ERH,             0,0,0,  // QOT
+       FLD|SFH,             BFF|SFH|EFH,         BFL|SFH|EFH|ELH,     SQT,                 EOF|SFH|EFH|ELH|STP, 0,0,0,  // BFF
+       QOT|SFH,             QOT|SFH,             QOT|SFH,             SQE,                 ERR|ERH,             0,0,0,  // SQT
+       ERR|ERH,             BFF|EFB,             BFL|EFB|ELH,         QOT|RMB,             EOF|EFB|ELH|STP,     0,0,0,  // ESC
+       ERR|ERH,             BFF|SFH|EFH,         BFL|SFH|EFH|ELH,     QOT|SFH,             EOF|SFH|EFH|ELH|STP, 0,0,0,  // SQE
+       FLD|SFH,             BFF|SFH|EFH,         BFL|SFH|EFH|ELH,     SQT,                 EOF|STP,             0,0,0,  // BFL *
+       ERR|ERH,             ERR|ERH,             ERR|ERH,             ERR|ERH,             ERR|ERH,             0,0,0,  // EOF
+       ERR|ERH,             ERR|ERH,             ERR|ERH,             ERR|ERH,             ERR|ERH,             0,0,0,  // ERR
        0,                   0,                   0,                   0,                   0,                   0,0,0,
        0,                   0,                   0,                   0,                   0,                   0,0,0,
        0,                   0,                   0,                   0,                   0,                   0,0,0,
