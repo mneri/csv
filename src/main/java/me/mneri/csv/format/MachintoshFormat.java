@@ -88,6 +88,11 @@ public final class MachintoshFormat implements Format {
        0,                   0,                   0,                   0,                   0,                   0,0,0};
     //@formatter:on
 
+    /**
+     * Return a provider of {@code MachintoshFormat}.
+     *
+     * @return The provider.
+     */
     public static Format.Provider<MachintoshFormat> provider() {
         return MachintoshFormat::new;
     }

@@ -84,6 +84,11 @@ public final class Rfc4180StrictFormat implements Format {
        0,                   0,                   0,                   0,                   0,                   0,                   0,0};
     //@formatter:on
 
+    /**
+     * Return a provider of {@code Rfc4180StrictFormat}.
+     *
+     * @return The provider.
+     */
     public static Format.Provider<Rfc4180StrictFormat> provider() {
         return Rfc4180StrictFormat::new;
     }

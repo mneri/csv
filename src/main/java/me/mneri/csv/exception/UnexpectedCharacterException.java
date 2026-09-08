@@ -21,12 +21,17 @@ package me.mneri.csv.exception;
 import java.io.IOException;
 
 /**
- * This exception is thrown when on an invalid character.
+ * Thrown when an invalid character is found during parsing.
  *
  * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
  */
 public class UnexpectedCharacterException extends IOException {
-    public UnexpectedCharacterException(int position) {
+    /**
+     * Return a new {@code UnexpectedCharacterException}.
+     *
+     * @param position The absolute position of the character in the stream.
+     */
+    public UnexpectedCharacterException(long position) {
         super("Unexpected character at position " + position);
     }
 }

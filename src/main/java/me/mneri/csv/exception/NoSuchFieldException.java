@@ -20,8 +20,13 @@ package me.mneri.csv.exception;
 
 import java.io.IOException;
 
+/**
+ * Thrown when trying to access a field that does not exist.
+ *
+ * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
+ */
 public class NoSuchFieldException extends IOException {
-    public NoSuchFieldException(String message) {
-        super(message);
+    public NoSuchFieldException(int n) {
+        super("No such field: " + n);
     }
 }

@@ -181,6 +181,6 @@ public class SimdLineParser implements LineParser {
     }
 
     private void unexpectedCharacterException() throws UnexpectedCharacterException {
-        throw new UnexpectedCharacterException(0);
+        throw new UnexpectedCharacterException(strideStart);
     }
 }

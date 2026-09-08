@@ -125,6 +125,11 @@ public final class Rfc4180FullyRelaxedFormat implements Format {
        0,                 0,                   0,                   0,                   0,                   0,                   0,0};
     //@formatter:on
 
+    /**
+     * Return a provider of {@code Rfc4180FullyRelaxedFormat}.
+     *
+     * @return The provider.
+     */
     public static Format.Provider<Rfc4180FullyRelaxedFormat> provider() {
         return Rfc4180FullyRelaxedFormat::new;
     }

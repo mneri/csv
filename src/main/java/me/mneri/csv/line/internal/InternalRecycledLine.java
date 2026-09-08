@@ -27,6 +27,11 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
 
+/**
+ * Internal implementation of the {@link RecycledLine} interface.
+ *
+ * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
+ */
 public final class InternalRecycledLine implements RecycledLine {
     private final RandomAccessStream reader;
 
@@ -333,6 +338,6 @@ public final class InternalRecycledLine implements RecycledLine {
     }
 
     private void noSuchFieldException(int n) throws IOException {
-        throw new NoSuchFieldException("No such field: " + n);
+        throw new NoSuchFieldException(n);
     }
 }
