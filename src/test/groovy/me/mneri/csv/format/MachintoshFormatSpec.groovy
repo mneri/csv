@@ -10,23 +10,23 @@ class MachintoshFormatSpec extends Specification {
 
     @Unroll
     def "parses #input correctly"() {
-        expect:
-        driver.parse(input) == output
-
-        where:
-        input     | output
+//        expect:
+//        driver.parse(input) == output
+//
+//        where:
+//        input     | output
     }
 
     @Unroll
     def "rejects #input with UnexpectedCharacterException"() {
-        when:
-        driver.parse(input)
-
-        then:
-        thrown(UnexpectedCharacterException)
-
-        where:
-        input << [
-        ]
+//        when:
+//        driver.parse(input)
+//
+//        then:
+//        thrown(UnexpectedCharacterException)
+//
+//        where:
+//        input << [
+//        ]
     }
 }

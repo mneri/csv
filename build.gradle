@@ -15,10 +15,21 @@ dependencies {
     jmh 'org.openjdk.jmh:jmh-core:1.37'
     jmhAnnotationProcessor 'org.openjdk.jmh:jmh-generator-annprocess:1.37'
 
-    testImplementation 'org.spockframework:spock-core:2.4-M1-groovy-4.0'
+    jmh 'com.github.skjolber.sesseltjonna-csv:parser:1.0.26'
+    jmh 'com.opencsv:opencsv:5.12.0'
+    jmh 'com.univocity:univocity-parsers:2.9.1'
+    jmh 'de.siegmar:fastcsv:4.4.0'
+    jmh 'org.simpleflatmapper:sfm-csv:9.0.2'
+
+    testImplementation 'org.spockframework:spock-core:2.4-groovy-4.0'
     testImplementation 'org.apache.groovy:groovy:4.0.18'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.2'
+    testRuntimeOnly "net.bytebuddy:byte-buddy:1.17.7"
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+jmh {
+    jvmArgs = ['--add-modules=jdk.incubator.vector']
 }
 
 test {

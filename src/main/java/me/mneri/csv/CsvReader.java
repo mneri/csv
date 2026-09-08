@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package me.mneri.csv.reader;
+package me.mneri.csv;
 
 import me.mneri.csv.deserializer.Deserializer;
 import me.mneri.csv.deserializer.StringListDeserializer;
@@ -31,10 +31,9 @@ import me.mneri.csv.parser.internal.SequentialLineParser;
 import me.mneri.csv.parser.internal.SimdLineParser;
 
 import java.io.*;
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.NoSuchElementException;
-
-import static me.mneri.csv.format.Format.Provider;
 
 /**
  * Read CSV streams and automatically transform lines into Java objects.
@@ -48,7 +47,12 @@ public class CsvReader<T> implements AutoCloseable {
     private static final int NO_SUCH_ELEMENT = 2;
     private static final int READER_CLOSED = 3;
 
-    private static final int MAX_LINE_SIZE = 65_536;
+    /**
+     * The maximum length of a CSV line currently supported (in number of characters).
+     * <p>
+     * There must be a limit, or the reader would be subject to {@link OutOfMemoryError} attacks.
+     */
+    public static final int MAX_LINE_SIZE = 65_536;
 
     /**
      * Return a new {@link CsvReader} in open state, reading from the specified file.
@@ -60,9 +64,9 @@ public class CsvReader<T> implements AutoCloseable {
      * @return A new {@link CsvReader}, in open state.
      * @throws FileNotFoundException If the file does not exist.
      */
-    public static <T> CsvReader<T> open(File f, Format.Provider<? extends Format> p, Deserializer<T> des)
-            throws FileNotFoundException {
-        return open(new FileReader(f), p, des);
+    public static <T> CsvReader<T> open(File f, Charset charset, Format.Provider<? extends Format> p, Deserializer<T> des)
+            throws IOException {
+        return open(new FileReader(f, charset), p, des);
     }
 
     /**
@@ -74,8 +78,9 @@ public class CsvReader<T> implements AutoCloseable {
      * @return A new {@link CsvReader}, in open state.
      * @throws FileNotFoundException If the file does not exist.
      */
-    public static CsvReader<List<String>> open(File f, Format.Provider<? extends Format> p) throws FileNotFoundException {
-        return open(f, p, new StringListDeserializer());
+    public static CsvReader<List<String>> open(File f, Charset charset, Format.Provider<? extends Format> p)
+            throws IOException {
+        return open(f, charset, p, new StringListDeserializer());
     }
 
     /**
@@ -88,8 +93,8 @@ public class CsvReader<T> implements AutoCloseable {
      * @return A new {@link CsvReader}, in open state.
      * @throws FileNotFoundException If the file does not exist.
      */
-    public static <T> CsvReader<T> open(File f, Deserializer<T> des) throws FileNotFoundException {
-        return open(f, Rfc4180FullyRelaxedFormat.provider(), des);
+    public static <T> CsvReader<T> open(File f, Charset charset, Deserializer<T> des) throws IOException {
+        return open(f, charset, Rfc4180FullyRelaxedFormat.provider(), des);
     }
 
     /**
@@ -100,8 +105,8 @@ public class CsvReader<T> implements AutoCloseable {
      * @return A new {@link CsvReader}, in open state.
      * @throws FileNotFoundException If the file does not exist.
      */
-    public static CsvReader<List<String>> open(File f) throws FileNotFoundException {
-        return open(f, Rfc4180FullyRelaxedFormat.provider(), new StringListDeserializer());
+    public static CsvReader<List<String>> open(File f, Charset charset) throws IOException {
+        return open(f, charset, Rfc4180FullyRelaxedFormat.provider(), new StringListDeserializer());
     }
 
     /**
@@ -114,7 +119,7 @@ public class CsvReader<T> implements AutoCloseable {
      * @return A new {@link CsvReader}, in open state.
      */
     public static <T> CsvReader<T> open(Reader rdr, Format.Provider<? extends Format> p, Deserializer<T> des) {
-        return new CsvReader<>(rdr, p, des);
+        return newInstance(rdr, p, des);
     }
 
     /**
@@ -153,24 +158,29 @@ public class CsvReader<T> implements AutoCloseable {
         return open(rdr, Rfc4180FullyRelaxedFormat.provider(), new StringListDeserializer());
     }
 
+    private static <T> CsvReader<T> newInstance(Reader rdr, Format.Provider<? extends Format> p, Deserializer<T> des) {
+        RandomAccessStream stream = new RandomAccessCharStream(rdr, MAX_LINE_SIZE);
+        InternalRecycledLine line = new InternalRecycledLine(stream);
+        LineParser parser;
+
+        if (Extensions.SIMD_SUPPORTED) {
+            parser = new SimdLineParser(p, stream);
+        } else {
+            parser = new SequentialLineParser(p, stream);
+        }
+
+        return new CsvReader<>(parser, line, des);
+    }
+
     private final Deserializer<T> deserializer;
-    private final InternalRecycledLine out;
+    private final InternalRecycledLine line;
     private final LineParser parser;
     private int state = ELEMENT_NOT_PREPARED;
 
-    private CsvReader(Reader reader, Provider<? extends Format> provider, Deserializer<T> deserializer) {
-        this(new RandomAccessCharStream(reader, MAX_LINE_SIZE), provider, deserializer);
-    }
-
-    private CsvReader(RandomAccessStream reader, Provider<? extends Format> provider, Deserializer<T> deserializer) {
-        this.out = new InternalRecycledLine(reader);
+    CsvReader(LineParser parser, InternalRecycledLine line, Deserializer<T> deserializer) {
+        this.parser = parser;
+        this.line = line;
         this.deserializer = deserializer;
-
-        if (Extensions.SIMD_SUPPORTED) {
-            this.parser = new SimdLineParser(provider, reader);
-        } else {
-            this.parser = new SequentialLineParser(provider, reader);
-        }
     }
 
     /**
@@ -201,7 +211,7 @@ public class CsvReader<T> implements AutoCloseable {
         // ELEMENT_NOT PREPARED. We check if this is the case, and delegate the rest to the cold-path method hasNext2(),
         // reducing the bytecode size and making it more likely this method is inlined by the JIT compiler.
         if (state == ELEMENT_NOT_PREPARED) {
-            if (parser.next(out)) {
+            if (parser.next(line)) {
                 state = ELEMENT_PREPARED;
                 return true;
             } else {
@@ -230,7 +240,7 @@ public class CsvReader<T> implements AutoCloseable {
         // size and making it more likely this method is inlined by the JIT compiler.
         if (state == ELEMENT_PREPARED) {
             state = ELEMENT_NOT_PREPARED;
-            return deserializer.deserialize(out);
+            return deserializer.deserialize(line);
         }
         return next2(); // Only called if the client doesn't follow the idiomatic pattern hasNext()/next()
     }
@@ -243,7 +253,7 @@ public class CsvReader<T> implements AutoCloseable {
             noSuchElementException();
         }
         state = ELEMENT_NOT_PREPARED;
-        return deserializer.deserialize(out);
+        return deserializer.deserialize(line);
     }
 
     private void noSuchElementException() {

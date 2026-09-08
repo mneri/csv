@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.nio.BufferOverflowException;
 
-public class RandomAccessCharStream implements RandomAccessStream {
+public final class RandomAccessCharStream implements RandomAccessStream {
     // The class is architected to heavily exploit HotSpot JIT compiler, specifically targeting array range check
     // elimination and aggressive method inlining.
     //

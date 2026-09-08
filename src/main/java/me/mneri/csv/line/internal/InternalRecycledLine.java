@@ -33,7 +33,7 @@ import java.util.Arrays;
  * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
  */
 public final class InternalRecycledLine implements RecycledLine {
-    private final RandomAccessStream reader;
+    private final RandomAccessStream stream;
 
     private long[] idx = new long[768];
     private int idxSize;
@@ -41,13 +41,18 @@ public final class InternalRecycledLine implements RecycledLine {
     private long[] drt = new long[32];
     private int drtSize;
 
-    private char[] buff = new char[256];
+    private char[] cb = new char[256];
 
-    public InternalRecycledLine(RandomAccessStream reader) {
-        if (reader == null) {
+    /**
+     * Construct a new {@code InternalRecycledLine}.
+     *
+     * @param stream The character stream.
+     */
+    public InternalRecycledLine(RandomAccessStream stream) {
+        if (stream == null) {
             throw new IllegalArgumentException("Reader cannot be null");
         }
-        this.reader = reader;
+        this.stream = stream;
     }
 
     public void startField(long pos) {
@@ -87,13 +92,13 @@ public final class InternalRecycledLine implements RecycledLine {
     }
 
     private char[] ensureBuffCapacity(int required) {
-        if (buff.length < required) {
+        if (cb.length < required) {
             // Bit-twiddling hack to scale to the next highest power of two.
             // Avoids thrashing allocations if field lengths creep up slowly.
             int nextPow2 = Integer.highestOneBit(required - 1) << 1;
-            buff = new char[nextPow2];
+            cb = new char[nextPow2];
         }
-        return buff;
+        return cb;
     }
 
     /**
@@ -115,19 +120,19 @@ public final class InternalRecycledLine implements RecycledLine {
      */
     @Override
     public String getString(int n) throws IOException {
-        if (n >= idxSize) {
+        if (n >= getFieldCount()) {
             noSuchFieldException(n);
         }
         int i = n * 3;
         if (idx[i + 2] == -1) { // If the field is marked NOT dirty
-            return reader.getString(idx[i], idx[i + 1]);
+            return stream.getString(idx[i], idx[i + 1]);
         }
         return getDirtyString(n);
     }
 
     private String getDirtyString(int n) throws IOException {
-        int length = getDirtyCharArray(n, buff, 0);
-        return new String(buff, 0, length);
+        int length = getDirtyCharArray(n, cb, 0);
+        return new String(cb, 0, length);
     }
 
     /**
@@ -139,8 +144,8 @@ public final class InternalRecycledLine implements RecycledLine {
      */
     @Override
     public BigDecimal getBigDecimal(int n) throws IOException {
-        int length = getCharArray(n, buff, 0);
-        return new BigDecimal(buff, 0, length);
+        int length = getCharArray(n, cb, 0);
+        return new BigDecimal(cb, 0, length);
     }
 
     /**
@@ -180,14 +185,14 @@ public final class InternalRecycledLine implements RecycledLine {
 
     @Override
     public int getCharArray(int n, char[] dest, int destPos) throws IOException {
-        if (n >= idxSize) {
+        if (n >= getFieldCount()) {
             noSuchFieldException(n);
         }
         int i = n * 3;
         if (idx[i + 2] == -1) { // If the field is marked NOT dirty
             long start = idx[i];
             long end = idx[i + 1];
-            reader.getCharArray(dest, destPos, start, end);
+            stream.getCharArray(dest, destPos, start, end);
             return (int) (end - start);
         }
         return getDirtyCharArray(n, dest, destPos);
@@ -203,12 +208,12 @@ public final class InternalRecycledLine implements RecycledLine {
         int j = (int) idx[i + 2];
         while (j < drtSize && drt[j] < end) {
             long stop = drt[j++];
-            reader.getCharArray(dest, destPos + copied, start, stop);
+            stream.getCharArray(dest, destPos + copied, start, stop);
             copied += (int) (stop - start);
             start = stop + 1;
         }
 
-        reader.getCharArray(dest, destPos + copied, start, end);
+        stream.getCharArray(dest, destPos + copied, start, end);
         copied += (int) (end - start);
 
         return copied;

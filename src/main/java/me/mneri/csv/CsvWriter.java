@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package me.mneri.csv.writer;
+package me.mneri.csv;
 
 import me.mneri.csv.format.Format;
 import me.mneri.csv.format.Rfc4180StrictFormat;

@@ -18,7 +18,7 @@
 
 package me.mneri.csv.line;
 
-import me.mneri.csv.reader.CsvReader;
+import me.mneri.csv.CsvReader;
 
 import java.io.IOException;
 import java.math.BigDecimal;
