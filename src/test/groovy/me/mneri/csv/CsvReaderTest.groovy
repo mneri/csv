@@ -18,23 +18,111 @@
 
 package me.mneri.csv
 
-
+import me.mneri.csv.deserializer.Deserializer
+import me.mneri.csv.io.internal.RandomAccessStream
+import me.mneri.csv.line.internal.InternalRecycledLine
+import me.mneri.csv.parser.internal.LineParser
 import spock.lang.Specification
+import spock.lang.Unroll
 
 class CsvReaderTest extends Specification {
-//    def stream = new RandomAccessCharStream(Mock(Reader), CsvReader.MAX_LINE_SIZE)
-//    def line = new InternalRecycledLine(stream);
-//
-//    @Unroll
-//    def "creates a usable reader"() {
-//        given:
-//        def parser = Mock(LineParser) {
-//            next(line) >> true
-//            next(line) >> false
-//        }
-//        def reader = new CsvReader(parser, line, deserializer)
-//
-//        expect:
-//        reader.hasNext()
-//    }
+    def stream = new RandomAccessStream(Mock(Reader), 65_536);
+    def line = new InternalRecycledLine(stream)
+    def parser = Mock(LineParser)
+    def deserializer = Stub(Deserializer)
+    def reader = new CsvReader(parser, line, deserializer)
+
+    def "hasNext() and next() return values in order"() {
+        given:
+        parser.next(line) >>> [true, false]
+        deserializer.deserialize(line) >> ["apple", "banana", "cherry"]
+
+        when:
+        def hasFirst = reader.hasNext()
+
+        then:
+        hasFirst
+
+        when:
+        def value = reader.next()
+
+        then:
+        value == ["apple", "banana", "cherry"]
+
+        when:
+        def hasSecond = reader.hasNext()
+
+        then:
+        !hasSecond
+    }
+
+    def "hasNext() twice in a row does not advance to the next element"() {
+        given:
+        parser.next(line) >>> [true, false]
+        deserializer.deserialize(line) >> ["apple", "banana", "cherry"]
+
+        when:
+        def hasFirst = reader.hasNext()
+
+        then:
+        hasFirst
+
+        when:
+        def hasAgain = reader.hasNext()
+
+        then:
+        hasAgain
+
+        when:
+        def value = reader.next()
+
+        then:
+        value == ["apple", "banana", "cherry"]
+    }
+
+    def "next() returns an element even when hasNext() was never called first"() {
+        given:
+        parser.next(line) >>> [true, false]
+        deserializer.deserialize(line) >> ["apple", "banana", "cherry"]
+
+        when:
+        def value = reader.next()
+
+        then:
+        value == ["apple", "banana", "cherry"]
+
+        when:
+        def hasNext = reader.hasNext()
+
+        then:
+        !hasNext
+    }
+
+    def "next() throws NoSuchElementException when there are no more elements"() {
+        given:
+        parser.next(line) >> false
+
+        when:
+        reader.next()
+
+        then:
+        thrown(NoSuchElementException)
+    }
+
+    @Unroll
+    def "#label throws IllegalStateException when the reader is closed"() {
+        given:
+        reader.close()
+
+        when:
+        action(reader)
+
+        then:
+        thrown(IllegalStateException)
+
+        where:
+        label       | action
+        "hasNext()" | { r -> r.hasNext() }
+        "next()"    | { r -> r.next() }
+    }
 }
