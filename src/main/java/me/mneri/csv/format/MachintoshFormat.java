@@ -122,7 +122,7 @@ public final class MachintoshFormat implements Format {
     public long bitmask(int s, char[] buff, int offset) {
         long bm = FormatHelper.bitmask(buff, offset, (char) -1, '\r', '"', ',');
 
-        // A bm with 1's set at the positions of commas or any other CSV special character is not sufficient; for
+        // A bitmask with 1's set at the positions of commas or any other CSV special character is not sufficient; for
         // example, the Format needs to consume a comma to track the end of the current field and the character after to
         // track the start of the next field (and the same goes for new lines and double quotes). So, after we first
         // calculated the bitmask of the CSV special characters, we add 1's for the characters positioned after them.
@@ -153,6 +153,10 @@ public final class MachintoshFormat implements Format {
         // } else {
         //     return 0;
         // }
+
+        // The implementation below uses a mask and a map. While likely slightly slower than a pure, properly ordered
+        // if-else chain like the one above, it is compact and more likely to be inlined, which has a greater benefit on
+        // the overall performance.
 
         // Fast Path: Check if 'c' is an "ordinary" character. This includes anything > 44 (standard text) or characters
         // <= 44 not in the special mask.

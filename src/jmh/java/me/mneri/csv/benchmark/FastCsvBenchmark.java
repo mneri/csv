@@ -18,12 +18,12 @@ import java.util.concurrent.TimeUnit;
 @Warmup(iterations = 10, time = 5)
 @Measurement(iterations = 20, time = 5)
 public class FastCsvBenchmark {
-    @Benchmark
-    public void worldCitiesPop(Blackhole bh) throws IOException {
-        File file = new File("/home/mneri/Downloads/stop_times.txt");
-        Charset charset = StandardCharsets.ISO_8859_1;
-        try (CsvReader<CsvRecord> csv = CsvReader.builder().ofCsvRecord(new FileReader(file, charset))) {
-            csv.forEach(bh::consume);
-        }
-    }
+//    @Benchmark
+//    public void worldCitiesPop(Blackhole bh) throws IOException {
+//        File file = new File("/home/mneri/Downloads/stop_times.txt");
+//        Charset charset = StandardCharsets.ISO_8859_1;
+//        try (CsvReader<CsvRecord> csv = CsvReader.builder().ofCsvRecord(new FileReader(file, charset))) {
+//            csv.forEach(bh::consume);
+//        }
+//    }
 }

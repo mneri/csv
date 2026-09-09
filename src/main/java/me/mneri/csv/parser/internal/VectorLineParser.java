@@ -39,7 +39,7 @@ import static me.mneri.csv.format.Format.*;
  *
  * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
  */
-public class SimdLineParser implements LineParser {
+public class VectorLineParser implements LineParser {
     private static final int EFB_TRAILING_ZEROES = Integer.numberOfTrailingZeros(EFB);
     private static final int STRIDE = Long.SIZE;
 
@@ -58,7 +58,7 @@ public class SimdLineParser implements LineParser {
      *                 {@code Format} instances.
      * @param stream   The character stream.
      */
-    public SimdLineParser(Format.Provider<? extends Format> provider, RandomAccessStream stream) {
+    public VectorLineParser(Format.Provider<? extends Format> provider, RandomAccessStream stream) {
         this.format = provider.provide();
         this.stream = stream;
     }
@@ -85,7 +85,6 @@ public class SimdLineParser implements LineParser {
         int s = format.base();
         long bitmask = this.bitmask;
         long strideStart = this.strideStart;
-        long strideEnd = this.strideEnd;
 
         out.reset();
         stream.compact(strideStart);
@@ -127,7 +126,7 @@ public class SimdLineParser implements LineParser {
                 }
             }
         } while (isNotEndOfLineAndNotEndOfFileAndNotError(s));
-        this.strideEnd = strideEnd;
+//        this.strideEnd = strideEnd;
         this.strideStart = strideStart;
         this.bitmask = bitmask;
 

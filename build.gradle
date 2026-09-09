@@ -29,7 +29,7 @@ dependencies {
 }
 
 jmh {
-    jvmArgs = ['--add-modules=jdk.incubator.vector']
+    //jvmArgs = ['--add-modules=jdk.incubator.vector']
 }
 
 test {

@@ -193,6 +193,10 @@ public final class Rfc4180FullyRelaxedFormat implements Format {
         //     return 0;
         // }
 
+        // The implementation below uses a mask and a map. While likely slightly slower than a pure, properly ordered
+        // if-else chain like the one above, it is compact and more likely to be inlined, which has a greater benefit on
+        // the overall performance.
+
         // Fast Path: Check if 'c' is an "ordinary" character. This includes anything > 44 (standard text) or characters
         // <= 44 not in the special mask.
         // Java's shift operators natively mask the shift by 63 (c & 63). Thus, 1L << -1 cleanly wraps to bit 63.

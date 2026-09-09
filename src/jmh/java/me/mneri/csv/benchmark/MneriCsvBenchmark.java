@@ -12,19 +12,26 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
 @BenchmarkMode(Mode.AverageTime)
-@Fork(3)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
-@Warmup(iterations = 10, time = 5)
-@Measurement(iterations = 20, time = 5)
-public class MneriCsvBenchmark {
+@Warmup(iterations = 5)
+@Measurement(iterations = 5)
+public abstract class MneriCsvBenchmark {
     @Benchmark
     public void worldCitiesPop(Blackhole bh) throws IOException {
-        File file = new File("/home/mneri/Downloads/stop_times.txt");
+        File file = new File("/home/mneri/Downloads/worldcitiespop.csv");
         Charset charset = StandardCharsets.ISO_8859_1;
         try (CsvReader<String[]> reader = CsvReader.open(file, charset, new StringArrayDeserializer())) {
             while (reader.hasNext()) {
                 bh.consume(reader.next());
             }
         }
+    }
+
+//    @Fork(3)
+//    public static class Sequential extends MneriCsvBenchmark {
+//    }
+
+    @Fork(value = 3, jvmArgsPrepend = "--add-modules=jdk.incubator.vector")
+    public static class Vector extends MneriCsvBenchmark {
     }
 }

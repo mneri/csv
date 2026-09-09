@@ -23,12 +23,11 @@ import me.mneri.csv.deserializer.StringListDeserializer;
 import me.mneri.csv.extension.internal.Extensions;
 import me.mneri.csv.format.Format;
 import me.mneri.csv.format.Rfc4180FullyRelaxedFormat;
-import me.mneri.csv.io.internal.RandomAccessCharStream;
 import me.mneri.csv.io.internal.RandomAccessStream;
 import me.mneri.csv.line.internal.InternalRecycledLine;
 import me.mneri.csv.parser.internal.LineParser;
 import me.mneri.csv.parser.internal.SequentialLineParser;
-import me.mneri.csv.parser.internal.SimdLineParser;
+import me.mneri.csv.parser.internal.VectorLineParser;
 
 import java.io.*;
 import java.nio.charset.Charset;
@@ -159,12 +158,12 @@ public class CsvReader<T> implements AutoCloseable {
     }
 
     private static <T> CsvReader<T> newInstance(Reader rdr, Format.Provider<? extends Format> p, Deserializer<T> des) {
-        RandomAccessStream stream = new RandomAccessCharStream(rdr, MAX_LINE_SIZE);
+        RandomAccessStream stream = new RandomAccessStream(rdr, MAX_LINE_SIZE);
         InternalRecycledLine line = new InternalRecycledLine(stream);
         LineParser parser;
 
         if (Extensions.SIMD_SUPPORTED) {
-            parser = new SimdLineParser(p, stream);
+            parser = new VectorLineParser(p, stream);
         } else {
             parser = new SequentialLineParser(p, stream);
         }

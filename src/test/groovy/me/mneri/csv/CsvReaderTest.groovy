@@ -19,11 +19,7 @@
 package me.mneri.csv
 
 
-import me.mneri.csv.io.internal.RandomAccessCharStream
-import me.mneri.csv.line.internal.InternalRecycledLine
-import me.mneri.csv.parser.internal.LineParser
 import spock.lang.Specification
-import spock.lang.Unroll
 
 class CsvReaderTest extends Specification {
 //    def stream = new RandomAccessCharStream(Mock(Reader), CsvReader.MAX_LINE_SIZE)

@@ -17,13 +17,13 @@ import java.util.stream.Stream;
 @Warmup(iterations = 10, time = 5)
 @Measurement(iterations = 20, time = 5)
 public class SimpleFlatMapperBenchmark {
-    @Benchmark
-    public void worldCitiesPop(Blackhole bh) throws Exception {
-        File file = new File("/home/mneri/Downloads/stop_times.txt");
-        Charset charset = StandardCharsets.ISO_8859_1;
-
-        try (Stream<String[]> stream = CsvParser.stream(new FileReader(file, charset))) {
-            stream.forEach(bh::consume);
-        }
-    }
+//    @Benchmark
+//    public void worldCitiesPop(Blackhole bh) throws Exception {
+//        File file = new File("/home/mneri/Downloads/stop_times.txt");
+//        Charset charset = StandardCharsets.ISO_8859_1;
+//
+//        try (Stream<String[]> stream = CsvParser.stream(new FileReader(file, charset))) {
+//            stream.forEach(bh::consume);
+//        }
+//    }
 }
