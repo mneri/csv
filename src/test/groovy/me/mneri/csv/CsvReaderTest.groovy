@@ -125,4 +125,13 @@ class CsvReaderTest extends Specification {
         "hasNext()" | { r -> r.hasNext() }
         "next()"    | { r -> r.next() }
     }
+
+    def "close() twice doesn't throw an exception"() {
+        when:
+        reader.close()
+        reader.close()
+
+        then:
+        noExceptionThrown()
+    }
 }

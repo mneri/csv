@@ -24,7 +24,7 @@ import spock.lang.Specification
 class StringListDeserializerTest extends Specification {
     private final StringListDeserializer des = new StringListDeserializer()
 
-    def "deserializes all fields into a list of strings"() {
+    def "deserialize() deserializes all fields into a list of strings"() {
         given:
         def line = Mock(RecycledLine) {
             getFieldCount() >> 3
@@ -40,7 +40,7 @@ class StringListDeserializerTest extends Specification {
         result == ["Alice", "42", "London"]
     }
 
-    def "returns an empty list when line has no fields"() {
+    def "deserialize() returns an empty list when line has no fields"() {
         given:
         def line = Mock(RecycledLine) {
             getFieldCount() >> 0

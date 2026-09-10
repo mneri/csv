@@ -15,15 +15,15 @@ import java.util.concurrent.TimeUnit;
 @BenchmarkMode(Mode.AverageTime)
 @Fork(3)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
-@Warmup(iterations = 10, time = 5)
-@Measurement(iterations = 20, time = 5)
+@Warmup(iterations = 6)
+@Measurement(iterations = 6)
 public class FastCsvBenchmark {
-//    @Benchmark
-//    public void worldCitiesPop(Blackhole bh) throws IOException {
-//        File file = new File("/home/mneri/Downloads/stop_times.txt");
-//        Charset charset = StandardCharsets.ISO_8859_1;
-//        try (CsvReader<CsvRecord> csv = CsvReader.builder().ofCsvRecord(new FileReader(file, charset))) {
-//            csv.forEach(bh::consume);
-//        }
-//    }
+    @Benchmark
+    public void worldCitiesPop(Blackhole bh) throws IOException {
+        File file = new File("/home/mneri/Downloads/worldcitiespop.csv");
+        Charset charset = StandardCharsets.ISO_8859_1;
+        try (CsvReader<CsvRecord> csv = CsvReader.builder().ofCsvRecord(new FileReader(file, charset))) {
+            csv.forEach(bh::consume);
+        }
+    }
 }

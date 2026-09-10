@@ -82,7 +82,7 @@ public interface Format {
     int ELB = 1 << 20;
 
     /**
-     * When this flag is set, the client must take action to go back one character in the stream.
+     * When this flag is set, the client must take action to replay the same character to the {@code Format} next.
      */
     int RPL = 1 << 21;
 
@@ -151,6 +151,7 @@ public interface Format {
      * only the subset of characters indicated by the bitmask returned by this method.
      * <p>
      * <i>Please, note that the method can sometimes return false-positives, but never false-negatives.</i>
+     * <p>
      * Known implementations of {@code Format} use SIMD (Single Instruction, Multiple Data) instructions to evaluate the
      * entire vector concurrently, returning the bitmask in just a few CPU cycles.
      *

@@ -13,8 +13,8 @@ import java.util.concurrent.TimeUnit;
 
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
-@Warmup(iterations = 5)
-@Measurement(iterations = 5)
+@Warmup(iterations = 6)
+@Measurement(iterations = 6)
 public abstract class MneriCsvBenchmark {
     @Benchmark
     public void worldCitiesPop(Blackhole bh) throws IOException {
@@ -27,9 +27,9 @@ public abstract class MneriCsvBenchmark {
         }
     }
 
-//    @Fork(3)
-//    public static class Sequential extends MneriCsvBenchmark {
-//    }
+    @Fork(3)
+    public static class Sequential extends MneriCsvBenchmark {
+    }
 
     @Fork(value = 3, jvmArgsPrepend = "--add-modules=jdk.incubator.vector")
     public static class Vector extends MneriCsvBenchmark {

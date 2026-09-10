@@ -26,6 +26,8 @@ import java.io.IOException;
  * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
  */
 public class UnexpectedCharacterException extends IOException {
+    private final long position;
+
     /**
      * Return a new {@code UnexpectedCharacterException}.
      *
@@ -33,5 +35,15 @@ public class UnexpectedCharacterException extends IOException {
      */
     public UnexpectedCharacterException(long position) {
         super("Unexpected character at position " + position);
+        this.position = position;
+    }
+
+    /**
+     * Return the position in the stream where the error occurred.
+     *
+     * @return The position.
+     */
+    public long getPosition() {
+        return position;
     }
 }

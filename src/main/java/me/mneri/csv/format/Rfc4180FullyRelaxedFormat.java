@@ -107,15 +107,15 @@ public final class Rfc4180FullyRelaxedFormat implements Format {
     //@formatter:off
     private static final int[] DFA = {
     // *                  ,                    \r                   \n                   "                    EOF                  padding
-       FLD,               BFF|EFH,             CAR|EFH,             BFL|EFH|ELH,         FLD,                 EOF|EFH|ELH|STP,     0,0,  // FLD
-       QOT,               QOT,                 QOT,                 QOT,                 ESC,                 EOF|EFH|ELH|STP,     0,0,  // QOT
-       FLD|SFH,           BFF|SFH|EFH,         CAR|SFH|EFH,         BFL|SFH|EFH|ELH,     SQT,                 EOF|SFH|EFH|ELH|STP, 0,0,  // BFF
-       QOT|SFH,           QOT|SFH,             QOT|SFH,             QOT|SFH,             SQE,                 EOF|SFH|EFH|ELH|STP, 0,0,  // SQT
-       FLD|RMB,           BFF|EFB,             CAR|EFB,             BFL|EFB|ELH,         QOT|RMB,             EOF|EFB|ELH|STP,     0,0,  // ESC
-       FLD|SFH,           BFF|SFH|EFH,         CAR|SFH|EFH,         BFL|SFH|EFH|ELH,     QOT|SFH,             EOF|SFH|EFH|ELH|STP, 0,0,  // SQE
-       FLD|SFH,           BFF|SFH|EFH,         CAR|SFH|EFH,         BFL|SFH|EFH|ELH,     SQT,                 EOF|STP,             0,0,  // BFL *
-       BFL|ELB|RPL,       BFL|ELB|RPL,         BFL|ELB|RPL,         BFL|ELH,             BFL|ELB|RPL,         EOF|ELB|STP,         0,0,  // CAR
-       ERR|ERH,           ERR|ERH,             ERR|ERH,             ERR|ERH,             ERR|ERH,             ERR|ERH,             0,0,  // EOF
+       FLD,               BFF|EFH,             CAR|EFH,             BFL|EFH|ELH,         FLD,                 EOF|EFH|ELH|RPL,     0,0,  // FLD
+       QOT,               QOT,                 QOT,                 QOT,                 ESC,                 EOF|EFH|ELH|RPL,     0,0,  // QOT
+       FLD|SFH,           BFF|SFH|EFH,         CAR|SFH|EFH,         BFL|SFH|EFH|ELH,     SQT,                 EOF|SFH|EFH|ELH|RPL, 0,0,  // BFF
+       QOT|SFH,           QOT|SFH,             QOT|SFH,             QOT|SFH,             SQE,                 EOF|SFH|EFH|ELH|RPL, 0,0,  // SQT
+       FLD|RMB,           BFF|EFB,             CAR|EFB,             BFL|EFB|ELH,         QOT|RMB,             EOF|EFB|ELH|RPL,     0,0,  // ESC
+       FLD|SFH,           BFF|SFH|EFH,         CAR|SFH|EFH,         BFL|SFH|EFH|ELH,     QOT|SFH,             EOF|SFH|EFH|ELH|RPL, 0,0,  // SQE
+       FLD|SFH,           BFF|SFH|EFH,         CAR|SFH|EFH,         BFL|SFH|EFH|ELH,     SQT,                 EOF|RPL,             0,0,  // BFL *
+       BFL|ELB|RPL,       BFL|ELB|RPL,         BFL|ELB|RPL,         BFL|ELH,             BFL|ELB|RPL,         EOF|ELB|RPL,         0,0,  // CAR
+       ERR|ERH,           ERR|ERH,             ERR|ERH,             ERR|ERH,             ERR|ERH,             EOF|STP,             0,0,  // EOF
        ERR|ERH,           ERR|ERH,             ERR|ERH,             ERR|ERH,             ERR|ERH,             ERR|ERH,             0,0,  // ERR
        0,                 0,                   0,                   0,                   0,                   0,                   0,0,
        0,                 0,                   0,                   0,                   0,                   0,                   0,0,

@@ -101,7 +101,7 @@ public class SequentialLineParser implements LineParser {
                     out.dirty(pos - 2); // -1: refers to previous position; -1: pos was already incremented
                 }
                 if (isReplay(s)) {
-                    pos = pos - 2; // -1: go back one; -1: pos was already incremented
+                    pos = pos - 1;
                 }
             }
         } while (isNotEndOfLineAndNotEndOfFileAndNotError(s));
