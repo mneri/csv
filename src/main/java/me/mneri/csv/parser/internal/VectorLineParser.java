@@ -85,7 +85,7 @@ public class VectorLineParser implements LineParser {
         int s = format.base();
         long bitmask = this.bitmask;
         long strideStart = this.strideStart;
-//        long strideEnd = this.strideEnd;
+        long strideEnd = this.strideEnd;
 
         out.reset();
         stream.compact(strideStart);
@@ -127,7 +127,7 @@ public class VectorLineParser implements LineParser {
                 }
             }
         } while (isNotEndOfLineAndNotEndOfFileAndNotError(s));
-//        this.strideEnd = strideEnd;
+        this.strideEnd = strideEnd;
         this.strideStart = strideStart;
         this.bitmask = bitmask;
 
