@@ -18,7 +18,7 @@
 
 package me.mneri.csv.format;
 
-import me.mneri.csv.extension.internal.VectorHelper;
+import me.mneri.csv.extension.VectorHelper;
 
 /**
  * Implements a relaxed interpretation of the RFC4180 standard for CSV files.

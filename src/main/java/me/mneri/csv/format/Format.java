@@ -22,6 +22,9 @@ package me.mneri.csv.format;
  * A specific CSV dialect. Instances of this interface manage the state of the CSV parser and dictate the actions a
  * client must perform for each character in a stream.
  * <p>
+ * Rather than implementing this interface themselves, clients typically choose from one of the pre-provided
+ * implementations.
+ * <p>
  * For performance reasons, the state is maintained externally rather than encapsulated within the {@code Format}
  * instance, and it is encoded in a primitive {@code int}. The client must keep track of this value and pass it back
  * when calling methods of the {@code Format}; for example, the methods {@link #consume(int, int)} and

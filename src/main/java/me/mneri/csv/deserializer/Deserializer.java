@@ -19,16 +19,35 @@
 package me.mneri.csv.deserializer;
 
 import me.mneri.csv.line.RecycledLine;
-import me.mneri.csv.serializer.Serializer;
 
 import java.io.IOException;
 
 /**
- * Deserialize objects.
+ * Given a CSV line, construct a Java object. Clients are normally required to implement this class to map CSV lines to
+ * their domain objects.
+ * <p>
+ * <strong>Example</strong>
+ * <pre>{@code
+ * public class ContactDeserializer implements Deserializer<Contact> {
+ *     @Override
+ *     public Contact deserialize(RecycledLine line) throws IOException {
+ *         Contact contact = new Contact();
+ *         contact.setFirstName(line.getString(0));
+ *         contact.setLastName(line.getString(1));
+ *         // ...
+ *         return contact;
+ *     }
+ * }}</pre>
+ * <p>
+ * The {@link RecycledLine} instance passed to the {@link #deserialize(RecycledLine)} method is internally reused,
+ * cleared, and repopulated. Implementations of this interface should never store, return or otherwise use the
+ * {@code RecycledLine} instance outside the scope of this method. The state of {@code RecycledLine} can (and will)
+ * change frequently and without warning. Clients should use {@code RecycleLine} in the scope of the
+ * {@link #deserialize(RecycledLine)} method to create domain objects.
  *
  * @param <T> The type of the objects.
  * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
- * @see Serializer
+ * @see RecycledLine
  */
 public interface Deserializer<T> {
     /**

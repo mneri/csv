@@ -36,9 +36,33 @@ import java.util.NoSuchElementException;
 
 /**
  * Read CSV streams and automatically transform lines into Java objects.
+ * <p>
+ * To create a new instance of {@code CsvReader}, use one of the provided {@code open()} factory methods.
+ * <p>
+ * The reader supports various CSV dialects called formats, and they can be configured by passing a specific
+ * {@code Format} provider as an argument. Different formats offer distinct interpretations of a CSV file: some enforce
+ * strict adherence to the RFC 4180 standard, while others provide a more relaxed interpretation and are guaranteed
+ * never to error (for example, {@link Rfc4180FullyRelaxedFormat}). Clients can choose the appropriate format based on
+ * their specific use case.
+ * <p>
+ * Row-to-object conversion is handled by a {@link Deserializer} instance, allowing clients to supply their own custom
+ * implementations.
+ * <p>
+ * <strong>Example</strong><br/>
+ * <pre>{@code
+ * Deserializer<Contact> deserializer = new ContactDeserializer();
+ * try (CsvReader<Contact> reader = CsvReader.open(file, charset, Rfc4180StrictFormat.provider(), deserializer)) {
+ *     while (reader.hasNext()) {
+ *         Contact contact = reader.next();
+ *         // ...
+ *     }
+ * }}</pre>
+ * <p>
  *
  * @param <T> The type of the Java objects to read.
  * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
+ * @see Deserializer
+ * @see Format
  */
 public class CsvReader<T> implements AutoCloseable {
     private static final int ELEMENT_NOT_PREPARED = 0;
@@ -56,56 +80,94 @@ public class CsvReader<T> implements AutoCloseable {
     /**
      * Return a new {@link CsvReader} in open state, reading from the specified file.
      *
-     * @param f   The file.
-     * @param p   A provider of {@link Format}s.
-     * @param des The deserializer, mapping CSV lines to Java objects.
-     * @param <T> The type of object a CSV line should be mapped to.
+     * @param f       The file.
+     * @param charset The charset of the file.
+     * @param p       A provider of {@link Format}s.
+     * @param des     The deserializer, mapping CSV lines to Java objects.
+     * @param hints   Hints to the reader.
+     * @param <T>     The type of object a CSV line should be mapped to.
+     * @return A new {@link CsvReader}, in open state.
+     * @throws FileNotFoundException If the file does not exist.
+     * @see Hint
+     */
+    public static <T> CsvReader<T> open(
+            File f, Charset charset, Format.Provider<? extends Format> p, Deserializer<T> des, int hints)
+            throws IOException {
+        return open(new FileReader(f, charset), p, des, hints);
+    }
+
+    /**
+     * Return a new {@link CsvReader} in open state, reading from the specified file.
+     *
+     * @param f       The file.
+     * @param charset The charset of the file.
+     * @param p       A provider of {@link Format}s.
+     * @param des     The deserializer, mapping CSV lines to Java objects.
+     * @param <T>     The type of object a CSV line should be mapped to.
      * @return A new {@link CsvReader}, in open state.
      * @throws FileNotFoundException If the file does not exist.
      */
     public static <T> CsvReader<T> open(File f, Charset charset, Format.Provider<? extends Format> p, Deserializer<T> des)
             throws IOException {
-        return open(new FileReader(f, charset), p, des);
+        return open(f, charset, p, des, 0);
     }
 
     /**
      * Return a new {@link CsvReader} in open state, reading from the specified file, deserializing each line into a
      * {@link List<String>}.
      *
-     * @param f The file.
-     * @param p A provider of {@link Format}s.
+     * @param f       The file.
+     * @param charset The charset of the file.
+     * @param p       A provider of {@link Format}s.
      * @return A new {@link CsvReader}, in open state.
      * @throws FileNotFoundException If the file does not exist.
      */
     public static CsvReader<List<String>> open(File f, Charset charset, Format.Provider<? extends Format> p)
             throws IOException {
-        return open(f, charset, p, new StringListDeserializer());
+        return open(f, charset, p, new StringListDeserializer(), 0);
     }
 
     /**
      * Return a new {@link CsvReader} in open state, reading from the specified file, parsing with
      * {@link Rfc4180FullyRelaxedFormat}.
      *
-     * @param f   The file.
-     * @param des The deserializer, mapping CSV lines to Java objects.
-     * @param <T> The type of object a CSV line should be mapped to.
+     * @param f       The file.
+     * @param charset The charset of the file.
+     * @param des     The deserializer, mapping CSV lines to Java objects.
+     * @param <T>     The type of object a CSV line should be mapped to.
      * @return A new {@link CsvReader}, in open state.
      * @throws FileNotFoundException If the file does not exist.
      */
     public static <T> CsvReader<T> open(File f, Charset charset, Deserializer<T> des) throws IOException {
-        return open(f, charset, Rfc4180FullyRelaxedFormat.provider(), des);
+        return open(f, charset, Rfc4180FullyRelaxedFormat.provider(), des, 0);
     }
 
     /**
      * Return a new {@link CsvReader} in open state, reading from the specified file, parsing with
      * {@link Rfc4180FullyRelaxedFormat}, deserializing each line into a {@link List<String>}.
      *
-     * @param f The file.
+     * @param f       The file.
+     * @param charset The charset of the file.
      * @return A new {@link CsvReader}, in open state.
      * @throws FileNotFoundException If the file does not exist.
      */
     public static CsvReader<List<String>> open(File f, Charset charset) throws IOException {
-        return open(f, charset, Rfc4180FullyRelaxedFormat.provider(), new StringListDeserializer());
+        return open(f, charset, Rfc4180FullyRelaxedFormat.provider(), new StringListDeserializer(), 0);
+    }
+
+    /**
+     * Return a new {@link CsvReader} in open state, reading from the specified reader.
+     *
+     * @param rdr   The reader.
+     * @param p     A provider of {@link Format}s.
+     * @param des   The deserializer, mapping CSV lines to Java objects.
+     * @param hints Hints to the reader.
+     * @param <T>   The type of object a CSV line should be mapped to.
+     * @return A new {@link CsvReader}, in open state.
+     */
+    public static <T> CsvReader<T> open(
+            Reader rdr, Format.Provider<? extends Format> p, Deserializer<T> des, int hints) {
+        return newInstance(rdr, p, des, hints);
     }
 
     /**
@@ -118,7 +180,7 @@ public class CsvReader<T> implements AutoCloseable {
      * @return A new {@link CsvReader}, in open state.
      */
     public static <T> CsvReader<T> open(Reader rdr, Format.Provider<? extends Format> p, Deserializer<T> des) {
-        return newInstance(rdr, p, des);
+        return open(rdr, p, des, 0);
     }
 
     /**
@@ -130,7 +192,7 @@ public class CsvReader<T> implements AutoCloseable {
      * @return A new {@link CsvReader}, in open state.
      */
     public static CsvReader<List<String>> open(Reader rdr, Format.Provider<? extends Format> p) {
-        return open(rdr, p, new StringListDeserializer());
+        return open(rdr, p, new StringListDeserializer(), 0);
     }
 
     /**
@@ -143,7 +205,7 @@ public class CsvReader<T> implements AutoCloseable {
      * @return A new {@link CsvReader}, in open state.
      */
     public static <T> CsvReader<T> open(Reader rdr, Deserializer<T> des) {
-        return open(rdr, Rfc4180FullyRelaxedFormat.provider(), des);
+        return open(rdr, Rfc4180FullyRelaxedFormat.provider(), des, 0);
     }
 
     /**
@@ -154,15 +216,16 @@ public class CsvReader<T> implements AutoCloseable {
      * @return A new {@link CsvReader}, in open state.
      */
     public static CsvReader<List<String>> open(Reader rdr) {
-        return open(rdr, Rfc4180FullyRelaxedFormat.provider(), new StringListDeserializer());
+        return open(rdr, Rfc4180FullyRelaxedFormat.provider(), new StringListDeserializer(), 0);
     }
 
-    private static <T> CsvReader<T> newInstance(Reader rdr, Format.Provider<? extends Format> p, Deserializer<T> des) {
+    private static <T> CsvReader<T> newInstance(
+            Reader rdr, Format.Provider<? extends Format> p, Deserializer<T> des, int hints) {
         RandomAccessStream stream = new RandomAccessStream(rdr, MAX_LINE_SIZE);
         InternalRecycledLine line = new InternalRecycledLine(stream);
-        LineParser parser;
 
-        if (Extensions.SIMD_SUPPORTED) {
+        LineParser parser;
+        if (Extensions.SIMD_SUPPORTED && (hints & Hint.TINY_FIELDS) == 0) {
             parser = new VectorLineParser(p, stream);
         } else {
             parser = new SequentialLineParser(p, stream);

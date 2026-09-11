@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package me.mneri.csv.extension.internal;
+package me.mneri.csv.extension;
 
 import jdk.incubator.vector.ShortVector;
 import jdk.incubator.vector.VectorSpecies;

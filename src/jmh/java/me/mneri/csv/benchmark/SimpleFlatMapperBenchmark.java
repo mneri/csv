@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
@@ -23,7 +24,17 @@ public class SimpleFlatMapperBenchmark {
         Charset charset = StandardCharsets.ISO_8859_1;
 
         try (Stream<String[]> stream = CsvParser.stream(new FileReader(file, charset))) {
-            stream.forEach(bh::consume);
+            stream.forEach(next -> {
+                City city = new City(
+                        next[0],
+                        next[1],
+                        next[2],
+                        next[3],
+                        next[4],
+                        next[5],
+                        next[6]);
+                bh.consume(city);
+            });
         }
     }
 }

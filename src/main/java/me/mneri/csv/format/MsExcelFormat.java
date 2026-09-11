@@ -18,7 +18,7 @@
 
 package me.mneri.csv.format;
 
-import me.mneri.csv.extension.internal.VectorHelper;
+import me.mneri.csv.extension.VectorHelper;
 
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;

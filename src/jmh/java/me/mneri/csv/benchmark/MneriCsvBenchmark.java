@@ -1,7 +1,11 @@
 package me.mneri.csv.benchmark;
 
 import me.mneri.csv.CsvReader;
+import me.mneri.csv.Hint;
+import me.mneri.csv.deserializer.Deserializer;
 import me.mneri.csv.deserializer.StringArrayDeserializer;
+import me.mneri.csv.format.Rfc4180FullyRelaxedFormat;
+import me.mneri.csv.line.RecycledLine;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 
@@ -16,11 +20,26 @@ import java.util.concurrent.TimeUnit;
 @Warmup(iterations = 6)
 @Measurement(iterations = 6)
 public abstract class MneriCsvBenchmark {
+    private static class CityDeserializer implements Deserializer<City> {
+        @Override
+        public City deserialize(RecycledLine line) throws IOException {
+            return new City(
+                    line.getString(0),
+                    line.getString(1),
+                    line.getString(2),
+                    line.getString(3),
+                    line.getString(4),
+                    line.getString(5),
+                    line.getString(6));
+        }
+    }
+
     @Benchmark
     public void worldCitiesPop(Blackhole bh) throws IOException {
-        File file = new File("/home/mneri/Downloads/worldcitiespop.csv");
+        File file = new File("/home/mneri/Downloads/short.csv");
         Charset charset = StandardCharsets.ISO_8859_1;
-        try (CsvReader<String[]> reader = CsvReader.open(file, charset, new StringArrayDeserializer())) {
+        try (CsvReader<City> reader =
+                     CsvReader.open(file, charset, Rfc4180FullyRelaxedFormat.provider(), new CityDeserializer())) {
             while (reader.hasNext()) {
                 bh.consume(reader.next());
             }

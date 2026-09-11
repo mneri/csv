@@ -24,7 +24,19 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * Serialize objects.
+ * Given a Java object, construct a CSV line. Clients are normally required to implement this class to map domain
+ * objects CSV lines.
+ * <p>
+ * <strong>Example</strong>
+ * <pre>{@code
+ * public class ContactSerializer implements Serializer<Contact> {
+ *     @Override
+ *     public void serialize(Contact contact, List<String> out) throws IOException {
+ *         out.add(contact.getFirstName());
+ *         out.add(contact.getLastName());
+ *         // ...
+ *     }
+ * }}</pre>
  *
  * @param <T> the type of the objects.
  * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
@@ -32,7 +44,7 @@ import java.util.List;
  */
 public interface Serializer<T> {
     /**
-     * Serialize an object into a list of strings. The strings should be added in order to the list passed as parameter.
+     * Serialize an object into a list of strings. The strings should be added in order to the output list.
      *
      * @param object the object to serialize.
      * @param out    the list of strings representing the csv line.
