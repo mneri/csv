@@ -39,7 +39,7 @@ import static me.mneri.csv.format.Format.*;
  *
  * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
  */
-public class VectorLineParser implements LineParser {
+public final class VectorLineParser implements LineParser {
     private static final int EFB_TRAILING_ZEROES = Integer.numberOfTrailingZeros(EFB);
     private static final int STRIDE = Long.SIZE;
 

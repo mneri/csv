@@ -78,6 +78,9 @@ import me.mneri.csv.extension.VectorHelper;
  */
 @SuppressWarnings({"Duplicates", "unused"})
 public final class Rfc4180FullyRelaxedFormat implements Format {
+    /**
+     *
+     */
     private static final int FLD = 0; // Field
     private static final int QOT = 8; // Quotation
     private static final int BFF = 16; // Before field
@@ -195,7 +198,7 @@ public final class Rfc4180FullyRelaxedFormat implements Format {
         //     return 0;
         // }
 
-        // The implementation below uses a mask and a map. While likely slightly slower than a pure, properly ordered
+        // The implementation below uses a mask and a map. While *likely* slightly slower than a pure, properly ordered
         // if-else chain like the one above, it is compact and more likely to be inlined, which has a greater benefit on
         // the overall performance.
 

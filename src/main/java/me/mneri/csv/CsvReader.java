@@ -23,6 +23,7 @@ import me.mneri.csv.deserializer.StringListDeserializer;
 import me.mneri.csv.extension.internal.Extensions;
 import me.mneri.csv.format.Format;
 import me.mneri.csv.format.Rfc4180FullyRelaxedFormat;
+import me.mneri.csv.hint.Hint;
 import me.mneri.csv.io.internal.RandomAccessStream;
 import me.mneri.csv.line.internal.InternalRecycledLine;
 import me.mneri.csv.parser.internal.LineParser;

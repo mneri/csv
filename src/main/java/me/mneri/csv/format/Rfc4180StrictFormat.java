@@ -154,7 +154,7 @@ public final class Rfc4180StrictFormat implements Format {
         //     return 0;
         // }
 
-        // The implementation below uses a mask and a map. While likely slightly slower than a pure, properly ordered
+        // The implementation below uses a mask and a map. While *likely* slightly slower than a pure, properly ordered
         // if-else chain like the one above, it is compact and more likely to be inlined, which has a greater benefit on
         // the overall performance.
 

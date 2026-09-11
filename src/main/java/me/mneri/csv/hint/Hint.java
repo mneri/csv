@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package me.mneri.csv;
+package me.mneri.csv.hint;
 
 /**
  * Hint constants for CSV reader and writers.

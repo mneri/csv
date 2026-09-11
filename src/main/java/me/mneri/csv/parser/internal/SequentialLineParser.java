@@ -32,7 +32,7 @@ import static me.mneri.csv.format.Format.*;
  *
  * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
  */
-public class SequentialLineParser implements LineParser {
+public final class SequentialLineParser implements LineParser {
     private static final int EFB_TRAILING_ZEROES = Integer.numberOfTrailingZeros(EFB);
 
     private final Format format;
