@@ -130,8 +130,7 @@ public class CsvWriter<T> implements Closeable, Flushable {
     private boolean isQuotingNeeded(String string) {
         for (int i = 0; i < string.length(); i++) {
             int c = string.charAt(i);
-
-            if (c == format.delimiter() || c == format.qualifier()) {
+            if (c == format.delimiter() || c == format.qualifier() || c == '\r' || c == '\n') {
                 return true;
             }
         }
