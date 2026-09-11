@@ -3,7 +3,7 @@ package me.mneri.csv.format
 import spock.lang.Specification
 import spock.lang.Unroll
 
-class FormatHelperTest extends Specification {
+class VectorHelperTest extends Specification {
     def input = new char[256]
 
     @Unroll

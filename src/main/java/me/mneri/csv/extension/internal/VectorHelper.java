@@ -16,24 +16,24 @@
  * limitations under the License.
  */
 
-package me.mneri.csv.format;
+package me.mneri.csv.extension.internal;
 
 import jdk.incubator.vector.ShortVector;
 import jdk.incubator.vector.VectorSpecies;
 
 /**
- * Helper class for {@link Format} implementations.
+ * Helper class for SIMD operations.
  * <p>
  * This class uses the Vector API, which is an incubator feature not yet available in standard Java installations, but
  * can be enabled by adding the JVM flag {@code --add-modules jdk.incubator.vector}.
  *
  * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
  */
-public final class FormatHelper {
+public final class VectorHelper {
     private static final VectorSpecies<Short> SHORT_SPECIES = ShortVector.SPECIES_PREFERRED;
     private static final int SHORT_STRIDE = SHORT_SPECIES.length();
 
-    private FormatHelper() {
+    private VectorHelper() {
     }
 
     /**

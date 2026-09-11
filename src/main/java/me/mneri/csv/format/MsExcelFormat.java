@@ -18,6 +18,8 @@
 
 package me.mneri.csv.format;
 
+import me.mneri.csv.extension.internal.VectorHelper;
+
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
@@ -189,7 +191,7 @@ public final class MsExcelFormat implements Format {
      */
     @Override
     public long bitmask(int s, char[] buff, int offset) {
-        long bm = FormatHelper.bitmask(buff, offset, (char) -1, '\n', '\r', '"', (char) del);
+        long bm = VectorHelper.bitmask(buff, offset, (char) -1, '\n', '\r', '"', (char) del);
 
         // A bitmask with 1's set at the positions of commas or any other CSV special character is not sufficient; for
         // example, the Format needs to consume a comma to track the end of the current field and the character after to

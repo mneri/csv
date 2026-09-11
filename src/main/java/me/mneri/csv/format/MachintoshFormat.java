@@ -18,6 +18,8 @@
 
 package me.mneri.csv.format;
 
+import me.mneri.csv.extension.internal.VectorHelper;
+
 /**
  * Implements a strict interpretation of the legacy Macintosh CSV format, which historically utilizes a carriage return
  * ({@code \r}) as the sole line terminator.
@@ -120,7 +122,7 @@ public final class MachintoshFormat implements Format {
      */
     @Override
     public long bitmask(int s, char[] buff, int offset) {
-        long bm = FormatHelper.bitmask(buff, offset, (char) -1, '\r', '"', ',');
+        long bm = VectorHelper.bitmask(buff, offset, (char) -1, '\r', '"', ',');
 
         // A bitmask with 1's set at the positions of commas or any other CSV special character is not sufficient; for
         // example, the Format needs to consume a comma to track the end of the current field and the character after to
