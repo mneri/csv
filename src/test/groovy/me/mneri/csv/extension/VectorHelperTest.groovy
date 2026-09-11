@@ -1,4 +1,4 @@
-package me.mneri.csv.format
+package me.mneri.csv.extension
 
 import spock.lang.Specification
 import spock.lang.Unroll
