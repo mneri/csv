@@ -94,7 +94,7 @@ public class CsvWriter<T> implements Closeable, Flushable {
     private int state = OPEN;
     private Writer writer;
 
-    private CsvWriter(Writer writer, Format.Provider<? extends Format> p, Serializer<T> ser) {
+    CsvWriter(Writer writer, Format.Provider<? extends Format> p, Serializer<T> ser) {
         this.writer = writer;
         this.format = p.provide();
         this.ser = ser;
@@ -142,7 +142,7 @@ public class CsvWriter<T> implements Closeable, Flushable {
         isOpenOrThrow();
         line.clear();
         ser.serialize(object, line);
-        writeLine();
+        writeLine(line);
     }
 
     public void writeAll(List<T> objects) throws IOException {
@@ -176,7 +176,7 @@ public class CsvWriter<T> implements Closeable, Flushable {
         }
     }
 
-    private void writeLine() throws IOException {
+    private void writeLine(List<String> line) throws IOException {
         for (int i = 0; i < line.size() - 1; i++) {
             writeField(line.get(i));
             writer.write(format.delimiter());
