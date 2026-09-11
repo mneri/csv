@@ -45,6 +45,7 @@ class CsvWriterTest extends Specification {
 
         where:
         value                   | expected
+        []                      | "\r\n"
         [null]                  | "\r\n"
         [null, null]            | ",\r\n"
         ["apple", "banana"]     | "apple,banana\r\n"

@@ -177,11 +177,13 @@ public class CsvWriter<T> implements Closeable, Flushable {
     }
 
     private void writeLine(List<String> line) throws IOException {
-        for (int i = 0; i < line.size() - 1; i++) {
-            writeField(line.get(i));
-            writer.write(format.delimiter());
+        if (!line.isEmpty()) {
+            for (int i = 0; i < line.size() - 1; i++) {
+                writeField(line.get(i));
+                writer.write(format.delimiter());
+            }
+            writeField(line.get(line.size() - 1));
         }
-        writeField(line.get(line.size() - 1));
         writer.write("\r\n");
     }
 }
