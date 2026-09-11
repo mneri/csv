@@ -79,7 +79,7 @@ public final class MachintoshFormat implements Format {
        QOT|SFH,             QOT|SFH,             QOT|SFH,             SQE,                 ERR|ERH,             0,0,0,  // SQT
        ERR|ERH,             BFF|EFB,             BFL|EFB|ELH,         QOT|RMB,             EOF|EFB|ELH|RPL,     0,0,0,  // ESC
        ERR|ERH,             BFF|SFH|EFH,         BFL|SFH|EFH|ELH,     QOT|SFH,             EOF|SFH|EFH|ELH|RPL, 0,0,0,  // SQE
-       FLD|SFH,             BFF|SFH|EFH,         BFL|SFH|EFH|ELH,     SQT,                 EOF|RPL,             0,0,0,  // BFL *
+       FLD|SFH,             BFF|SFH|EFH,         BFL|SFH|EFH|ELH,     SQT,                 EOF|STP,             0,0,0,  // BFL *
        ERR|ERH,             ERR|ERH,             ERR|ERH,             ERR|ERH,             EOF|STP,             0,0,0,  // EOF
        ERR|ERH,             ERR|ERH,             ERR|ERH,             ERR|ERH,             ERR|ERH,             0,0,0,  // ERR
        0,                   0,                   0,                   0,                   0,                   0,0,0,
