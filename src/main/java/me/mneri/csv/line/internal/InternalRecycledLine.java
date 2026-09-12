@@ -28,20 +28,49 @@ import java.math.BigInteger;
 import java.util.Arrays;
 
 /**
- * Internal implementation of the {@link RecycledLine} interface.
+ * Internal implementation of the {@link RecycledLine} interface. <i>This class is internal and is not meant to be used
+ * by clients.</i>
+ * <p>
+ * {@code InternalRecycledLine}, {@code RandomAccessStream} and {@code LineParser} implementations are closely related,
+ * and together they compose the parsing and data extraction behaviour. As the stream is processed, the line parser
+ * populates this object by recording positional markers via calls to {@link #startField(long)},
+ * {@link #endField(long)}, and {@link #dirty(long)}. Rather than eagerly allocating or copying strings,
+ * {@code InternalRecycledLine} only tracks the fields' coordinates. When a field value is subsequently requested by the
+ * client (for example, via {@link #getString(int)}), {@code InternalRecycledLine} uses the saved markers to read and
+ * assemble the data directly from the underlying stream on demand. The same instance of {@code RandomAccessStream} is
+ * shared between the {@code LineParser} and {@code InternalRecycledLine}, so what the parser dictates can be
+ * effectively reconstructed by {@code InternalRecycledLine}.
  *
  * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
  */
 public final class InternalRecycledLine implements RecycledLine {
     private final RandomAccessStream stream;
 
-    private long[] idx = new long[768];
-    private int idxSize;
+    // Memory Layout & Indexing Strategy:
+    //
+    // Each parsed field is encoded using 3 consecutive entries in the 'coordinates' array:
+    //   1. Start position (inclusive)
+    //   2. End position (exclusive)
+    //   3. Exclusions pointer (-1 if clean, or an index into the 'exclusions' array if dirty characters exist)
+    //
+    // coordinates array:
+    //   ... +--------------------+--------------------+--------------------+ ...
+    //       | start pos (long)   |   end pos (long)   |   exclusions ptr   |
+    //       +--------------------+--------------------+--------------------+
+    //                                                          |
+    //                                                          +------+
+    // exclusions array:                                               V
+    //   ... +----------------------------------------------+--------------------+--------------------+ ...
+    //                                                      | exclusion pos      | exclusion pos      |
+    //       +----------------------------------------------+--------------------+--------------------+
 
-    private long[] drt = new long[32];
-    private int drtSize;
+    private long[] coordinates = new long[768];
+    private int coordinatesSize;
 
-    private char[] cb = new char[256];
+    private long[] exclusions = new long[32];
+    private int exclusionsSize;
+
+    private char[] staging = new char[512];
 
     /**
      * Construct a new {@code InternalRecycledLine}.
@@ -55,50 +84,57 @@ public final class InternalRecycledLine implements RecycledLine {
         this.stream = stream;
     }
 
+    /**
+     * Mark the start a field at the specified position in the character stream.
+     *
+     * @param pos The position.
+     */
     public void startField(long pos) {
-        if (idxSize + 3 > idx.length) {
-            growIdx();
+        if (coordinatesSize + 3 > coordinates.length) {
+            growCoordinates();
         }
-        idx[idxSize] = pos;
-        idx[idxSize + 2] = -1; // Initially marked as not dirty
+        coordinates[coordinatesSize] = pos;
+        coordinates[coordinatesSize + 2] = -1; // Initially marked as not dirty
     }
 
-    private void growIdx() {
-        idx = Arrays.copyOf(idx, idx.length << 1);
-    }
-
+    /**
+     * Mark the end of the current field at the specified position in the character stream. The client must have called
+     * {@link #startField(long)} before.
+     * <p>
+     * No object is actually created at this stage.
+     *
+     * @param pos The position.
+     */
     public void endField(long pos) {
-        idx[idxSize + 1] = pos;
-        idxSize += 3;
+        coordinates[coordinatesSize + 1] = pos;
+        coordinatesSize += 3;
     }
 
+    /**
+     * Mark the character at the specified position as dirty.
+     * <p>
+     * Dirty characters are stripped off, and are not part of the output of methods such as {@link #getString(int)}.
+     * This is important when dealing with escaped sequences inside a qualified field.
+     *
+     * @param pos The position.
+     */
     public void dirty(long pos) {
-        if (idx[idxSize + 2] == -1) {
-            idx[idxSize + 2] = drtSize;
+        if (coordinates[coordinatesSize + 2] == -1) {
+            coordinates[coordinatesSize + 2] = exclusionsSize;
         }
-        if (drtSize >= drt.length) {
-            growDrt(); // Pushed to cold path
+        if (exclusionsSize >= exclusions.length) {
+            growExclusions();
         }
-        drt[drtSize++] = pos;
+        exclusions[exclusionsSize++] = pos;
     }
 
-    private void growDrt() {
-        drt = Arrays.copyOf(drt, drt.length << 1);
-    }
-
+    /**
+     * Reset the state of this line. All the fields created with calls to {@link #startField(long)} and
+     * {@link #endField(long)}, and all the dirty characters marked with {@link #dirty(long)} are removed.
+     */
     public void reset() {
-        idxSize = 0;
-        drtSize = 0;
-    }
-
-    private char[] ensureBuffCapacity(int required) {
-        if (cb.length < required) {
-            // Bit-twiddling hack to scale to the next highest power of two.
-            // Avoids thrashing allocations if field lengths creep up slowly.
-            int nextPow2 = Integer.highestOneBit(required - 1) << 1;
-            cb = new char[nextPow2];
-        }
-        return cb;
+        coordinatesSize = 0;
+        exclusionsSize = 0;
     }
 
     /**
@@ -108,7 +144,7 @@ public final class InternalRecycledLine implements RecycledLine {
      */
     @Override
     public int getFieldCount() {
-        return idxSize / 3;
+        return coordinatesSize / 3;
     }
 
     /**
@@ -124,15 +160,15 @@ public final class InternalRecycledLine implements RecycledLine {
             noSuchFieldException(n);
         }
         int i = n * 3;
-        if (idx[i + 2] == -1) { // If the field is marked NOT dirty
-            return stream.getString(idx[i], idx[i + 1]);
+        if (coordinates[i + 2] == -1) { // If the field is marked NOT dirty
+            return stream.getString(coordinates[i], coordinates[i + 1]);
         }
         return getDirtyString(n);
     }
 
     private String getDirtyString(int n) throws IOException {
-        int length = getDirtyCharArray(n, cb, 0);
-        return new String(cb, 0, length);
+        int length = getDirtyCharArray(n, staging, 0);
+        return new String(staging, 0, length);
     }
 
     /**
@@ -144,8 +180,8 @@ public final class InternalRecycledLine implements RecycledLine {
      */
     @Override
     public BigDecimal getBigDecimal(int n) throws IOException {
-        int length = getCharArray(n, cb, 0);
-        return new BigDecimal(cb, 0, length);
+        int length = getCharArray(n, staging, 0);
+        return new BigDecimal(staging, 0, length);
     }
 
     /**
@@ -189,9 +225,9 @@ public final class InternalRecycledLine implements RecycledLine {
             noSuchFieldException(n);
         }
         int i = n * 3;
-        if (idx[i + 2] == -1) { // If the field is marked NOT dirty
-            long start = idx[i];
-            long end = idx[i + 1];
+        if (coordinates[i + 2] == -1) { // If the field is marked NOT dirty
+            long start = coordinates[i];
+            long end = coordinates[i + 1];
             stream.getCharArray(dest, destPos, start, end);
             return (int) (end - start);
         }
@@ -201,13 +237,13 @@ public final class InternalRecycledLine implements RecycledLine {
     private int getDirtyCharArray(int n, char[] dest, int destPos) throws IOException {
         int i = n * 3;
 
-        long start = idx[i];
-        long end = idx[i + 1];
+        long start = coordinates[i];
+        long end = coordinates[i + 1];
         int copied = 0;
 
-        int j = (int) idx[i + 2];
-        while (j < drtSize && drt[j] < end) {
-            long stop = drt[j++];
+        int j = (int) coordinates[i + 2];
+        while (j < exclusionsSize && exclusions[j] < end) {
+            long stop = exclusions[j++];
             stream.getCharArray(dest, destPos + copied, start, stop);
             copied += (int) (stop - start);
             start = stop + 1;
@@ -340,6 +376,21 @@ public final class InternalRecycledLine implements RecycledLine {
     public Long getUnsignedLong(int n) throws IOException {
         String value = getString(n);
         return value == null ? null : Long.parseUnsignedLong(value);
+    }
+
+    private void growCoordinates() {
+        coordinates = Arrays.copyOf(coordinates, coordinates.length << 1);
+    }
+
+    private void growExclusions() {
+        exclusions = Arrays.copyOf(exclusions, exclusions.length << 1);
+    }
+
+    private char[] getStagingBuffer(int requiredCapacity) {
+        if (requiredCapacity > staging.length) {
+            staging = new char[Integer.highestOneBit(requiredCapacity - 1) << 1];
+        }
+        return staging;
     }
 
     private void noSuchFieldException(int n) throws IOException {

@@ -18,6 +18,9 @@
 
 package me.mneri.csv.extension.internal;
 
+/**
+ * Utility class for JVM APIs.
+ */
 public final class Extensions {
     public static final boolean SIMD_SUPPORTED = isSimdSupported();
 

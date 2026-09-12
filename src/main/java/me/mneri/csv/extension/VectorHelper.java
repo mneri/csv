@@ -63,7 +63,7 @@ public final class VectorHelper {
                     .or(vector.eq((short) c2))
                     .or(vector.eq((short) c3))
                     .or(vector.eq((short) c4))
-                    .toLong() << i;
+                    .toLong() << i; // There's a shift here!
         }
         return bitmask;
     }
@@ -97,7 +97,7 @@ public final class VectorHelper {
                     .or(vector.eq((short) c3))
                     .or(vector.eq((short) c4))
                     .or(vector.eq((short) c5))
-                    .toLong() << i;
+                    .toLong() << i; // There's a shift here!
         }
         return bitmask;
     }

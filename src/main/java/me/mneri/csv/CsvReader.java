@@ -284,7 +284,7 @@ public class CsvReader<T> implements AutoCloseable {
         return hasNext2(); // Only called if the client doesn't follow the idiomatic pattern hasNext()/next()
     }
 
-    public boolean hasNext2() {
+    private boolean hasNext2() {
         if (state == READER_CLOSED) {
             readerIsClosedException();
         }

@@ -78,9 +78,6 @@ import me.mneri.csv.extension.VectorHelper;
  */
 @SuppressWarnings({"Duplicates", "unused"})
 public final class Rfc4180FullyRelaxedFormat implements Format {
-    /**
-     *
-     */
     private static final int FLD = 0; // Field
     private static final int QOT = 8; // Quotation
     private static final int BFF = 16; // Before field
