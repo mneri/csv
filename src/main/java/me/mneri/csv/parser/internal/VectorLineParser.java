@@ -140,8 +140,8 @@ public final class VectorLineParser implements LineParser {
     }
 
     private long bitmask(int s, long strideStart) throws IOException {
-        // FIXME: This is... Ugh. We're giving the Format free access to the internal array of the stream.
-        return format.bitmask(s, stream.array(strideStart, Long.SIZE), stream.index(strideStart));
+        // FIXME: Hack to avoid slower monomorphic calls.
+        return format.bitmask(s, stream.arrayHack(strideStart, Long.SIZE), stream.indexHack(strideStart));
     }
 
     private boolean isEndOfField(int s) {

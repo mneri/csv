@@ -12,6 +12,8 @@ repositories {
 }
 
 dependencies {
+    implementation 'ch.randelshofer:fastdoubleparser:2.0.1'
+
     jmh 'org.openjdk.jmh:jmh-core:1.37'
     jmhAnnotationProcessor 'org.openjdk.jmh:jmh-generator-annprocess:1.37'
 

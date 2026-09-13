@@ -191,7 +191,6 @@ public final class RandomAccessStream implements AutoCloseable {
     public String getString(long start, int length) throws IOException { // Bytecode size: 54 (OpenJDK 26)
         // This method is split in two to minimise the fast-path bytecode size and enable aggressive inlining by the
         // C2 compiler. State checks, buffer loads and exception throwing is delegated to getString2().
-
         if (length == 0) {
             return null;
         }
@@ -359,6 +358,17 @@ public final class RandomAccessStream implements AutoCloseable {
         skipTo(pos - last); // Might skip less if EOF happens prematurely
     }
 
+    /**
+     * Ensure that the specified character range is fully buffered, throwing an exception if it falls outside the valid
+     * stream bounds or exceeds buffer capacity.
+     *
+     * @param start  The starting position (inclusive).
+     * @param length The length of the range.
+     * @throws IOException               If an I/O error occurs while reading from the underlying stream.
+     * @throws IndexOutOfBoundsException If the start position precedes the compaction window or if the range exceeds
+     *                                   the available data (EOF).
+     * @throws BufferOverflowException   If the buffer capacity is insufficient to load the requested data.
+     */
     private void ensureRange(long start, int length) throws IOException {
         if (start < first) {
             indexOutOfBoundsException(start);
@@ -370,16 +380,40 @@ public final class RandomAccessStream implements AutoCloseable {
         }
     }
 
+    /**
+     * Converts an absolute stream position into its corresponding relative index within the backing character array.
+     * <p>
+     * This translates a global stream coordinate ({@code pos}) into a local buffer index.
+     *
+     * @param pos The absolute position in the character stream.
+     * @return The relative index in the {@code cb} buffer array.
+     */
     private int indexOf(long pos) {
         return (int) (pos + offset);
     }
 
+    /**
+     * Verifies that the stream is currently open, throwing an exception if it has been closed.
+     *
+     * @throws IOException If the stream has been closed.
+     */
     private void isOpenOrThrow() throws IOException {
         if (state == STATE_CLOSED) {
             readerIsClosedException();
         }
     }
 
+    /**
+     * Reads characters from the underlying {@link Reader} into the backing buffer until the specified absolute position
+     * is covered or the end of the stream is reached.
+     * <p>
+     * If the buffer is completely saturated with unconsumed data and cannot accommodate more input, a
+     * {@link BufferOverflowException} is thrown.
+     *
+     * @param pos The target absolute position that needs to be buffered.
+     * @throws IOException             If an I/O error occurs while reading from the underlying stream.
+     * @throws BufferOverflowException If the buffer capacity is insufficient and cannot free space via shifting.
+     */
     private void read(long pos) throws IOException {
         while (pos > last) { // While the requested position is greater than the last position read from disk
             int space = cb.length - limit;
@@ -407,6 +441,14 @@ public final class RandomAccessStream implements AutoCloseable {
         }
     }
 
+    /**
+     * Shifts the current buffer window to the left, to coalesce available space at the tail end.
+     * <p>
+     * This method discards consumed data preceding the current window start, copies the remaining active characters to
+     * the front of the array, and updates the internal offset and limit cursors accordingly.
+     *
+     * @return The resulting free space capacity available at the end of the buffer.
+     */
     private int shift() { // Bytecode size: 8 (OpenJDK 26)
         int start = (int) (first + offset);
         if (start > 0) {
@@ -418,6 +460,13 @@ public final class RandomAccessStream implements AutoCloseable {
         return cb.length - limit;
     }
 
+    /**
+     * Advances the stream window directly to the specified absolute position, skipping any intermediate characters and
+     * resetting the buffer layout.
+     *
+     * @param pos The absolute target position to skip to.
+     * @throws IOException If an I/O error occurs while skipping or reading from the underlying stream.
+     */
     private void skipTo(long pos) throws IOException {
         if (pos < last) {
             return;
@@ -460,14 +509,14 @@ public final class RandomAccessStream implements AutoCloseable {
 
     // The methods below are a temporary hack.
 
-    public char[] array(long start, int length) throws IOException {
+    public char[] arrayHack(long start, int length) throws IOException {
         if (start + length <= last) {
             return cb;
         }
-        return array2(start, length);
+        return arrayHack2(start, length);
     }
 
-    private char[] array2(long start, int length) throws IOException {
+    private char[] arrayHack2(long start, int length) throws IOException {
         isOpenOrThrow();
         if (start < first) {
             indexOutOfBoundsException(start);
@@ -477,7 +526,7 @@ public final class RandomAccessStream implements AutoCloseable {
         return cb;
     }
 
-    public int index(long pos) {
+    public int indexHack(long pos) {
         return indexOf(pos);
     }
 }
