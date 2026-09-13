@@ -161,7 +161,7 @@ public final class InternalRecycledLine implements RecycledLine {
         }
         int i = n * 3;
         if (coordinates[i + 2] == -1) { // If the field is marked NOT dirty
-            return stream.getString(coordinates[i], coordinates[i + 1]);
+            return stream.getString(coordinates[i], (int) (coordinates[i + 1] - coordinates[i]));
         }
         return getDirtyString(n);
     }
@@ -228,7 +228,8 @@ public final class InternalRecycledLine implements RecycledLine {
         if (coordinates[i + 2] == -1) { // If the field is marked NOT dirty
             long start = coordinates[i];
             long end = coordinates[i + 1];
-            stream.getCharArray(dest, destPos, start, end);
+            int length = (int) (end - start);
+            stream.getChars(dest, destPos, start, length);
             return (int) (end - start);
         }
         return getDirtyCharArray(n, dest, destPos);
@@ -244,13 +245,15 @@ public final class InternalRecycledLine implements RecycledLine {
         int j = (int) coordinates[i + 2];
         while (j < exclusionsSize && exclusions[j] < end) {
             long stop = exclusions[j++];
-            stream.getCharArray(dest, destPos + copied, start, stop);
-            copied += (int) (stop - start);
+            int length = (int) (stop - start);
+            stream.getChars(dest, destPos + copied, start, length);
+            copied += length;
             start = stop + 1;
         }
 
-        stream.getCharArray(dest, destPos + copied, start, end);
-        copied += (int) (end - start);
+        int length = (int) (end - start);
+        stream.getChars(dest, destPos + copied, start, length);
+        copied += length;
 
         return copied;
     }

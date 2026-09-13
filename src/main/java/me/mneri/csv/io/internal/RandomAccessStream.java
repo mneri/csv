@@ -18,8 +18,15 @@
 
 package me.mneri.csv.io.internal;
 
+import ch.randelshofer.fastdoubleparser.JavaBigDecimalParser;
+import ch.randelshofer.fastdoubleparser.JavaBigIntegerParser;
+import ch.randelshofer.fastdoubleparser.JavaDoubleParser;
+import ch.randelshofer.fastdoubleparser.JavaFloatParser;
+
 import java.io.IOException;
 import java.io.Reader;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.nio.BufferOverflowException;
 
 /**
@@ -123,9 +130,7 @@ public final class RandomAccessStream implements AutoCloseable {
         // performance reasons, and the result is left unspecified; callers must ensure that freed positions are never
         // accessed.
         if (/*pos >= first &&*/ pos < last) { // Hot path
-            // If the reader is closed, accessing cb throws a NullPointerException; rough, but OK. Avoiding the check on
-            // state is giving another nice boost in performance.
-            return cb[(int) (pos + offset)];
+            return cb[indexOf(pos)];
         }
         // Cold path: executed when the client requests characters that have not yet been read from the underlying
         // reader; roughly once every READ_SIZE invocations of this method, if the client reads characters sequentially.
@@ -133,97 +138,188 @@ public final class RandomAccessStream implements AutoCloseable {
     }
 
     private int getChar2(long pos) throws IOException {
-        if (state == STATE_CLOSED) {
-            readerIsClosedException();
-        }
+        isOpenOrThrow();
         if (pos < first) {
             indexOutOfBoundsException(pos);
         }
-        // At this point: pos >= last
-        read(pos);
+        read(pos + 1);
         if (pos >= last) { // If the requested position is still >= last we've reached EOF
             return -1;
         }
-        return cb[(int) (pos + offset)];
+        return cb[indexOf(pos)];
     }
 
     /**
-     * Get the characters between the two specified indexes as a character array.
+     * Copy characters from the underlying character stream into the specified destination array, starting from the
+     * given position for the specified length.
      *
      * @param dest    The array to copy the characters to.
      * @param destPos The starting position in the destination array.
-     * @param start   The starting position (inclusive).
-     * @param end     The end position (exclusive).
-     * @return The number of characters copied in the destination array.
+     * @param start   The starting position in the stream (inclusive).
+     * @param length  The length.
      * @throws IOException               If an I/O error occurs.
      * @throws IndexOutOfBoundsException If the requested positions are out of the buffered window.
      * @throws BufferOverflowException   If the requested positions exceeds the internal buffer limits.
      */
-    public int getCharArray(char[] dest, int destPos, long start, long end) throws IOException {
+    public void getChars(char[] dest, int destPos, long start, int length) throws IOException {
         // This method is split in two to minimise the fast-path bytecode size and enable aggressive inlining by the
-        // C2 compiler. State checks, buffer loads and exception throwing is delegated to getCharArray2().
-
-        // If state == STATE_CLOSED will throw a NullPointerException; rough, but OK. Avoiding the check on state is
-        // giving a nice boost in performance.
-        if (start >= first && end <= last) {
-            System.arraycopy(cb, (int) (start + offset), dest, destPos, (int) (end - start));
-            return (int) (end - start);
+        // C2 compiler. State checks, buffer loads and exception throwing is delegated to getChars2().
+        if (start >= first && start + length <= last) {
+            System.arraycopy(cb, indexOf(start), dest, destPos, length);
+        } else {
+            getChars2(dest, destPos, start, length); // Cold path: executed when the requested chars were never read
         }
-        return getCharArray2(dest, destPos, start, end); // Cold path: executed when the requested chars were never read
     }
 
-    private int getCharArray2(char[] dest, int destPos, long start, long end) throws IOException {
-        if (state == STATE_CLOSED) {
-            readerIsClosedException();
-        }
-        if (start < first) {
-            indexOutOfBoundsException(start);
-        }
-        // At this point: end > last
-        read(end - 1);
-        System.arraycopy(cb, (int) (start + offset), dest, destPos, (int) (end - start));
-        return (int) (end - start);
+    private void getChars2(char[] dest, int destPos, long start, int length) throws IOException {
+        isOpenOrThrow();
+        ensureRange(start, length);
+        System.arraycopy(cb, indexOf(start), dest, destPos, length);
     }
 
     /**
-     * Get the characters between the two specified indexes as string.
+     * Retrieve a {@link String} from the character stream starting at the specified position for the given length.
+     * Returns {@code null} if the length is zero.
      *
-     * @param start The starting position (inclusive).
-     * @param end   The end position (exclusive).
-     * @return The string.
+     * @param start  The starting position (inclusive).
+     * @param length The length.
+     * @return The string, or {@code null} if the length is zero.
      * @throws IOException               If an I/O error occurs.
      * @throws IndexOutOfBoundsException If the requested position is out of the buffered window.
      * @throws BufferOverflowException   If the requested position exceeds the internal buffer limits.
      */
-    public String getString(long start, long end) throws IOException { // Bytecode size: 54 (OpenJDK 26)
+    public String getString(long start, int length) throws IOException { // Bytecode size: 54 (OpenJDK 26)
         // This method is split in two to minimise the fast-path bytecode size and enable aggressive inlining by the
         // C2 compiler. State checks, buffer loads and exception throwing is delegated to getString2().
 
-        if (start == end) {
+        if (length == 0) {
             return null;
         }
-
-        // If state == STATE_CLOSED will throw a NullPointerException; rough, but OK. Avoiding the check on state is
-        // giving a nice boost in performance.
-        if (start >= first && end <= last) { // Hot path
-            return new String(cb, (int) (start + offset), (int) (end - start));
+        if (start >= first && start + length <= last) { // Hot path
+            return new String(cb, indexOf(start), length);
         }
-        return getString2(start, end); // Cold path: executed when the requested chars were never read
+        return getString2(start, length); // Cold path: executed when the requested chars were never read
     }
 
-    private String getString2(long start, long end) throws IOException {
-        if (state == STATE_CLOSED) {
-            readerIsClosedException();
+    private String getString2(long start, int length) throws IOException {
+        isOpenOrThrow();
+        ensureRange(start, length);
+        return new String(cb, indexOf(start), length);
+    }
+
+    /**
+     * Parse a {@link BigDecimal} from the character stream starting at the specified position for the given length.
+     *
+     * @param start  The starting position (inclusive).
+     * @param length The length.
+     * @return The {@link BigDecimal}.
+     * @throws IOException               If an I/O error occurs.
+     * @throws IndexOutOfBoundsException If the requested position is out of the buffered window.
+     * @throws BufferOverflowException   If the requested position exceeds the internal buffer limits.
+     */
+    public BigDecimal parseBigDecimal(long start, int length) throws IOException {
+        // This method is split in two to minimise the fast-path bytecode size and enable aggressive inlining by the
+        // C2 compiler. State checks, buffer loads and exception throwing are delegated to parseBigDecimal2().
+        if (length == 0) {
+            return null;
         }
-        if (start < first) {
-            indexOutOfBoundsException(start);
+        if (start >= first && start + length <= last) {
+            return JavaBigDecimalParser.parseBigDecimal(cb, indexOf(start), length);
         }
-        // At this point: end > last
-        read(end - 1);
-        if (end > last) {
-            indexOutOfBoundsException(end);
+        return parseBigDecimal2(start, length);
+    }
+
+    private BigDecimal parseBigDecimal2(long start, int length) throws IOException {
+        isOpenOrThrow();
+        ensureRange(start, length);
+        return JavaBigDecimalParser.parseBigDecimal(cb, (int) (start + offset), length);
+    }
+
+    /**
+     * Parse a {@link BigInteger} from the character stream starting at the specified position for the given length.
+     *
+     * @param start  The starting position (inclusive).
+     * @param length The length.
+     * @param radix  The radix.
+     * @return The {@link BigInteger}.
+     * @throws IOException               If an I/O error occurs.
+     * @throws IndexOutOfBoundsException If the requested position is out of the buffered window.
+     * @throws BufferOverflowException   If the requested position exceeds the internal buffer limits.
+     */
+    public BigInteger parseBigInteger(long start, int length, int radix) throws IOException {
+        // This method is split in two to minimise the fast-path bytecode size and enable aggressive inlining by the
+        // C2 compiler. State checks, buffer loads and exception throwing are delegated to parseBigInteger2().
+        if (length == 0) {
+            return null;
         }
-        return new String(cb, (int) (start + offset), (int) (end - start));
+        if (start >= first && start + length <= last) {
+            return JavaBigIntegerParser.parseBigInteger(cb, indexOf(start), length, radix);
+        }
+        return parseBigInteger2(start, length, radix);
+    }
+
+    private BigInteger parseBigInteger2(long start, int length, int radix) throws IOException {
+        isOpenOrThrow();
+        ensureRange(start, length);
+        return JavaBigIntegerParser.parseBigInteger(cb, indexOf(start), length, radix);
+    }
+
+    /**
+     * Parse a {@code double} from the character stream starting at the specified position for the given length,
+     * returning the specified default value if the field is empty.
+     *
+     * @param start  The starting position (inclusive).
+     * @param length The length.
+     * @param def    The default value to return if the length is zero.
+     * @return The parsed {@code double} or the default value.
+     * @throws IOException               If an I/O error occurs.
+     * @throws IndexOutOfBoundsException If the requested positions are out of the buffered window.
+     * @throws BufferOverflowException   If the requested positions exceeds the internal buffer limits.
+     */
+    public double parseDouble(long start, int length, double def) throws IOException {
+        // This method is split in two to minimise the fast-path bytecode size and enable aggressive inlining by the
+        // C2 compiler. State checks, buffer loads and exception throwing are delegated to parseDouble2().
+        if (length == 0) {
+            return def;
+        }
+        if (start >= first && start + length <= last) {
+            return JavaDoubleParser.parseDouble(cb, indexOf(start), length);
+        }
+        return parseDouble2(start, length);
+    }
+
+    private double parseDouble2(long start, int length) throws IOException {
+        isOpenOrThrow();
+        ensureRange(start, length);
+        return JavaDoubleParser.parseDouble(cb, indexOf(start), length);
+    }
+
+    /**
+     * Parse a {@code float} from the character stream starting at the specified position for the given length,
+     * returning the specified default value if the field is empty.
+     *
+     * @param start  The starting position (inclusive).
+     * @param length The length.
+     * @param def    The default value to return if the length is zero.
+     * @return The parsed {@code float} or the default value.
+     * @throws IOException               If an I/O error occurs.
+     * @throws IndexOutOfBoundsException If the requested positions are out of the buffered window.
+     * @throws BufferOverflowException   If the requested positions exceeds the internal buffer limits.
+     */
+    public float parseFloat(long start, int length, float def) throws IOException {
+        if (length == 0) {
+            return def;
+        }
+        if (start >= first && start + length <= last) {
+            return JavaFloatParser.parseFloat(cb, indexOf(start), length);
+        }
+        return parseFloat2(start, length);
+    }
+
+    private float parseFloat2(long start, int length) throws IOException {
+        isOpenOrThrow();
+        ensureRange(start, length);
+        return JavaFloatParser.parseFloat(cb, indexOf(start), length);
     }
 
     /**
@@ -254,9 +350,7 @@ public final class RandomAccessStream implements AutoCloseable {
     }
 
     private void compact2(long pos) throws IOException {
-        if (state == STATE_CLOSED) {
-            readerIsClosedException();
-        }
+        isOpenOrThrow();
         if (pos < first) {
             indexOutOfBoundsException(pos);
         }
@@ -265,36 +359,29 @@ public final class RandomAccessStream implements AutoCloseable {
         skipTo(pos - last); // Might skip less if EOF happens prematurely
     }
 
-    private void skipTo(long pos) throws IOException {
-        if (pos < last) {
-            return;
+    private void ensureRange(long start, int length) throws IOException {
+        if (start < first) {
+            indexOutOfBoundsException(start);
         }
-
-        long toSkip = pos - last;
-        long remaining = toSkip;
-        while (remaining > 0L) {
-            long chunk = Math.min(remaining, READ_SIZE); // Skip the stream in chunks of READ_SIZE.
-            long skipped = in.skip(chunk); // skip() returns 0 on stream not ready or EOF (unlike read() which returns 0 and -1)
-            if (skipped > 0L) {
-                remaining -= skipped;
-            } else {
-                // Since in.skip() returns 0 on stream not ready or EOF we have no way of knowing which one happened,
-                // so we force a read() and if it's -1 we assume the stream has ended.
-                if (in.read() == -1) {
-                    break;
-                }
-                remaining--;
-            }
+        long end = start + length;
+        read(end);
+        if (end > last) {
+            indexOutOfBoundsException(end);
         }
-        long skipped = toSkip - remaining;
+    }
 
-        first = last = last + skipped;
-        offset = -first;
-        limit = 0;
+    private int indexOf(long pos) {
+        return (int) (pos + offset);
+    }
+
+    private void isOpenOrThrow() throws IOException {
+        if (state == STATE_CLOSED) {
+            readerIsClosedException();
+        }
     }
 
     private void read(long pos) throws IOException {
-        while (pos >= last) { // While the requested position is greater than the last position read from disk
+        while (pos > last) { // While the requested position is greater than the last position read from disk
             int space = cb.length - limit;
             if (space < READ_SIZE) {
                 // This is not a circular buffer (ring buffer). Because we maintain a strictly linear contiguous memory
@@ -331,6 +418,34 @@ public final class RandomAccessStream implements AutoCloseable {
         return cb.length - limit;
     }
 
+    private void skipTo(long pos) throws IOException {
+        if (pos < last) {
+            return;
+        }
+
+        long toSkip = pos - last;
+        long remaining = toSkip;
+        while (remaining > 0L) {
+            long chunk = Math.min(remaining, READ_SIZE); // Skip the stream in chunks of READ_SIZE.
+            long skipped = in.skip(chunk); // skip() returns 0 on stream not ready or EOF (unlike read() which returns 0 and -1)
+            if (skipped > 0L) {
+                remaining -= skipped;
+            } else {
+                // Since in.skip() returns 0 on stream not ready or EOF we have no way of knowing which one happened,
+                // so we force a read() and if it's -1 we assume the stream has ended.
+                if (in.read() == -1) {
+                    break;
+                }
+                remaining--;
+            }
+        }
+        long skipped = toSkip - remaining;
+
+        first = last = last + skipped;
+        offset = -first;
+        limit = 0;
+    }
+
     private void bufferOverflowException() {
         throw new BufferOverflowException();
     }
@@ -343,6 +458,8 @@ public final class RandomAccessStream implements AutoCloseable {
         throw new IOException("Stream closed");
     }
 
+    // The methods below are a temporary hack.
+
     public char[] array(long start, long end) throws IOException {
         if (end <= last) {
             return cb;
@@ -351,17 +468,12 @@ public final class RandomAccessStream implements AutoCloseable {
     }
 
     private char[] array2(long start, long end) throws IOException {
-        if (state == STATE_CLOSED) {
-            readerIsClosedException();
-        }
-        if (start < first) {
-            indexOutOfBoundsException(start);
-        }
-        read(end - 1);
+        isOpenOrThrow();
+        ensureRange(start, (int) (end - start));
         return cb;
     }
 
     public int index(long pos) {
-        return (int) (pos + offset);
+        return indexOf(pos);
     }
 }
