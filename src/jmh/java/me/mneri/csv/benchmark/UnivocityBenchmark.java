@@ -27,14 +27,7 @@ public class UnivocityBenchmark {
         CsvParser parser = new CsvParser(settings);
         List<String[]> allRows = parser.parseAll(new FileReader(file, charset));
         for (String[] next : allRows) {
-            City city = new City(
-                    next[0],
-                    next[1],
-                    next[2],
-                    next[3],
-                    next[4],
-                    next[5],
-                    next[6]);
+            City city = new City(next[0], next[1], next[2], next[3], next[4], next[5], next[6]);
             bh.consume(city);
         }
     }

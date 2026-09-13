@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 public class SesseltjonnaBenchmark {
     @Benchmark
     public void worldCitiesPop(Blackhole bh) throws Exception {
-        File file = new File("/home/mneri/Downloads/short.csv");
+        File file = new File("/home/mneri/Downloads/worldcitiespop.csv");
         Charset charset = StandardCharsets.ISO_8859_1;
 
         try (CsvReader<String[]> reader = StringArrayCsvReader.builder().build(new FileReader(file, charset))) {

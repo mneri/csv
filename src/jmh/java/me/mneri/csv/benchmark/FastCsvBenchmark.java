@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 public class FastCsvBenchmark {
     @Benchmark
     public void worldCitiesPop(Blackhole bh) throws IOException {
-        File file = new File("/home/mneri/Downloads/short.csv");
+        File file = new File("/home/mneri/Downloads/worldcitiespop.csv");
         Charset charset = StandardCharsets.ISO_8859_1;
         try (CsvReader<CsvRecord> csv = CsvReader.builder()
                 .extraFieldStrategy(FieldMismatchStrategy.IGNORE)

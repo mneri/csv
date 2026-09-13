@@ -18,6 +18,10 @@
 
 package me.mneri.csv.line.internal;
 
+import ch.randelshofer.fastdoubleparser.JavaBigDecimalParser;
+import ch.randelshofer.fastdoubleparser.JavaBigIntegerParser;
+import ch.randelshofer.fastdoubleparser.JavaDoubleParser;
+import ch.randelshofer.fastdoubleparser.JavaFloatParser;
 import me.mneri.csv.exception.NoSuchFieldException;
 import me.mneri.csv.io.internal.RandomAccessStream;
 import me.mneri.csv.line.RecycledLine;
@@ -94,7 +98,7 @@ public final class InternalRecycledLine implements RecycledLine {
             growCoordinates();
         }
         coordinates[coordinatesSize] = pos;
-        coordinates[coordinatesSize + 2] = -1; // Initially marked as not dirty
+        coordinates[coordinatesSize + 2] = -1;
     }
 
     /**
@@ -160,15 +164,16 @@ public final class InternalRecycledLine implements RecycledLine {
             noSuchFieldException(n);
         }
         int i = n * 3;
-        if (coordinates[i + 2] == -1) { // If the field is marked NOT dirty
+        if (coordinates[i + 2] == -1) {
             return stream.getString(coordinates[i], (int) (coordinates[i + 1] - coordinates[i]));
         }
-        return getDirtyString(n);
+        return getDirtyString(n, i);
     }
 
-    private String getDirtyString(int n) throws IOException {
-        int length = getDirtyCharArray(n, staging, 0);
-        return new String(staging, 0, length);
+    private String getDirtyString(int n, int i) throws IOException {
+        char[] buffer = getStagingBuffer(fieldLength(i));
+        int length = getDirtyCharArray(n, buffer, 0);
+        return new String(buffer, 0, length);
     }
 
     /**
@@ -180,8 +185,20 @@ public final class InternalRecycledLine implements RecycledLine {
      */
     @Override
     public BigDecimal getBigDecimal(int n) throws IOException {
-        int length = getCharArray(n, staging, 0);
-        return new BigDecimal(staging, 0, length);
+        if (n >= getFieldCount()) {
+            noSuchFieldException(n);
+        }
+        int i = n * 3;
+        if (!isDirty(i)) {
+            return stream.parseBigDecimal(fieldStart(i), fieldLength(i));
+        }
+        return getDirtyBigDecimal(n, fieldLength(i));
+    }
+
+    private BigDecimal getDirtyBigDecimal(int n, int length) throws IOException {
+        char[] buffer = getStagingBuffer(length);
+        int actualLength = getDirtyCharArray(n, buffer, 0);
+        return JavaBigDecimalParser.parseBigDecimal(buffer, 0, actualLength);
     }
 
     /**
@@ -203,8 +220,20 @@ public final class InternalRecycledLine implements RecycledLine {
      */
     @Override
     public BigInteger getBigInteger(int n, int radix) throws IOException {
-        String value = getString(n);
-        return value == null ? null : new BigInteger(value, radix);
+        if (n >= getFieldCount()) {
+            noSuchFieldException(n);
+        }
+        int i = n * 3;
+        if (!isDirty(i)) {
+            return stream.parseBigInteger(fieldStart(i), fieldLength(i), radix);
+        }
+        return getDirtyBigInteger(n, fieldLength(i), radix);
+    }
+
+    private BigInteger getDirtyBigInteger(int n, int length, int radix) throws IOException {
+        char[] buffer = getStagingBuffer(length);
+        int actualLength = getDirtyCharArray(n, buffer, 0);
+        return JavaBigIntegerParser.parseBigInteger(buffer, 0, actualLength, radix);
     }
 
     /**
@@ -214,9 +243,9 @@ public final class InternalRecycledLine implements RecycledLine {
      * @return {@inheritDoc}
      */
     @Override
-    public Boolean getBoolean(int n) throws IOException {
+    public boolean getBoolean(int n, boolean def) throws IOException {
         String value = getString(n);
-        return value == null ? null : Boolean.parseBoolean(value);
+        return value == null ? def : Boolean.parseBoolean(value);
     }
 
     @Override
@@ -225,12 +254,11 @@ public final class InternalRecycledLine implements RecycledLine {
             noSuchFieldException(n);
         }
         int i = n * 3;
-        if (coordinates[i + 2] == -1) { // If the field is marked NOT dirty
-            long start = coordinates[i];
-            long end = coordinates[i + 1];
-            int length = (int) (end - start);
+        if (!isDirty(i)) {
+            long start = fieldStart(i);
+            int length = fieldLength(i);
             stream.getChars(dest, destPos, start, length);
-            return (int) (end - start);
+            return length;
         }
         return getDirtyCharArray(n, dest, destPos);
     }
@@ -265,9 +293,25 @@ public final class InternalRecycledLine implements RecycledLine {
      * @return {@inheritDoc}
      */
     @Override
-    public Double getDouble(int n) throws IOException {
-        String value = getString(n);
-        return value == null ? null : Double.parseDouble(value);
+    public double getDouble(int n, double def) throws IOException {
+        if (n >= getFieldCount()) {
+            noSuchFieldException(n);
+        }
+        int i = n * 3;
+        int length = fieldLength(i);
+        if (length == 0) {
+            return def;
+        }
+        if (!isDirty(i)) {
+            return stream.parseDouble(fieldStart(i), length, def);
+        }
+        return getDirtyDouble(n, length);
+    }
+
+    private double getDirtyDouble(int n, int length) throws IOException {
+        char[] buffer = getStagingBuffer(length);
+        int actualLength = getDirtyCharArray(n, buffer, 0);
+        return JavaDoubleParser.parseDouble(buffer, 0, actualLength);
     }
 
     /**
@@ -277,9 +321,25 @@ public final class InternalRecycledLine implements RecycledLine {
      * @return {@inheritDoc}
      */
     @Override
-    public Float getFloat(int n) throws IOException {
-        String value = getString(n);
-        return value == null ? null : Float.parseFloat(value);
+    public float getFloat(int n, float def) throws IOException {
+        if (n >= getFieldCount()) {
+            noSuchFieldException(n);
+        }
+        int i = n * 3;
+        int length = fieldLength(i);
+        if (length == 0) {
+            return def;
+        }
+        if (!isDirty(i)) {
+            return stream.parseFloat(fieldStart(i), length, def);
+        }
+        return getDirtyFloat(n, length);
+    }
+
+    private float getDirtyFloat(int n, int length) throws IOException {
+        char[] buffer = getStagingBuffer(length);
+        int actualLength = getDirtyCharArray(n, buffer, 0);
+        return JavaFloatParser.parseFloat(buffer, 0, actualLength);
     }
 
     /**
@@ -289,8 +349,8 @@ public final class InternalRecycledLine implements RecycledLine {
      * @return {@inheritDoc}
      */
     @Override
-    public Integer getInteger(int n) throws IOException {
-        return getInteger(n, 10);
+    public int getInteger(int n, int def) throws IOException {
+        return getInteger(n, 10, def);
     }
 
     /**
@@ -301,9 +361,9 @@ public final class InternalRecycledLine implements RecycledLine {
      * @return {@inheritDoc}
      */
     @Override
-    public Integer getInteger(int n, int radix) throws IOException {
+    public int getInteger(int n, int radix, int def) throws IOException {
         String value = getString(n);
-        return value == null ? null : Integer.parseInt(value, radix);
+        return value == null ? def : Integer.parseInt(value, radix);
     }
 
     /**
@@ -313,8 +373,8 @@ public final class InternalRecycledLine implements RecycledLine {
      * @return {@inheritDoc}
      */
     @Override
-    public Long getLong(int n) throws IOException {
-        return getLong(n, 10);
+    public long getLong(int n, long def) throws IOException {
+        return getLong(n, 10, def);
     }
 
     /**
@@ -325,9 +385,9 @@ public final class InternalRecycledLine implements RecycledLine {
      * @return {@inheritDoc}
      */
     @Override
-    public Long getLong(int n, int radix) throws IOException {
+    public long getLong(int n, int radix, long def) throws IOException {
         String value = getString(n);
-        return value == null ? null : Long.parseLong(value, radix);
+        return value == null ? def : Long.parseLong(value, radix);
     }
 
     /**
@@ -337,8 +397,8 @@ public final class InternalRecycledLine implements RecycledLine {
      * @return {@inheritDoc}
      */
     @Override
-    public Short getShort(int n) throws IOException {
-        return getShort(n, 10);
+    public short getShort(int n, short def) throws IOException {
+        return getShort(n, 10, def);
     }
 
     /**
@@ -350,9 +410,9 @@ public final class InternalRecycledLine implements RecycledLine {
      * @throws {@inheritDoc}
      */
     @Override
-    public Short getShort(int n, int radix) throws IOException {
+    public short getShort(int n, int radix, short def) throws IOException {
         String value = getString(n);
-        return value == null ? null : Short.parseShort(value, radix);
+        return value == null ? def : Short.parseShort(value, radix);
     }
 
     /**
@@ -363,9 +423,9 @@ public final class InternalRecycledLine implements RecycledLine {
      * @throws {@inheritDoc}
      */
     @Override
-    public Integer getUnsignedInteger(int n) throws IOException {
+    public int getUnsignedInteger(int n, int def) throws IOException {
         String value = getString(n);
-        return value == null ? null : Integer.parseUnsignedInt(value);
+        return value == null ? def : Integer.parseUnsignedInt(value);
     }
 
     /**
@@ -376,9 +436,21 @@ public final class InternalRecycledLine implements RecycledLine {
      * @throws {@inheritDoc}
      */
     @Override
-    public Long getUnsignedLong(int n) throws IOException {
+    public long getUnsignedLong(int n, long def) throws IOException {
         String value = getString(n);
-        return value == null ? null : Long.parseUnsignedLong(value);
+        return value == null ? def : Long.parseUnsignedLong(value);
+    }
+
+    private long fieldStart(int i) {
+        return coordinates[i];
+    }
+
+    private int fieldLength(int i) {
+        return (int) (coordinates[i + 1] - coordinates[i]);
+    }
+
+    private boolean isDirty(int i) {
+        return coordinates[i + 2] != -1;
     }
 
     private void growCoordinates() {

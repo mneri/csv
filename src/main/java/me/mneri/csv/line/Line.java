@@ -63,22 +63,24 @@ public interface Line {
     /**
      * Return the value of the field at the specified index as {@link Boolean}.
      *
-     * @param i The index of the field.
+     * @param i   The index of the field.
+     * @param def The default value.
      * @return The value of the field.
      * @throws IOException If an I/O error occurs.
      */
-    Boolean getBoolean(int i) throws IOException;
+    boolean getBoolean(int i, boolean def) throws IOException;
 
     int getCharArray(int i, char[] dest, int start) throws IOException;
 
     /**
      * Return the value of the field at the specified index as {@link Double}.
      *
-     * @param i The index of the field.
+     * @param i   The index of the field.
+     * @param def The default value.
      * @return The value of the field.
      * @throws IOException If an I/O error occurs.
      */
-    Double getDouble(int i) throws IOException;
+    double getDouble(int i, double def) throws IOException;
 
     /**
      * Return the number of fields in this line.
@@ -90,20 +92,22 @@ public interface Line {
     /**
      * Return the value of the field at the specified index as {@link Float}.
      *
-     * @param i The index of the field.
+     * @param i   The index of the field.
+     * @param def The default value.
      * @return The value of the field.
      * @throws IOException If an I/O error occurs.
      */
-    Float getFloat(int i) throws IOException;
+    float getFloat(int i, float def) throws IOException;
 
     /**
      * Return the value of the field at the specified index as {@link Integer}.
      *
-     * @param i The index of the field.
+     * @param i   The index of the field.
+     * @param def The default value.
      * @return The value of the field.
      * @throws IOException If an I/O error occurs.
      */
-    Integer getInteger(int i) throws IOException;
+    int getInteger(int i, int def) throws IOException;
 
     /**
      * Return the value of the field at the specified index as {@link Integer} in the radix specified by the second
@@ -112,19 +116,21 @@ public interface Line {
      *
      * @param i     The index of the field.
      * @param radix The radix to be used.
+     * @param def   The default value.
      * @return The value of the field.
      * @throws IOException If an I/O error occurs.
      */
-    Integer getInteger(int i, int radix) throws IOException;
+    int getInteger(int i, int radix, int def) throws IOException;
 
     /**
      * Return the value of the field at the specified index as {@link Long}.
      *
-     * @param i The index of the field.
+     * @param i   The index of the field.
+     * @param def The default value.
      * @return The value of the field.
      * @throws IOException If an I/O error occurs.
      */
-    Long getLong(int i) throws IOException;
+    long getLong(int i, long def) throws IOException;
 
     /**
      * Return the value of the field at the specified index as {@link Long} in the radix specified by the second
@@ -133,19 +139,21 @@ public interface Line {
      *
      * @param i     The index of the field.
      * @param radix The radix to be used.
+     * @param def   The default value.
      * @return The value of the field.
      * @throws IOException If an I/O error occurs.
      */
-    Long getLong(int i, int radix) throws IOException;
+    long getLong(int i, int radix, long def) throws IOException;
 
     /**
      * Return the value of the field at the specified index as {@link Short}.
      *
-     * @param i The index of the field.
+     * @param i   The index of the field.
+     * @param def The default value.
      * @return The value of the field.
      * @throws IOException If an I/O error occurs.
      */
-    Short getShort(int i) throws IOException;
+    short getShort(int i, short def) throws IOException;
 
     /**
      * Return the value of the field at the specified index as {@link Short} in the radix specified by the second
@@ -154,10 +162,11 @@ public interface Line {
      *
      * @param i     The index of the field.
      * @param radix The radix to be used.
+     * @param def   The default value.
      * @return The value of the field.
      * @throws IOException If an I/O error occurs.
      */
-    Short getShort(int i, int radix) throws IOException;
+    short getShort(int i, int radix, short def) throws IOException;
 
     /**
      * Return the value of the field at the specified index as {@link String}.
@@ -171,18 +180,20 @@ public interface Line {
     /**
      * Return the value of the field at the specified index as an unsigned {@link Integer}.
      *
-     * @param i The index of the field.
+     * @param i   The index of the field.
+     * @param def The default value.
      * @return The value of the field.
      * @throws IOException If an I/O error occurs.
      */
-    Integer getUnsignedInteger(int i) throws IOException;
+    int getUnsignedInteger(int i, int def) throws IOException;
 
     /**
      * Return the value of the field at the specified index as an unsigned {@link Long}.
      *
-     * @param i The index of the field.
+     * @param i   The index of the field.
+     * @param def The default value.
      * @return The value of the field.
      * @throws IOException If an I/O error occurs.
      */
-    Long getUnsignedLong(int i) throws IOException;
+    long getUnsignedLong(int i, long def) throws IOException;
 }
