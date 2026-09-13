@@ -101,7 +101,7 @@ public final class VectorLineParser implements LineParser {
                 while (bitmask == 0L) {
                     strideStart = strideEnd;
                     strideEnd += STRIDE;
-                    bitmask = bitmask(s, strideStart, strideEnd);
+                    bitmask = bitmask(s, strideStart);
                 }
                 shift = Long.numberOfTrailingZeros(bitmask);
                 bitmask &= bitmask - 1L;
@@ -139,9 +139,9 @@ public final class VectorLineParser implements LineParser {
         return false;
     }
 
-    private long bitmask(int s, long strideStart, long strideEnd) throws IOException {
+    private long bitmask(int s, long strideStart) throws IOException {
         // FIXME: This is... Ugh. We're giving the Format free access to the internal array of the stream.
-        return format.bitmask(s, stream.array(strideStart, strideEnd), stream.index(strideStart));
+        return format.bitmask(s, stream.array(strideStart, Long.SIZE), stream.index(strideStart));
     }
 
     private boolean isEndOfField(int s) {

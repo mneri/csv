@@ -460,16 +460,20 @@ public final class RandomAccessStream implements AutoCloseable {
 
     // The methods below are a temporary hack.
 
-    public char[] array(long start, long end) throws IOException {
-        if (end <= last) {
+    public char[] array(long start, int length) throws IOException {
+        if (start + length <= last) {
             return cb;
         }
-        return array2(start, end);
+        return array2(start, length);
     }
 
-    private char[] array2(long start, long end) throws IOException {
+    private char[] array2(long start, int length) throws IOException {
         isOpenOrThrow();
-        ensureRange(start, (int) (end - start));
+        if (start < first) {
+            indexOutOfBoundsException(start);
+        }
+        long end = start + length;
+        read(end);
         return cb;
     }
 

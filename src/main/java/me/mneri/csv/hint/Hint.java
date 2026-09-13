@@ -25,7 +25,7 @@ package me.mneri.csv.hint;
  */
 public class Hint {
     /**
-     * The CSV stream <i>only</i> contains short fields (0-4 characters).
+     * The CSV stream <i>only</i> contains short fields (0-3 characters).
      * <p>
      * Advise CSV readers and writers to adapt their algorithms to this specific scenario and be more efficient.
      */
