@@ -5,18 +5,16 @@
 ## Quick Example
 
 ### Reading a CSV File
-
 ```java
 try(CsvReader<Contact> reader=CsvReader.open(new File("contacts.csv"),StandardCharsets.UTF_8,new ContactDeserializer())){
-        while(reader.hasNext()){
+    while(reader.hasNext()){
         Contact contact=reader.next(); // Records are mapped to domain objects via the provided ContactDeserializer
         // ...
-        }
-        }
+    }
+}
 ```
 
 Where `ContactDeserializer` is:
-
 ```java
 public class ContactDeserializer implements Deserializer<Contact> {
     @Override
@@ -31,19 +29,15 @@ public class ContactDeserializer implements Deserializer<Contact> {
 ```
 
 ### Writing a CSV File
-
-Writing to a csv file is easy, too.
-
 ```java
 try(CsvWriter<Contact> writer=CsvWriter.open(new File("contacts.csv"),StandardCharsets.UTF_8,new ContactSerializer())){
-        for(Contact contact:contacts){
+    for(Contact contact:contacts){
         writer.write(contact); // Domain objects are mapped to records via the provided ContactSerializer
-        }
-        }
+    }
+}
 ```
 
-Where `PersonSerializer` is:
-
+Where `ContactSerializer` is:
 ```java
 public class ContactSerializer implements CsvSerializer<Contact> {
     @Override
@@ -84,5 +78,15 @@ prior to the
 transition to Unix-based OS X in 2001.
 
 </small>
+
+The format can be defined at the creation of a `CsvReader`.
+```java
+try(CsvReader<Contact> reader=CsvReader.open(new File("contacts.csv"), StandardCharsets.UTF_8, Rfc4180StrictFormat.provider(), new ContactDeserializer())){
+    while(reader.hasNext()){
+        Contact contact=reader.next();
+        // ...
+    }
+}
+```
 
 ## Performances
