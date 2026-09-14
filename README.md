@@ -89,6 +89,14 @@ try (CsvReader<Contact> reader = CsvReader.open(new File("contacts.csv"), Standa
 }
 ```
 
+## Vector API
+`mneri/csv` features an alternative high-performance parser implementation built on top of Java's **Vector API**. By 
+everaging SIMD (Single Instruction, Multiple Data) CPU instructions (such as AVX or NEON), this parser can process
+chunks of data concurrently in a single CPU cycle, significantly lowering parsing time.
+
+Because the Vector API is an incubating feature in Java (available from **Java 16 and later**), it is hidden behind an
+incubator module. The Vector API can be enabled via the JVM flag `--add-modules jdk.incubator.vector`.
+
 ## Performances
 
 The preliminary results are excellent.
