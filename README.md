@@ -68,6 +68,7 @@ public class ContactSerializer implements CsvSerializer<Contact> {
 | **MS&nbsp;Excel**                           | `\r\n`,&nbsp;`\r`,&nbsp;`\n` |                                       |                                          |                                           |                                     |
 
 </div>
+<small>
 
 **Variable Number of Fields<sup>1</sup>**: the format accepts files containing a different number of fields on
 different lines.<br/>
@@ -81,5 +82,7 @@ but the end of file is reached prior to the corresponding closing double quote; 
 **Macintosh<sup>5</sup>**: refers to the legacy line-termination convention (`\r`) used by classic Mac OS systems
 prior to the
 transition to Unix-based OS X in 2001.
+
+</small>
 
 ## Performances
