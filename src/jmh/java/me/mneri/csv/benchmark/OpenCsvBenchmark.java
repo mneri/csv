@@ -24,15 +24,7 @@ public class OpenCsvBenchmark {
         try (CSVReader reader = new CSVReader(new FileReader(file, charset))) {
             String[] next;
             while ((next = reader.readNext()) != null) {
-                City city = new City(
-                        next[0],
-                        next[1],
-                        next[2],
-                        next[3],
-                        next[4],
-                        next[5],
-                        next[6]);
-                bh.consume(city);
+                bh.consume(next);
             }
         }
     }
