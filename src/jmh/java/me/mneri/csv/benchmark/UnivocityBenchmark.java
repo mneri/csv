@@ -1,5 +1,7 @@
 package me.mneri.csv.benchmark;
 
+import com.univocity.parsers.common.IterableResult;
+import com.univocity.parsers.common.ParsingContext;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 import org.openjdk.jmh.annotations.*;
@@ -9,7 +11,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @BenchmarkMode(Mode.AverageTime)
@@ -25,10 +26,19 @@ public class UnivocityBenchmark {
 
         CsvParserSettings settings = new CsvParserSettings();
         CsvParser parser = new CsvParser(settings);
-        List<String[]> allRows = parser.parseAll(new FileReader(file, charset));
-        for (String[] next : allRows) {
-            City city = new City(next[0], next[1], next[2], next[3], next[4], next[5], next[6]);
-            bh.consume(city);
+        try (FileReader reader = new FileReader(file, charset)) {
+            IterableResult<String[], ParsingContext> iterable = parser.iterate(reader);
+            for (String[] next : iterable) {
+                City city = new City(
+                        next[0],
+                        next[1],
+                        next[2],
+                        next[3],
+                        next[4],
+                        next[5],
+                        next[6]);
+                bh.consume(city);
+            }
         }
     }
 }

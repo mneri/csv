@@ -101,12 +101,13 @@ incubator module. The Vector API can be enabled via the JVM flag `--add-modules 
 
 The preliminary results are excellent.
 
-| Parser                   | Benchmark            | Average Time            |
-|:-------------------------|:---------------------|:------------------------|
-| `sesseltjonna`           | `worldcitiespop.csv` | 320.956 ± 9.746 ms/op   |
-| `mneri/csv` (Vector API) | `worldcitiespop.csv` | 466.128 ± 18.083 ms/op  |
-| `SimpleFlatMapper`       | `worldcitiespop.csv` | 506.760 ± 12.265 ms/op  |
-| `FastCsv`                | `worldcitiespop.csv` | 586.141 ± 22.049 ms/op  |
-| `mneri/csv` (sequential) | `worldcitiespop.csv` | 607.289 ± 8.904 ms/op   |
-| `OpenCSV`                | `worldcitiespop.csv` | 1185.597 ± 32.292 ms/op |
-| `Univocity`              | `worldcitiespop.csv` | 1475.526 ± 57.933 ms/op |
+| Parser                   | Benchmark            | Average Time             |
+|:-------------------------|:---------------------|:-------------------------|
+| `sesseltjonna`           | `worldcitiespop.csv` | 316.427 ±  8.929  ms/op  |
+| `mneri/csv` (Vector API) | `worldcitiespop.csv` | 443.890 ±  3.588  ms/op  |
+| `FastCsv`                | `worldcitiespop.csv` | 490.589 ±  7.682  ms/op  |
+| `SimpleFlatMapper`       | `worldcitiespop.csv` | 503.237 ± 12.598  ms/op  |
+| `Univocity`              | `worldcitiespop.csv` | 546.780 ± 16.979  ms/op  |
+| `mneri/csv` (sequential) | `worldcitiespop.csv` | 599.022 ±  7.652  ms/op  |
+| `OpenCSV`                | `worldcitiespop.csv` | 1186.027 ± 14.649  ms/op |
+| `Apache Commons CSV`     | `worldcitiespop.csv` | 2711.048 ± 22.687  ms/op |
