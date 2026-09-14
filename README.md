@@ -6,9 +6,9 @@
 
 ### Reading a CSV File
 ```java
-try(CsvReader<Contact> reader=CsvReader.open(new File("contacts.csv"),StandardCharsets.UTF_8,new ContactDeserializer())){
-    while(reader.hasNext()){
-        Contact contact=reader.next(); // Records are mapped to domain objects via the provided ContactDeserializer
+try(CsvReader<Contact> reader = CsvReader.open(new File("contacts.csv"), StandardCharsets.UTF_8, new ContactDeserializer())){
+    while(reader.hasNext()) {
+        Contact contact = reader.next(); // Records are mapped to domain objects via the provided ContactDeserializer
         // ...
     }
 }
@@ -30,8 +30,8 @@ public class ContactDeserializer implements Deserializer<Contact> {
 
 ### Writing a CSV File
 ```java
-try(CsvWriter<Contact> writer=CsvWriter.open(new File("contacts.csv"),StandardCharsets.UTF_8,new ContactSerializer())){
-    for(Contact contact:contacts){
+try(CsvWriter<Contact> writer = CsvWriter.open(new File("contacts.csv"), StandardCharsets.UTF_8, new ContactSerializer())){
+    for(Contact contact : contacts) {
         writer.write(contact); // Domain objects are mapped to records via the provided ContactSerializer
     }
 }
@@ -81,9 +81,9 @@ transition to Unix-based OS X in 2001.
 
 The format can be defined at the creation of a `CsvReader`.
 ```java
-try(CsvReader<Contact> reader=CsvReader.open(new File("contacts.csv"), StandardCharsets.UTF_8, Rfc4180StrictFormat.provider(), new ContactDeserializer())){
-    while(reader.hasNext()){
-        Contact contact=reader.next();
+try(CsvReader<Contact> reader = CsvReader.open(new File("contacts.csv"), StandardCharsets.UTF_8, Rfc4180FullyRelaxedFormat.provider(), new ContactDeserializer())){
+    while(reader.hasNext()) {
+        Contact contact = reader.next();
         // ...
     }
 }
