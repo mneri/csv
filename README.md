@@ -55,25 +55,31 @@ public class ContactSerializer implements CsvSerializer<Contact> {
 }
 ```
 
-## Support for Different CSV Dialects
+## Dialect Support
 
 <div style="overflow-x: auto;">
 
-| Format                                      | Line Termination             | Variable Number of Fields[^1] | Quotes in Unqualified Fields[^2] | Extra Text After Quoted Field[^3] | Truncated Quoted Fields[^4] |
-|:--------------------------------------------|:-----------------------------|:-----------------------------:|:--------------------------------:|:---------------------------------:|:---------------------------:|
-| **Machintosh**[^5]                          | `\r`                         |                               |                ❌                 |                 ❌                 |              ❌              |
-| **RFC&nbsp;4180&nbsp;"Strict"**             | `\r\n`                       |                               |                ❌                 |                 ❌                 |              ❌              |
-| **RFC&nbsp;4180&nbsp;"Half&nbsp;Relaxed"**  | `\r\n`,&nbsp;`\n`            |                               |                                  |                 ❌                 |              ❌              |
-| **RFC&nbsp;4180&nbsp;"Fully&nbsp;Relaxed"** | `\r\n`,&nbsp;`\r`,&nbsp;`\n` |                               |                                  |                                   |                             |
-| **MS&nbsp;Excel**                           | `\r\n`,&nbsp;`\r`,&nbsp;`\n` |                               |                                  |                                   |                             |
+| Format                                      | Line Termination             | Variable Number of Fields<sup>1</sup> | Quotes in Unqualified Fields<sup>2</sup> | Extra Text After Quoted Field<sup>3</sup> | Truncated Quoted Fields<sup>4</sup> |
+|:--------------------------------------------|:-----------------------------|:-------------------------------------:|:----------------------------------------:|:-----------------------------------------:|:-----------------------------------:|
+| **Machintosh<sup>5</sup>**                  | `\r`                         |                                       |                    no                    |                    no                     |                 no                  |
+| **RFC&nbsp;4180&nbsp;"Strict"**             | `\r\n`                       |                                       |                    no                    |                    no                     |                 no                  |
+| **RFC&nbsp;4180&nbsp;"Half&nbsp;Relaxed"**  | `\r\n`,&nbsp;`\n`            |                                       |                                          |                    no                     |                 no                  |
+| **RFC&nbsp;4180&nbsp;"Fully&nbsp;Relaxed"** | `\r\n`,&nbsp;`\r`,&nbsp;`\n` |                                       |                                          |                                           |                                     |
+| **MS&nbsp;Excel**                           | `\r\n`,&nbsp;`\r`,&nbsp;`\n` |                                       |                                          |                                           |                                     |
 
 </div>
 
-[^1]: *Variable Number of Fields* 
-[^2]: *Quotes in Unqualified Fields*
-[^3]: *Extra Text After Quoted Field*
-[^4]: *Truncated Quoted Fields*
-[^5]: **Macintosh** refers to the legacy line-termination convention (`\r`) used by classic Mac OS systems prior to the
+**Variable Number of Fields<sup>1</sup>**: the format accepts files containing a different number of fields on
+different lines.<br/>
+**Quotes in Unqualified Fields<sup>2</sup>**: the format accepts unqualified fields containing double quotes (`"`);
+for example, the line `aaa,b"b"b,ccc CRLF` is interpreted as ⟨`aaa`, `b"b"b`, `ccc`⟩.<br/>
+**Extra Text After Quoted Field<sup>3</sup>**: the format accepts free text after the closing double quotes (`"`) of
+a qualified field; for example, the line `aaa,"bb"b,ccc` is interpreted as ⟨`aaa`, `bbb`, `ccc`⟩.<br/>
+**Truncated Quoted Fields<sup>4</sup>**: the format accepts a field starting with a double quote character (`"`)
+but the end of file is reached prior to the corresponding closing double quote; for example, the line
+`aaa,bbb,"ccc EOF` is interpreted as ⟨`aaa`, `bbb`, `ccc`⟩.<br/>
+**Macintosh<sup>5</sup>**: refers to the legacy line-termination convention (`\r`) used by classic Mac OS systems
+prior to the
 transition to Unix-based OS X in 2001.
 
 ## Performances
