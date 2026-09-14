@@ -59,17 +59,21 @@ public class ContactSerializer implements CsvSerializer<Contact> {
 
 <div style="overflow-x: auto;">
 
-| Format                       | Line Termination   | Variable Number of Fields | Quotes in Unqualified Fields | Extra Text After Quoted Field | Truncated Quoted Fields |
-|:-----------------------------|:-------------------|:-------------------------:|:----------------------------:|:-----------------------------:|:-----------------------:|
-| **Machintosh***              | `\r`               |                           |              ❌               |               ❌               |            ❌            |
-| **RFC 4180 "Strict"**        | `\r\n`             |                           |              ❌               |               ❌               |            ❌            |
-| **RFC 4180 "Half Relaxed"**  | `\r\n`, `\n`       |                           |                              |               ❌               |            ❌            |
-| **RFC 4180 "Fully Relaxed"** | `\r\n`, `\r`, `\n` |                           |                              |                               |                         |
-| **MS Excel**                 | `\r\n`, `\r`, `\n` |                           |                              |                               |                         |
+| Format                                      | Line Termination             | Variable Number of Fields[^1] | Quotes in Unqualified Fields[^2] | Extra Text After Quoted Field[^3] | Truncated Quoted Fields[^4] |
+|:--------------------------------------------|:-----------------------------|:-----------------------------:|:--------------------------------:|:---------------------------------:|:---------------------------:|
+| **Machintosh**[^5]                          | `\r`                         |                               |                ❌                 |                 ❌                 |              ❌              |
+| **RFC&nbsp;4180&nbsp;"Strict"**             | `\r\n`                       |                               |                ❌                 |                 ❌                 |              ❌              |
+| **RFC&nbsp;4180&nbsp;"Half&nbsp;Relaxed"**  | `\r\n`,&nbsp;`\n`            |                               |                                  |                 ❌                 |              ❌              |
+| **RFC&nbsp;4180&nbsp;"Fully&nbsp;Relaxed"** | `\r\n`,&nbsp;`\r`,&nbsp;`\n` |                               |                                  |                                   |                             |
+| **MS&nbsp;Excel**                           | `\r\n`,&nbsp;`\r`,&nbsp;`\n` |                               |                                  |                                   |                             |
 
 </div>
 
-*\* **Macintosh**: Refers to the legacy line-termination convention (`\r`) used by classic Mac OS systems prior to the
-transition to Unix-based OS X in 2001.*
+[^1]: *Variable Number of Fields* 
+[^2]: *Quotes in Unqualified Fields*
+[^3]: *Extra Text After Quoted Field*
+[^4]: *Truncated Quoted Fields*
+[^5]: **Macintosh** refers to the legacy line-termination convention (`\r`) used by classic Mac OS systems prior to the
+transition to Unix-based OS X in 2001.
 
 ## Performances
