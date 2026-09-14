@@ -81,8 +81,8 @@ transition to Unix-based OS X in 2001.
 
 The format can be defined at the creation of a `CsvReader`.
 ```java
-try(CsvReader<Contact> reader = CsvReader.open(new File("contacts.csv"), StandardCharsets.UTF_8, Rfc4180FullyRelaxedFormat.provider(), new ContactDeserializer())){
-    while(reader.hasNext()) {
+try (CsvReader<Contact> reader = CsvReader.open(new File("contacts.csv"), StandardCharsets.UTF_8, Rfc4180FullyRelaxedFormat.provider(), new ContactDeserializer())){
+    while (reader.hasNext()) {
         Contact contact = reader.next();
         // ...
     }
@@ -90,3 +90,15 @@ try(CsvReader<Contact> reader = CsvReader.open(new File("contacts.csv"), Standar
 ```
 
 ## Performances
+
+The preliminary results are excellent.
+
+| Parser                   | Benchmark            | Average Time            |
+|:-------------------------|:---------------------|:------------------------|
+| `sesseltjonna`           | `worldcitiespop.csv` | 320.956 ± 9.746 ms/op   |
+| `mneri/csv` (Vector API) | `worldcitiespop.csv` | 466.128 ± 18.083 ms/op  |
+| `SimpleFlatMapper`       | `worldcitiespop.csv` | 506.760 ± 12.265 ms/op  |
+| `FastCsv`                | `worldcitiespop.csv` | 586.141 ± 22.049 ms/op  |
+| `mneri/csv` (sequential) | `worldcitiespop.csv` | 607.289 ± 8.904 ms/op   |
+| `OpenCSV`                | `worldcitiespop.csv` | 1185.597 ± 32.292 ms/op |
+| `Univocity`              | `worldcitiespop.csv` | 1475.526 ± 57.933 ms/op |
