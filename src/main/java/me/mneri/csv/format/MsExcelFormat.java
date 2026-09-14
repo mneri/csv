@@ -81,6 +81,9 @@ import java.util.Locale;
  *         </samp>
  *     </li>
  * </ul>
+ * <p>
+ * It is not possible to create new instances of this class directly; instances can only be obtained through the
+ * {@link Format.Provider}, which in turn can be obtained by calling the {@link #provider()} method.
  *
  * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
  */
