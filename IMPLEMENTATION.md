@@ -76,11 +76,11 @@ represent states, columns represent input characters, and the intersection indic
 The transition table above can be used to parse a CSV file that is fully compliant with
 [RFC 4180](https://datatracker.ietf.org/doc/rfc4180/). The initial state (marked with `*`) is `BEFORE_LINE`. Upon
 consuming the character `a` (first column), the state transitions to `FIELD`. From the `FIELD` state, a comma sets the
-transition to `BEFORE_FIELD`. Transitions continue until either `END_OF_FILE` or `ERROR` is reached. `ERROR` is called a
-_sink state_; once entered, it cannot be left because all outgoing transitions loop back to itself.
+transition to `BEFORE_FIELD`. Transitions continue until either the state `END_OF_FILE` or `ERROR` is reached. `ERROR`
+is called a _sink state_; once entered, it cannot be left because all outgoing transitions loop back to itself.
 
 When transitioning from one state to the next, the parser shall perform some actions. Actions can be encoded in the
-transition table along with the state changes. Below, an example for the `BEFORE_LINE` state shown above.
+transition table along with the state changes. Below is an example for the `BEFORE_LINE` state shown above.
 
 ```
 |               | [A-Za-z0-9]         | ,                             | \r               | \n                      | EOF                 |
@@ -89,4 +89,26 @@ transition table along with the state changes. Below, an example for the `BEFORE
 |               | action: START_FIELD | action: START_FIELD,END_FIELD | action: END_LINE | action: THROW_EXCEPTION | action: STOP        |
 ```
 Consuming the character `a` while in state `BEFORE_LINE` makes the parser transition to the state `FIELD` and record the
-start of a field.
+start of a field (`START_FIELD` action).
+
+`mneri/csv` implements the transition table with a `static` `int[]`.
+```java
+private static final int[] DFA = {
+// *                    ,                    \r                   \n                   "                    EOF                  padding
+   FLD,                 BFF|EFH,             CAR|EFH,             ERR|ERH,             ERR|ERH,             EOF|EFH|ELH|RPL,     0,0,  // FLD
+   QOT,                 QOT,                 QOT,                 QOT,                 ESC,                 ERR|ERH,             0,0,  // QOT
+   FLD|SFH,             BFF|SFH|EFH,         CAR|SFH|EFH,         ERR|ERH,             SQT,                 EOF|SFH|EFH|ELH|RPL, 0,0,  // BFF
+   QOT|SFH,             QOT|SFH,             QOT|SFH,             QOT|SFH,             SQE,                 ERR|ERH,             0,0,  // SQT
+   ERR|ERH,             BFF|EFB,             CAR|EFB,             ERR|ERH,             QOT|RMB,             EOF|EFB|ELH|RPL,     0,0,  // ESC
+   ERR|ERH,             BFF|SFH|EFH,         CAR|SFH|EFH,         ERR|ERH,             QOT|SFH,             EOF|SFH|EFH|RPL,     0,0,  // SQE
+   FLD|SFH,             BFF|SFH|EFH,         CAR|SFH|EFH,         ERR|ERH,             SQT,                 EOF|STP,             0,0,  // BFL *
+   ERR|ERH,             ERR|ERH,             ERR|ERH,             BFL|ELH,             ERR|ERH,             ERR|ERH,             0,0,  // CAR
+   ERR|ERH,             ERR|ERH,             ERR|ERH,             ERR|ERH,             ERR|ERH,             EOF|STP,             0,0,  // EOF
+   ERR|ERH,             ERR|ERH,             ERR|ERH,             ERR|ERH,             ERR|ERH,             ERR|ERH,             0,0,  // ERR
+   0,                   0,                   0,                   0,                   0,                   0,                   0,0,
+   0,                   0,                   0,                   0,                   0,                   0,                   0,0,
+   0,                   0,                   0,                   0,                   0,                   0,                   0,0,
+   0,                   0,                   0,                   0,                   0,                   0,                   0,0,
+   0,                   0,                   0,                   0,                   0,                   0,                   0,0,
+   0,                   0,                   0,                   0,                   0,                   0,                   0,0};
+```
