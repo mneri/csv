@@ -79,7 +79,9 @@ The transition table above can be used to parse a CSV file that is fully complia
 [RFC 4180](https://datatracker.ietf.org/doc/rfc4180/). The initial state (marked with `*`) is `BEFORE_LINE`. Upon
 consuming the character `a` (first column), the state transitions to `FIELD`. From the `FIELD` state, a comma sets the
 transition to `BEFORE_FIELD`. Transitions continue until either the state `END_OF_FILE` or `ERROR` is reached. `ERROR`
-is called a _sink state_; once entered, it cannot be left because all outgoing transitions loop back to itself.
+is called a _sink state_; once entered, it cannot be left because all outgoing transitions loop back to itself. _A
+transition table makes it easier to reason about the parser._ All the states and transitions are laid out in a single
+point.
 
 When transitioning from one state to the next, the parser shall perform some actions. Actions can be encoded in the
 transition table along with the state changes. Below is an example for the `BEFORE_LINE` state shown above.
@@ -93,8 +95,8 @@ transition table along with the state changes. Below is an example for the `BEFO
 Consuming the character `a` while in state `BEFORE_LINE` makes the parser transition to the state `FIELD` and record the
 start of a field (`START_FIELD` action).
 
-`mneri/csv` supports many different CSV dialects, and for each one there's a transition table. In the code they're
-called [`Format`s](https://github.com/mneri/csv/tree/master/src/main/java/me/mneri/csv/format).
+`mneri/csv` supports many different CSV dialects, and for each one there's a transition table. In the code [they're
+called formats](https://github.com/mneri/csv/tree/master/src/main/java/me/mneri/csv/format).
 
 ```java
 private static final int[] DFA = {
