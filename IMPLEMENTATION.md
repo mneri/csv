@@ -73,12 +73,18 @@ represent states, columns represent input characters, and the intersection indic
 | END_OF_FILE     | ERROR           | ERROR           | ERROR           | ERROR           | ERROR           | ERROR       |
 | ERROR           | ERROR           | ERROR           | ERROR           | ERROR           | ERROR           | ERROR       |
 ```
-The transition table above can be used to parse a CSV file that is perfectly compliant with the
+The transition table above can be used to parse a CSV file that is fully compliant with
 [RFC 4180](https://datatracker.ietf.org/doc/rfc4180/). The initial state (marked with `*`) is `BEFORE_LINE`. Upon
 consuming the character `a` (first column), the state transitions to `FIELD`. From the `FIELD` state, a comma sets the
-transition to the state `BEFORE_FIELD`. Transitions continue until either `END_OF_FILE` or `ERROR` is reached.
+transition to `BEFORE_FIELD`. Transitions continue until either `END_OF_FILE` or `ERROR` is reached.
 
+When transitioning from one state to the next, the parser shall perform some actions. For example, when transitioning
+from the state `BEFORE_FIELD` to the state `FIELD`, the parser must record the start of a new field. Actions can be
+encoded in the transition table along with the state changes.
 
-When transitioning from one state to the next, the parser can take some actions. For example, when transitioning from
-the state `BEFORE_FIELD` to the state `FIELD`, the parser must take the action to start recording a field. Actions are
-encoded in the transition table as well.
+```
+|               | [A-Za-z0-9]         | ,                             | \r               | \n                      | EOF                 |
++---------------+---------------------+-------------------------------+------------------+-------------------------+---------------------+
+| BEFORE_LINE * | next:   FIELD       | next:   BEFORE_FIELD          | next:   CAR      | next:   ERROR           | next:   END_OF_FILE |
+|               | action: START_FIELD | action: START_FIELD,END_FIELD | action: END_LINE | action: THROW_EXCEPTION | action: STOP        |
+```
