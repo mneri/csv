@@ -63,7 +63,7 @@ represent states, columns represent input characters, and the intersection indic
 ```
 |                 | [A-Za-z0-9]     | ,               | \r              | \n              | "               | EOF         |
 +-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+-------------+
-| BEFORE_LINE (*) | FIELD           | BEFORE_FIELD    | CAR             | ERROR           | START_QUALIFIED | END_OF_FILE |
+| BEFORE_LINE *   | FIELD           | BEFORE_FIELD    | CAR             | ERROR           | START_QUALIFIED | END_OF_FILE |
 | BEFORE_FIELD    | FIELD           | BEFORE_FIELD    | CAR             | ERROR           | START_QUALIFIED | END_OF_FILE |
 | FIELD           | FIELD           | BEFORE_FIELD    | CAR             | ERROR           | ERROR           | END_OF_FILE |
 | START_QUALIFIED | QUALIFIED_FIELD | QUALIFIED_FIELD | QUALIFIED_FIELD | QUALIFIED_FIELD | ESCAPE          | ERROR       |
@@ -73,7 +73,10 @@ represent states, columns represent input characters, and the intersection indic
 | END_OF_FILE     | ERROR           | ERROR           | ERROR           | ERROR           | ERROR           | ERROR       |
 | ERROR           | ERROR           | ERROR           | ERROR           | ERROR           | ERROR           | ERROR       |
 ```
-The transition table above can be used to parse a CSV file that is perfectly compliant with the RFC 4180.
+The transition table above can be used to parse a CSV file that is perfectly compliant with the
+[RFC 4180](https://datatracker.ietf.org/doc/rfc4180/). The initial state (marked with `*`) is `BEFORE_LINE`. Upon
+consuming the character `a` (first column), the state transitions to `FIELD`. From the `FIELD` state, a comma sets the
+transition to the state `BEFORE_FIELD`. Transitions continue until either `END_OF_FILE` or `ERROR` is reached.
 
 
 When transitioning from one state to the next, the parser can take some actions. For example, when transitioning from
