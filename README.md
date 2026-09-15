@@ -103,11 +103,12 @@ The preliminary results are excellent.
 
 | Parser                   | Benchmark            | Average Time             |
 |:-------------------------|:---------------------|:-------------------------|
-| `sesseltjonna`           | `worldcitiespop.csv` | 316.427 ±  8.929  ms/op  |
-| `mneri/csv` (Vector API) | `worldcitiespop.csv` | 443.890 ±  3.588  ms/op  |
-| `FastCsv`                | `worldcitiespop.csv` | 490.589 ±  7.682  ms/op  |
-| `SimpleFlatMapper`       | `worldcitiespop.csv` | 503.237 ± 12.598  ms/op  |
-| `Univocity`              | `worldcitiespop.csv` | 546.780 ± 16.979  ms/op  |
-| `mneri/csv` (sequential) | `worldcitiespop.csv` | 599.022 ±  7.652  ms/op  |
-| `OpenCSV`                | `worldcitiespop.csv` | 1186.027 ± 14.649  ms/op |
-| `Apache Commons CSV`     | `worldcitiespop.csv` | 2711.048 ± 22.687  ms/op |
+| `sesseltjonna`           | `worldcitiespop.csv` | 327.306 ± 20.752  ms/op  |
+| `mneri/csv` (Vector API) | `worldcitiespop.csv` | 467.593 ± 20.892  ms/op  |
+| `FastCsv`                | `worldcitiespop.csv` | 501.092 ± 14.628  ms/op  |
+| `SimpleFlatMapper`       | `worldcitiespop.csv` | 506.456 ± 13.523  ms/op  |
+| `picocsv`                | `worldcitiespop.csv` | 537.334 ± 15.956  ms/op  |
+| `Univocity`              | `worldcitiespop.csv` | 546.224 ±  9.908  ms/op  |
+| `mneri/csv` (sequential) | `worldcitiespop.csv` | 589.560 ± 12.901  ms/op  |
+| `OpenCSV`                | `worldcitiespop.csv` | 1225.205 ± 33.525  ms/op |
+| `Apache Commons CSV`     | `worldcitiespop.csv` | 2696.596 ± 33.325  ms/op |

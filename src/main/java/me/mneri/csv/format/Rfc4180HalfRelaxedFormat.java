@@ -152,7 +152,7 @@ public final class Rfc4180HalfRelaxedFormat implements Format {
         // We also might need to set the first bit: the Format needs to consume the character at the start of field! We
         // set it unless we're already inside a field (FLD or QOT). The states FLD and QOT are conveniently positioned
         // at the top of the DFA, so anything greater is an outside-the-field state.
-        return bm | ((15 - (s & 0xFF_FF)) >>> 31); // 15 is the index of the last entry for state QOT
+        return bm | ((QOT - (s & 0xFF_FF)) >>> 31);
     }
 
     /**
