@@ -32,14 +32,6 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
-jmh {
-    //jvmArgs = ['--add-modules=jdk.incubator.vector']
-}
-
-test {
-    useJUnitPlatform()
-}
-
 tasks.withType(JavaCompile).configureEach {
     options.compilerArgs += ['--add-modules=jdk.incubator.vector']
 }
@@ -50,4 +42,24 @@ tasks.withType(JavaExec).configureEach {
 
 tasks.withType(Test).configureEach {
     jvmArgs += ['--add-modules=jdk.incubator.vector']
+}
+
+test {
+    useJUnitPlatform()
+
+    ext.passed = 0
+    ext.failed = 0
+    ext.skipped = 0
+    afterTest { desc, result ->
+        if (result.resultType == TestResult.ResultType.SUCCESS) {
+            ext.passed++
+        } else if (result.resultType == TestResult.ResultType.SKIPPED) {
+            ext.skipped++
+        } else if (result.resultType == TestResult.ResultType.FAILURE) {
+            ext.failed++
+        }
+    }
+    doLast {
+        print "${ext.passed} test passed, ${ext.skipped} skipped, ${ext.failed} failed"
+    }
 }
