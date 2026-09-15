@@ -1,3 +1,5 @@
+# Transition Tables
+
 The CSV grammar defines a [regular language](https://en.wikipedia.org/wiki/Regular_language). By definition, a regular
 language is the set of strings recognised by a
 [finite state automaton](https://en.wikipedia.org/wiki/Finite-state_machine) (FSA).
@@ -91,7 +93,9 @@ transition table along with the state changes. Below is an example for the `BEFO
 Consuming the character `a` while in state `BEFORE_LINE` makes the parser transition to the state `FIELD` and record the
 start of a field (`START_FIELD` action).
 
-`mneri/csv` implements the transition table with a `static` `int[]`.
+`mneri/csv` supports many different CSV dialects, and for each one there's a transition table. In the code they're
+called [`Format`s](https://github.com/mneri/csv/tree/master/src/main/java/me/mneri/csv/format).
+
 ```java
 private static final int[] DFA = {
 // *                    ,                    \r                   \n                   "                    EOF                  padding
