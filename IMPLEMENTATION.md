@@ -76,11 +76,12 @@ represent states, columns represent input characters, and the intersection indic
 The transition table above can be used to parse a CSV file that is fully compliant with
 [RFC 4180](https://datatracker.ietf.org/doc/rfc4180/). The initial state (marked with `*`) is `BEFORE_LINE`. Upon
 consuming the character `a` (first column), the state transitions to `FIELD`. From the `FIELD` state, a comma sets the
-transition to `BEFORE_FIELD`. Transitions continue until either `END_OF_FILE` or `ERROR` is reached.
+transition to `BEFORE_FIELD`. Transitions continue until either `END_OF_FILE` or `ERROR` is reached. `ERROR` is called a
+_sink state_; once entered, it cannot be left because all outgoing transitions loop back to itself.
 
 When transitioning from one state to the next, the parser shall perform some actions. For example, when transitioning
 from the state `BEFORE_FIELD` to the state `FIELD`, the parser must record the start of a new field. Actions can be
-encoded in the transition table along with the state changes.
+encoded in the transition table along with the state changes. Below, an example for the `BEFORE_LINE` state shown above.
 
 ```
 |               | [A-Za-z0-9]         | ,                             | \r               | \n                      | EOF                 |
