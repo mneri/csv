@@ -132,7 +132,7 @@ public final class Rfc4180StrictFormat implements Format {
         // We also might need to set the first bit: the Format needs to consume the character at the start of field! We
         // set it unless we're already inside a field (FLD or QOT). The states FLD and QOT are conveniently positioned
         // at the top of the DFA, so anything greater is an outside-the-field state.
-        return (s & 0xFF_FF) >= (QOT + 8) ? (bm | 1L) : bm; // The QOT line is 8 integers
+        return bm | ((QOT + 7) - (s & 0xFFFF) >>> 31); // The QOT line is 8 integers
     }
 
     /**

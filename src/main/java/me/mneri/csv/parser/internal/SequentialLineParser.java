@@ -72,12 +72,12 @@ public final class SequentialLineParser implements LineParser {
      */
     @Override
     public boolean next(InternalRecycledLine out) throws IOException { // Bytecode size: 209 (OpenJDK 26)
-        out.reset();
-        stream.compact(pos);
-
         final Format format = this.format;
         int s = format.base();
         int pos = this.pos;
+
+        out.reset();
+        stream.compact(pos);
         do {
             // Optimization: The most frequent actions are to start and to end a field. For example, in a line with 5
             // fields there are 10 field-start/field-stop and only 1 end-of-line. We inserted a tighter loop, saving a
