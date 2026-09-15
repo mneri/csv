@@ -60,6 +60,22 @@ is difficult._
 `mneri/csv` takes a different approach: all the states of the parser are explicitly laid out in a transition table. Rows
 represent states, columns represent input characters, and the intersection indicates the next state.
 
+```
+|                 | [A-Za-z0-9]     | ,               | \r              | \n              | "               | EOF         |
++-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+-------------+
+| BEFORE_LINE (*) | FIELD           | BEFORE_FIELD    | CAR             | ERROR           | START_QUALIFIED | END_OF_FILE |
+| BEFORE_FIELD    | FIELD           | BEFORE_FIELD    | CAR             | ERROR           | START_QUALIFIED | END_OF_FILE |
+| FIELD           | FIELD           | BEFORE_FIELD    | CAR             | ERROR           | ERROR           | END_OF_FILE |
+| START_QUALIFIED | QUALIFIED_FIELD | QUALIFIED_FIELD | QUALIFIED_FIELD | QUALIFIED_FIELD | ESCAPE          | ERROR       |
+| QUALIFIED_FIELD | QUALIFIED_FIELD | QUALIFIED_FIELD | QUALIFIED_FIELD | QUALIFIED_FIELD | ESCAPE          | ERROR       |
+| ESCAPE          | ERROR           | BEFORE_FIELD    | CAR             | ERROR           | QUALIFIED       | END_OF_FILE |
+| CAR             | ERROR           | ERROR           | ERROR           | BEFORE_LINE     | ERROR           | ERROR       |
+| END_OF_FILE     | ERROR           | ERROR           | ERROR           | ERROR           | ERROR           | ERROR       |
+| ERROR           | ERROR           | ERROR           | ERROR           | ERROR           | ERROR           | ERROR       |
+```
+The transition table above can be used to parse a CSV file that is perfectly compliant with the RFC 4180.
+
+
 When transitioning from one state to the next, the parser can take some actions. For example, when transitioning from
 the state `BEFORE_FIELD` to the state `FIELD`, the parser must take the action to start recording a field. Actions are
 encoded in the transition table as well.
