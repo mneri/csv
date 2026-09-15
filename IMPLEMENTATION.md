@@ -79,9 +79,8 @@ consuming the character `a` (first column), the state transitions to `FIELD`. Fr
 transition to `BEFORE_FIELD`. Transitions continue until either `END_OF_FILE` or `ERROR` is reached. `ERROR` is called a
 _sink state_; once entered, it cannot be left because all outgoing transitions loop back to itself.
 
-When transitioning from one state to the next, the parser shall perform some actions. For example, when transitioning
-from the state `BEFORE_FIELD` to the state `FIELD`, the parser must record the start of a new field. Actions can be
-encoded in the transition table along with the state changes. Below, an example for the `BEFORE_LINE` state shown above.
+When transitioning from one state to the next, the parser shall perform some actions. Actions can be encoded in the
+transition table along with the state changes. Below, an example for the `BEFORE_LINE` state shown above.
 
 ```
 |               | [A-Za-z0-9]         | ,                             | \r               | \n                      | EOF                 |
@@ -89,3 +88,5 @@ encoded in the transition table along with the state changes. Below, an example 
 | BEFORE_LINE * | next:   FIELD       | next:   BEFORE_FIELD          | next:   CAR      | next:   ERROR           | next:   END_OF_FILE |
 |               | action: START_FIELD | action: START_FIELD,END_FIELD | action: END_LINE | action: THROW_EXCEPTION | action: STOP        |
 ```
+Consuming the character `a` while in state `BEFORE_LINE` makes the parser transition to the state `FIELD` and record the
+start of a field.
