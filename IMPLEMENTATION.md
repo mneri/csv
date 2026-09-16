@@ -158,10 +158,32 @@ The transition table is hidden behind the `Format`'s `consume()` method.
 ```java
 state = format.consume(state, nextChar);
 ```
-Given the current state and the next input character, `consume()` returns the next state and actions, consulting the
-transition table.
+Given the current state and the next input character, `consume()` returns the next state and actions, consulting its
+private transition table.
 
 # Parsers
+In this architecture, parsers are responsible for reading characters from the input stream, feeding them to the format,
+and executing any actions dictated by the format.
+
+```java
+public void parse() {
+    do {
+        state = format.consume(state, nextChar());
+        if (isStartOfField(state)) {
+            // ...
+        }
+        if (isEndOfField(state)) {
+            // ...    
+        }
+        // ...
+    } while // ...
+}
+
+private boolean isStartOfField(int state) {
+    return (state & SFH) != 0; 
+}
+```
+
 
 # Footnotes
 [^1]: See `SimpleFlatMapper`'s [ConfigurableCharConsumer.java](https://github.com/arnaudroger/SimpleFlatMapper/blob/0f0977f4c1e03cfeb3c4ca1dd5d4050462b01df8/lightningcsv/src/main/java/org/simpleflatmapper/lightningcsv/parser/ConfigurableCharConsumer.java#L204)
