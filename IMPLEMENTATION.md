@@ -98,7 +98,7 @@ Consuming the character `a` while in state `BEFORE_LINE` makes the parser transi
 start of a field (`START_FIELD` action).
 
 # Formats
-`mneri/csv` supports many different CSV dialects each one implemented as a _separate transition table_ and enclosed in
+`mneri/csv` supports many different CSV dialects, each one implemented as a _separate transition table_ and enclosed in
 a [`Format`](https://github.com/mneri/csv/tree/master/src/main/java/me/mneri/csv/format) implementation.
 
 Transition tables are implemented using `int[]` and as explained before, states and actions are encoded together: the
@@ -107,28 +107,29 @@ the transition table for `Rfc4180StrictFormat`. While it looks complex, it is ac
 
 ```java
 private static final int[] DFA = {
-// *                    ,                    \r                   \n                   "                    EOF                  padding
-   FLD,                 BFF|EFH,             CAR|EFH,             ERR|ERH,             ERR|ERH,             EOF|EFH|ELH|RPL,     0,0,  // FLD
-   QOT,                 QOT,                 QOT,                 QOT,                 ESC,                 ERR|ERH,             0,0,  // QOT
-   FLD|SFH,             BFF|SFH|EFH,         CAR|SFH|EFH,         ERR|ERH,             SQT,                 EOF|SFH|EFH|ELH|RPL, 0,0,  // BFF
-   QOT|SFH,             QOT|SFH,             QOT|SFH,             QOT|SFH,             SQE,                 ERR|ERH,             0,0,  // SQT
-   ERR|ERH,             BFF|EFB,             CAR|EFB,             ERR|ERH,             QOT|RMB,             EOF|EFB|ELH|RPL,     0,0,  // ESC
-   ERR|ERH,             BFF|SFH|EFH,         CAR|SFH|EFH,         ERR|ERH,             QOT|SFH,             EOF|SFH|EFH|RPL,     0,0,  // SQE
-   FLD|SFH,             BFF|SFH|EFH,         CAR|SFH|EFH,         ERR|ERH,             SQT,                 EOF|STP,             0,0,  // BFL *
-   ERR|ERH,             ERR|ERH,             ERR|ERH,             BFL|ELH,             ERR|ERH,             ERR|ERH,             0,0,  // CAR
-   ERR|ERH,             ERR|ERH,             ERR|ERH,             ERR|ERH,             ERR|ERH,             EOF|STP,             0,0,  // EOF
-   ERR|ERH,             ERR|ERH,             ERR|ERH,             ERR|ERH,             ERR|ERH,             ERR|ERH,             0,0,  // ERR
-   0,                   0,                   0,                   0,                   0,                   0,                   0,0,
-   0,                   0,                   0,                   0,                   0,                   0,                   0,0,
-   0,                   0,                   0,                   0,                   0,                   0,                   0,0,
-   0,                   0,                   0,                   0,                   0,                   0,                   0,0,
-   0,                   0,                   0,                   0,                   0,                   0,                   0,0,
-   0,                   0,                   0,                   0,                   0,                   0,                   0,0};
+// *            ,            \r           \n           "            EOF                  padding
+   FLD,         BFF|EFH,     CAR|EFH,     ERR|ERH,     ERR|ERH,     EOF|EFH|ELH|RPL,     0,0,  // FLD
+   QOT,         QOT,         QOT,         QOT,         ESC,         ERR|ERH,             0,0,  // QOT
+   FLD|SFH,     BFF|SFH|EFH, CAR|SFH|EFH, ERR|ERH,     SQT,         EOF|SFH|EFH|ELH|RPL, 0,0,  // BFF
+   QOT|SFH,     QOT|SFH,     QOT|SFH,     QOT|SFH,     SQE,         ERR|ERH,             0,0,  // SQT
+   ERR|ERH,     BFF|EFB,     CAR|EFB,     ERR|ERH,     QOT|RMB,     EOF|EFB|ELH|RPL,     0,0,  // ESC
+   ERR|ERH,     BFF|SFH|EFH, CAR|SFH|EFH, ERR|ERH,     QOT|SFH,     EOF|SFH|EFH|RPL,     0,0,  // SQE
+   FLD|SFH,     BFF|SFH|EFH, CAR|SFH|EFH, ERR|ERH,     SQT,         EOF|STP,             0,0,  // BFL *
+   ERR|ERH,     ERR|ERH,     ERR|ERH,     BFL|ELH,     ERR|ERH,     ERR|ERH,             0,0,  // CAR
+   ERR|ERH,     ERR|ERH,     ERR|ERH,     ERR|ERH,     ERR|ERH,     EOF|STP,             0,0,  // EOF
+   ERR|ERH,     ERR|ERH,     ERR|ERH,     ERR|ERH,     ERR|ERH,     ERR|ERH,             0,0,  // ERR
+   0,           0,           0,           0,           0,           0,                   0,0,
+   0,           0,           0,           0,           0,           0,                   0,0,
+   0,           0,           0,           0,           0,           0,                   0,0,
+   0,           0,           0,           0,           0,           0,                   0,0,
+   0,           0,           0,           0,           0,           0,                   0,0,
+   0,           0,           0,           0,           0,           0,                   0,0};
 ```
-Rows represent the current state, and columns represent classes of characters. A line comment above the table labels the
-columns. The first column is labelled with `*`, meaning any character other than those listed in the subsequent columns.
-Next, in order, come the columns for `,`, `\r`, `\n`, `"`, and `EOF` (end of file).<br/>
-States and actions appear in the code as three-letters mnemonics, shown in alphabetical order in the table below.
+Rows represent the current state, and columns represent classes of characters. Each line has a comment on the right
+indicating the state, and the starting state is noted with an `*`. A line comment above the table labels the columns.
+The first column is labelled with `*`, meaning any character other than those listed in the subsequent columns. Next, in
+order, come the columns for `,`, `\r`, `\n`, `"`, and `EOF` (end of file).<br/>
+States and actions appear in the code as three-letter mnemonics, shown in alphabetical order in the tables below.
 
 ```
 | STATE MNEMONIC  | MEANING                                | STATE MNEMONIC  | MEANING                                |
@@ -149,7 +150,7 @@ States and actions appear in the code as three-letters mnemonics, shown in alpha
 | ERH             | report error at this position          |                 |                                        |
 ```
 
-Cells encode both the next state and the actions. For example the cell `BFF|EFH` encodes both the `BEFORE_FIELD` state
+Cells encode both the next state and the actions. For example, the cell `BFF|EFH` encodes both the `BEFORE_FIELD` state
 and the _"end field at the current position"_ action. The first element in each cell is always the state.
 
 
