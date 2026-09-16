@@ -281,12 +281,36 @@ it to the client. If the client follows the pattern, when `hasNext()` is called 
 `ELEMENT_NOT_PREPARED`; the method then loads a new element and sets the state to `ELEMENT_PREPARED` before the client
 calls to `next()`.
 
-| Method      | Common-Case State      |
-|-------------|------------------------|
-| `hasNext()` | `ELEMENT_NOT_PREPARED` |
-| `next()`    | `ELEMENT_PREPARED`     |
+| Method      | Common-Case Initial State | Common-Case Final State |
+|-------------|---------------------------|-------------------------|
+| `hasNext()` | `ELEMENT_NOT_PREPARED`    | `ELEMENT_PREPARED`      |
+| `next()`    | `ELEMENT_PREPARED`        | `ELEMENT_NOT_PREPARED`  |
 
+Naturally, the code must be robust enough to handle a client using it wrong, but we can structure it in a way to have a
+performance gain if the client does it right.
 
+```java
+public T next() throws IOException { // Bytecode size: 38
+    if (state == ELEMENT_PREPARED) {
+        state = ELEMENT_NOT_PREPARED;
+        return deserializer.deserialize(line);
+    }
+    return next2(); // Only called if the client doesn't follow the idiomatic pattern hasNext()-next()
+}
+```
+Then, the method `next2()` handles the edge-case.
+```java
+  private T next2() throws IOException {
+      if (state == READER_CLOSED) {
+          readerIsClosedException();
+      }
+      if (!hasNext()) {
+          noSuchElementException();
+      }
+      state = ELEMENT_NOT_PREPARED;
+      return deserializer.deserialize(line);
+    }
+```
 
 ## Branchless Column Mapping
 
