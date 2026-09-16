@@ -163,15 +163,15 @@ private transition table.
 
 As mentioned before, `mneri/csv` implements different CSV formats; most notably:
 
-* `Rfc4180StrictFormat`: a strict interpretation of the RFC 4180 specification, throwing an exception if the document is
-  not fully compliant.
-* `Rfc4180HalfRelaxedFormat`: a more relaxed interpretation of RFC 4180, allowing for different line termination, and
-  misplaced double-quotes.
+* `Rfc4180StrictFormat`: strict interpretation of the RFC 4180 specification, throwing an exception if the document is
+  not compliant.
+* `Rfc4180HalfRelaxedFormat`: a more relaxed interpretation of RFC 4180, allowing for different line termination
+  characters, and misplaced double-quotes.
 * `Rfc4180FullyRelaxedFormat`: a fully relaxed interpretation of RFC 4180 that is guaranteed to never throw an
   exception, even if the document does not conform to the specification.
 * `MsExcelFormat`: a format implementation inspired by Microsoft Excel's behaviour.
 * `MacintoshFormat`: an interpretation of RFC 4180 compliant with legacy Macintosh systems where the line separator
-  was `\r`.
+  is `\r`.
 
 # Parsers
 In this architecture, parsers are responsible for reading characters from the input stream, feeding them to the format,
@@ -244,7 +244,7 @@ do {
 ```
 The parser maintains a 64-character window (stride). The bitmask tells which characters to process, and which not. Using
 Kernighan's trick the bitmask is zeroed one bit at a time. Please, note that `Long.numberOfTrailingZeros()` is a HotSpot
-intrinsic and the result is calculated in a couple of CPU cycles. 
+intrinsic and the result is calculated in a couple of CPU cyclesto. 
 
 Experiments have shown that 50-70% of the characters in popular benchmarks are skipped, leading to a considerable
 performance gain.
