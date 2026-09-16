@@ -279,8 +279,11 @@ if (c == ',') {
     return 0;
 }
 ```
-`,` is mapped to column `1`, `\r` to column `2`, `\n` to column `3`, `"` to column `4`, `EOF` to column `5`, and any
-other character to column `0`.
+However, branching introduces a major performance bottleneck due to possible misprediction. Modern CPUs rely on branch
+predictors to guess execution paths and pre-fill the pipeline. In a CSV stream, this mechanism breaks down. Real-world
+data alternates unpredictably between long stretches of ordinary text and sparse structural markers like commas, quotes,
+and newlines. Because these tokens appear at irregular intervals depending on the data content, branch predictors cannot
+establish a reliable pattern. Every misprediction triggers a costly pipeline flush, stalling the CPU.
 
 # Other Low-Level Optimisations
 ## Facilitating Method Inlining
