@@ -118,7 +118,7 @@ private static final int[] DFA = {
    ERR|ERH,     ERR|ERH,     ERR|ERH,     BFL|ELH,     ERR|ERH,     ERR|ERH,             0,0,  // CAR
    ERR|ERH,     ERR|ERH,     ERR|ERH,     ERR|ERH,     ERR|ERH,     EOF|STP,             0,0,  // EOF
    ERR|ERH,     ERR|ERH,     ERR|ERH,     ERR|ERH,     ERR|ERH,     ERR|ERH,             0,0,  // ERR
-// padding
+// padding      padding      padding      padding      padding      padding              padding
    0,           0,           0,           0,           0,           0,                   0,0,
    0,           0,           0,           0,           0,           0,                   0,0,
    0,           0,           0,           0,           0,           0,                   0,0,
