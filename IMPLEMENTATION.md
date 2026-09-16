@@ -199,16 +199,18 @@ Vector API, `mneri/csv` will leverage vector operations. If not, it will fall ba
 
 Rather than processing every character, `mneri/csv` uses vector operations to calculate a 64 bit mask. The mask
 indicates which characters must be processed, and which can be ignored. In the example below, bits are set at key
-positions (such as start of a field, commas, and new lines).
+positions (such as the start of a field, commas, and new lines).
 ```
 CSV chunk: a a a a , b b b b , c c c c \r\n
 Mask:      1 0 0 0 1 1 0 0 0 1 1 0 0 0 1 1
 ```
-Processing only these characters is sufficient to keep state machine consistent, while the characters with bits set to
-zero can be safely skipped.
+Processing only these characters is sufficient to keep the state machine consistent, while the characters with bits set
+to zero can be safely skipped. The mask can occasionally contain false-positives, for example a comma enclosed in a
+qualified field (this is unavoidable, but luckily rare). In this case the state machine knows it is inside a qualified
+field and correctly ignores the comma.
 
-Experiments have shown that 50-70% of characters in popular benchmarks is skipped, leading to a considerable performance
-gain.
+Experiments have shown that 50-70% of the characters in popular benchmarks are skipped, leading to a considerable
+performance gain.
 
 # Low-Level Optimizations
 
