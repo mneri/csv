@@ -161,6 +161,13 @@ state = format.consume(state, nextChar);
 Given the current state and the next input character, `consume()` returns the next state and actions, consulting its
 private transition table.
 
+As mentioned before, `mneri/csv` implements different CSV formats; most notably:
+* `Rfc4180StrictFormat`
+* `Rfc4180HalfRelaxedFormat`
+* `Rfc4180FullyRelaxedFormat`
+* `MsExcelFormat`
+* `MachintoshFormat`
+
 # Parsers
 In this architecture, parsers are responsible for reading characters from the input stream, feeding them to the format,
 and executing any actions dictated by the format.
