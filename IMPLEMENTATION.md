@@ -260,12 +260,27 @@ every character in the stream. `mneri/csv` mitigates this architectural penalty 
 optimisations.
 
 ## Branchless Column Mapping
-The transition table is hidden behind the `consume()` method.
+As explained earlier, the parser decides its next state by querying a transition table. To do the lookup, it first needs
+to translate the current character into a column index.
 
+`Rfc4180StrictFormat` performs a mapping similar to the following:
 ```java
-state = format.consume(state, nextChar);
+if (c == ',') {
+    return 1;
+} else if (c == '\r') {
+    return 2;
+} else if (c == '\n') {
+    return 3;
+} else if (c == '"') {
+    return 4;
+} else if (c == -1) {
+    return 5;
+} else {
+    return 0;
+}
 ```
-
+`,` is mapped to column `1`, `\r` to column `2`, `\n` to column `3`, `"` to column `4`, `EOF` to column `5`, and any
+other character to column `0`.
 
 # Other Low-Level Optimisations
 ## Facilitating Method Inlining
@@ -343,6 +358,8 @@ The cold method performs further checks and might make calls to reload the buffe
 approximately once every `8,000` calls of `getChar()`. We need `getChar()` to be inlined, and to push the JIT compiler
 to do so we must keep it as lean as possible. We are happy to pay a full method call for `getChar2()` because it happens
 so infrequently.
+
+_It sounds off, but sometimes you can get better performances by adding a method call._
 
 # Performances
 
