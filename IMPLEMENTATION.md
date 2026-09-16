@@ -277,20 +277,20 @@ try (CsvReader<Contact> reader = CsvReader.open(new File("contacts.csv"), Standa
 }
 ```
 Under this pattern, `hasNext()` _prepares_ the next element returning `true` if present, while `next()` simply returns
-it to the client. If the client follows the pattern, when `hasNext()` is called the state of `CsvReader` is _always_
-`ELEMENT_NOT_PREPARED`; the method then loads a new element and sets the state to `ELEMENT_PREPARED` before the client
-calls to `next()`.
+the element to the client. If the client follows the pattern, when `hasNext()` is called the state of `CsvReader` is
+_always_ `ELEMENT_NOT_PREPARED`; the method then loads a new element and sets the state to `ELEMENT_PREPARED` before the
+client calls to `next()`.
 
 | Method      | Common-Case Initial State | Common-Case Final State |
 |-------------|---------------------------|-------------------------|
 | `hasNext()` | `ELEMENT_NOT_PREPARED`    | `ELEMENT_PREPARED`      |
 | `next()`    | `ELEMENT_PREPARED`        | `ELEMENT_NOT_PREPARED`  |
 
-Naturally, the code must be robust enough to handle a client using it wrong, but we can structure it in a way to have a
-performance gain if the client does it right.
+Obviously, the code must be robust enough to handle a client using it _slightly_ wrong, but we can structure it in a way
+to have a performance gain if the client does it correctly.
 
 ```java
-public T next() throws IOException { // Bytecode size: 38
+public T next() throws IOException {
     if (state == ELEMENT_PREPARED) {
         state = ELEMENT_NOT_PREPARED;
         return deserializer.deserialize(line);
@@ -298,7 +298,10 @@ public T next() throws IOException { // Bytecode size: 38
     return next2(); // Only called if the client doesn't follow the idiomatic pattern hasNext()-next()
 }
 ```
-Then, the method `next2()` handles the edge-case.
+Notice how `next()` performs only a single check (`state == ELEMENT_PREPARED`), skipping other sanity checks like
+verifying whether the reader is still open or trying to prepare an element on-the-fly. This minimalism keeps the
+bytecode footprint tiny. These edge-cases are handled byte the `next2()` method.
+
 ```java
   private T next2() throws IOException {
       if (state == READER_CLOSED) {
