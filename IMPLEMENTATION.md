@@ -187,6 +187,15 @@ Action flags are checked using a simple bitwise `&` operation (`state & SFH`). I
 the corresponding action. _This separation allows different CSV dialects to be plugged seamlessly into high-performance
 parsing pipelines without duplicating stream-handling or optimization logic._
 
-# Footnotes
+# Vector API
+The [Vector API](https://openjdk.org/jeps/508) is an exciting feature of JDK 16 and above that allows engineers to
+access CPU vector operations.
+
+Vector operations (also known as SIMD, Single Instruction Multiple Data) can substantially speed up computation. Instead
+of processing values one by one in a sequential loop, the CPU operates on entire blocks of data packed into hardware
+vector lanes in a single clock cycle.  For some time now, the Java C2 just-in-time compiler can transform tight loops
+into vector operations, but the result is somewhat unreliable. The Vector API gives engineers explicit control.
+
+
 [^1]: See `SimpleFlatMapper`'s [ConfigurableCharConsumer.java](https://github.com/arnaudroger/SimpleFlatMapper/blob/0f0977f4c1e03cfeb3c4ca1dd5d4050462b01df8/lightningcsv/src/main/java/org/simpleflatmapper/lightningcsv/parser/ConfigurableCharConsumer.java#L204)
 [^2]: See `sesseltjonna-csv`'s [DefaultStringArrayCsvReader.java](https://github.com/skjolber/sesseltjonna-csv/blob/master/parser/src/main/java/com/github/skjolber/stcsv/sa/DefaultStringArrayCsvReader.java#L65)
