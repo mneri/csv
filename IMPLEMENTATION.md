@@ -129,7 +129,8 @@ private static final int[] DFA = {
 Rows represent the current state, and columns represent classes of characters. On the right-hand side of each row there
 is a comment indicating the state, and the starting state is noted with an `*`. A line comment above the table labels
 the columns. The first column is labelled with `*`, meaning any character other than those listed in the subsequent
-columns. Next, in order, come the columns for `,`, `\r`, `\n`, `"`, and `EOF` (end of file).<br/>
+columns. Next, in order, come the columns for `,`, `\r`, `\n`, `"`, and `EOF` (end of file). The padding around rows and
+columns is a low-level optimization, and is explained later on in the document.<br/>
 States and actions appear in the code as three-letter mnemonics, shown in alphabetical order in the tables below.
 
 ```
@@ -221,7 +222,7 @@ to zero can be safely skipped. The mask can occasionally contain false-positives
 qualified field (this is unavoidable, but luckily rare). In this case the state machine knows it is inside a qualified
 field and correctly ignores the comma.
 
-Below is an abstraction of the vectorised parser's loop.
+Below is an abstraction of the vectorised parser's loop[^3].
 ```java
 do {
     while (bitmask == 0L) {
@@ -247,16 +248,17 @@ Kernighan's trick the bitmask is zeroed one bit at a time. Please, note that `Lo
 intrinsic and the result is calculated in a couple of CPU cycles. 
 
 Experiments have shown that 50-70% of the characters in popular benchmarks are skipped, leading to a considerable
-performance gain. For example, in the popular benchmark `worldcitiespop.txt` out of the `129,212,350` total characters,
-the vectorised parser is able to safely ignore `72.80%` of them (`94,072,029` characters), processing only the remaining
-`35,140,321`.
+performance gain. For example, in the classic CSV benchmark `worldcitiespop.txt` from MaxMind, out of the `129,212,350`
+total characters, the vectorised parser is able to safely ignore `72.80%` of them (`94,072,029` characters), processing
+only the remaining `35,140,321`.
 
 # Low-Level Optimisations
-Maintaining state in a local variable or relying on the _implicit state_ on the execution stack is generally faster than
-querying a transition table for every character in the stream. `mneri/csv` tries to mitigate this architectural penalty
-with a series of low-level optimisations.
+Maintaining state in a local variable or relying on the _implicit state_ on the execution stack (like `SimpleFlatMapper`
+and `sesseltjonna-csv` do respectively) is generally faster than querying a transition table for every character in the
+stream. `mneri/csv` tries to mitigate this architectural penalty with a series of low-level optimisations.
 
 # Performances
 
 [^1]: See `SimpleFlatMapper`'s [ConfigurableCharConsumer.java](https://github.com/arnaudroger/SimpleFlatMapper/blob/0f0977f4c1e03cfeb3c4ca1dd5d4050462b01df8/lightningcsv/src/main/java/org/simpleflatmapper/lightningcsv/parser/ConfigurableCharConsumer.java#L204)
 [^2]: See `sesseltjonna-csv`'s [DefaultStringArrayCsvReader.java](https://github.com/skjolber/sesseltjonna-csv/blob/master/parser/src/main/java/com/github/skjolber/stcsv/sa/DefaultStringArrayCsvReader.java#L65)
+[^3]: For the full implementation, check [VectorLineParser.java]()
