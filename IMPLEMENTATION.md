@@ -259,6 +259,14 @@ Maintaining the state in a local variable or relying on the execution stack to k
 every character in the stream. `mneri/csv` mitigagtes this architectural penalty with a series of low-level
 optimisations.
 
+## Branchless Column Mapping
+The transition table is hidden behind the `consume()` method.
+
+```java
+state = format.consume(state, nextChar);
+```
+
+
 # Other Low-Level Optimisations
 ## Facilitating Method Inlining
 Every time a method is invoked, the CPU must incur the cost of setting up a stack frame, jumping to a new memory
@@ -333,9 +341,6 @@ The cold method performs further checks and might make calls to reload the buffe
 approximately once every `8,000` calls of `getChar()`. We need `getChar()` to be inlined, and to push the JIT compiler
 to do so we must keep it as lean as possible. We are happy to pay a full method call for `getChar2()` because it happens
 so infrequently.
-
-## Branchless Column Mapping
-
 
 # Performances
 
