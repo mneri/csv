@@ -266,14 +266,17 @@ of the call completely), and it is more likely to do so when its bytecode is sma
 
 `mneri/csv` structures hot methods to keep the common case short, pushing uncommon code paths and error handling into a
 separate, cold method that is only reached when needed. An example of this can be found in `CsvReader`. Clients are
-expected to use this class following the idiomatic pattern `hasNext()`/`next()`.
+expected to use this class following the idiomatic pattern `hasNext()`-`next()`.
 
 ```java
-while (reader.hasNext()) {
-    Contact contact = reader.next();
-    // ...
+try (CsvReader<Contact> reader = CsvReader.open(new File("contacts.csv"), StandardCharsets.UTF_8, new ContactDeserializer())) {
+    while (reader.hasNext()) {
+        Contact contact = reader.next();
+        // ...
+    }
 }
 ```
+Under this pattern, `hasNext()` loads the next element returning `true` if present, while `next()` simply returns it.
 
 
 ## Branchless Column Mapping
