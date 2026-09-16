@@ -264,9 +264,9 @@ address, and returning once finished. For small, frequently executed methods (li
 can easily eclipse the actual execution time. The JIT compiler is capable of inlining short methods (removing the cost
 of the call completely), and it is more likely to do so when its bytecode is small.
 
-`mneri/csv` structures hot methods to keep the common case short, pushing uncommon code paths and error handling into a
-separate, cold method that is only reached when needed. An example of this can be found in `CsvReader`. Clients are
-expected to use this class following the idiomatic pattern `hasNext()`-`next()`.
+`mneri/csv` structures hot methods to keep the common case short and inlineable, pushing uncommon code paths and error
+handling into a separate, cold method that is only reached when needed. An example of this can be found in `CsvReader`.
+Clients are expected to use this class following the idiomatic `hasNext()`-`next()` pattern.
 
 ```java
 try (CsvReader<Contact> reader = CsvReader.open(new File("contacts.csv"), StandardCharsets.UTF_8, new ContactDeserializer())) {
@@ -276,7 +276,16 @@ try (CsvReader<Contact> reader = CsvReader.open(new File("contacts.csv"), Standa
     }
 }
 ```
-Under this pattern, `hasNext()` loads the next element returning `true` if present, while `next()` simply returns it.
+Under this pattern, `hasNext()` _prepares_ the next element returning `true` if present, while `next()` simply returns
+it to the client. If the client follows the pattern, when `hasNext()` is called the state of `CsvReader` is _always_
+`ELEMENT_NOT_PREPARED`; the method then loads a new element and sets the state to `ELEMENT_PREPARED` before the client
+calls to `next()`.
+
+| Method      | Common-Case State      |
+|-------------|------------------------|
+| `hasNext()` | `ELEMENT_NOT_PREPARED` |
+| `next()`    | `ELEMENT_PREPARED`     |
+
 
 
 ## Branchless Column Mapping
