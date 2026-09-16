@@ -45,7 +45,7 @@ import me.mneri.csv.extension.VectorHelper;
  * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
  */
 @SuppressWarnings({"Duplicates", "unused"})
-public final class MachintoshFormat implements Format {
+public final class MacintoshFormat implements Format {
     private static final int FLD = 0; // Field
     private static final int QOT = 8; // Quotation
     private static final int BFF = 16; // Before field
@@ -94,15 +94,15 @@ public final class MachintoshFormat implements Format {
     //@formatter:on
 
     /**
-     * Return a provider of {@code MachintoshFormat}.
+     * Return a provider of {@code MacintoshFormat}.
      *
      * @return The provider.
      */
-    public static Format.Provider<MachintoshFormat> provider() {
-        return MachintoshFormat::new;
+    public static Format.Provider<MacintoshFormat> provider() {
+        return MacintoshFormat::new;
     }
 
-    private MachintoshFormat() {
+    private MacintoshFormat() {
     }
 
     /**

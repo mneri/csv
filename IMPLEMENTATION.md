@@ -165,12 +165,12 @@ As mentioned before, `mneri/csv` implements different CSV formats; most notably:
 
 * `Rfc4180StrictFormat`: a strict interpretation of the RFC 4180 specification, throwing an exception if the document is
   not fully compliant.
-* `Rfc4180HalfRelaxedFormat`: a more relaxed interpretation of RFC 4180, allowing for different line termination and
-  easy-misses.
+* `Rfc4180HalfRelaxedFormat`: a more relaxed interpretation of RFC 4180, allowing for different line termination, and
+  misplaced double-quotes.
 * `Rfc4180FullyRelaxedFormat`: a fully relaxed interpretation of RFC 4180 that is guaranteed to never throw an
   exception, even if the document does not conform to the specification.
 * `MsExcelFormat`: a format implementation inspired by Microsoft Excel's behaviour.
-* `MachintoshFormat`: an interpretation of RFC 4180 compliant with legacy Machintosh systems where the line separator
+* `MacintoshFormat`: an interpretation of RFC 4180 compliant with legacy Macintosh systems where the line separator
   was `\r`.
 
 # Parsers
