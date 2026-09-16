@@ -260,9 +260,9 @@ optimisations.
 
 ## Facilitating Code Inlining
 Every time a method is invoked, the CPU must incur the cost of setting up a stack frame, jumping to a new memory
-address, and returning once finished. For small, frequently executed methods (like getters or validators), the overhead
-can easily eclipse the actual execution time. The JIT compiler is capable of inlining short methods (removing the cost
-of the call completely), and it is more likely to do so when its bytecode is small.
+address, and returning once finished. For small, frequently executed methods (like getters), the overhead can easily
+eclipse the actual execution time. The JIT compiler is capable of inlining short methods (removing the cost of the call
+completely), and it is more likely to do so when its bytecode is small.
 
 `mneri/csv` structures hot methods to keep the common case short and inlineable, pushing uncommon code paths and error
 handling into a separate, cold method that is only reached when needed. An example of this can be found in `CsvReader`.
@@ -300,7 +300,7 @@ public T next() throws IOException {
 ```
 Notice how `next()` performs only a single check (`state == ELEMENT_PREPARED`), skipping other sanity checks like
 verifying whether the reader is still open or trying to prepare an element on-the-fly. This minimalism keeps the
-bytecode footprint tiny. These edge-cases are handled byte the `next2()` method.
+bytecode footprint tiny. All the edge-cases are handled by the `next2()` method.
 
 ```java
   private T next2() throws IOException {
@@ -314,6 +314,22 @@ bytecode footprint tiny. These edge-cases are handled byte the `next2()` method.
       return deserializer.deserialize(line);
     }
 ```
+
+This technique is not limited to the `CsvReader` class, but used throughout the code. Another example can be found in
+`RandomAccessStream`.
+
+```java
+  public int getChar(long pos) throws IOException {
+      if (pos >= first && pos < last) {
+          return cb[(int) (pos + offset)];
+      }
+      return getChar2(pos);
+  }
+```
+`getChar()` only checks if the position is within range and immediately returns; if not, it delegates to `getChar2()`.
+The cold method performs further checks and might make calls to reload the buffer (`cb`). `getChar2()` is invoked 
+approximately once every `8,000` times. We need `getChar()` to be inlined, and to push the JIT compiler to do so we kept
+it as lean as possible. We are happy to pay for a full method call for `getChar2()` because it happens so infrequently.
 
 ## Branchless Column Mapping
 
