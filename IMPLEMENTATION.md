@@ -149,7 +149,7 @@ States and actions appear in the code as three-letter mnemonics, shown in alphab
 | EFH             | end field at the current position      | RPL             | replay the last character              |
 | ELB             | end line at the previous position      | SFH             | start field at the current position    |
 | ELH             | end line at the current position       | STP             | stop processing                        |
-| ERH             | report error at this position          |                 |                                        |
+| ERH             | report error at the current position   |                 |                                        |
 ```
 
 Cells encode both the next state and the actions. For example, the cell `BFF|EFH` encodes both the _"before field"_
@@ -253,12 +253,14 @@ total characters, the vectorised parser is able to safely ignore `72.80%` of the
 only the remaining `35,140,321`.
 
 # Low-Level Optimisations
-Maintaining state in a local variable or relying on the _implicit state_ on the execution stack (like `SimpleFlatMapper`
-and `sesseltjonna-csv` do respectively) is generally faster than querying a transition table for every character in the
-stream. `mneri/csv` tries to mitigate this architectural penalty with a series of low-level optimisations.
+Maintaining the state in a local variable or relying on the execution stack to keep an _implicit state_ (like
+`SimpleFlatMapper` and `sesseltjonna-csv` do respectively) is generally faster than querying a transition table for
+every character in the stream. `mneri/csv` tries to mitigate this architectural penalty with a series of low-level
+optimisations.
+
 
 # Performances
 
 [^1]: See `SimpleFlatMapper`'s [ConfigurableCharConsumer.java](https://github.com/arnaudroger/SimpleFlatMapper/blob/0f0977f4c1e03cfeb3c4ca1dd5d4050462b01df8/lightningcsv/src/main/java/org/simpleflatmapper/lightningcsv/parser/ConfigurableCharConsumer.java#L204)
 [^2]: See `sesseltjonna-csv`'s [DefaultStringArrayCsvReader.java](https://github.com/skjolber/sesseltjonna-csv/blob/master/parser/src/main/java/com/github/skjolber/stcsv/sa/DefaultStringArrayCsvReader.java#L65)
-[^3]: For the full implementation, check [VectorLineParser.java]()
+[^3]: For the full implementation, see [VectorLineParser.java](https://github.com/mneri/csv/blob/master/src/main/java/me/mneri/csv/parser/internal/VectorLineParser.java)
