@@ -54,7 +54,7 @@ if (current[currentOffset] != quoteCharacter) {
 }
 ```
 Performance-wise, the implicit state technique works really well, and to my knowledge `sesseltjonna-csv` is currently
-the fastest Java CSV parser. In both `SimpleFlatMapper` and `sesseltjonna-csv`, transitions from one state to the next
+the fastest Java CSV parser. In both `SimpleFlatMapper` and `sesseltjonna-csv`, _transitions_ from one state to the next
 are not explicit, and their logic is pushed deep within the code. _Understanding state transitions with these two models
 is difficult._
 
@@ -127,10 +127,12 @@ private static final int[] DFA = {
    0,           0,           0,           0,           0,           0,                   0,0};
 ```
 Rows represent the current state, and columns represent classes of characters. On the right-hand side of each row there
-is a comment indicating the state, and the starting state is noted with an `*`. A line comment above the table labels
-the columns. The first column is labelled with `*`, meaning any character other than those listed in the subsequent
-columns. Next, in order, come the columns for `,`, `\r`, `\n`, `"`, and `EOF` (end of file). The padding around rows and
-columns is a low-level optimization, and is explained later on in the document.<br/>
+is a comment indicating the state name, and the starting state is noted with an `*`. A line comment above the table
+labels the columns. The first column is labelled with `*`, meaning any character other than those listed in the
+subsequent columns. Next, in order, come the columns for `,`, `\r`, `\n`, `"`, and `EOF` (end of file). The padding
+around rows and columns is a low-level optimization, and is explained later on in the document. Cells encode both the
+next state and the actions. For example, the cell `BFF|EFH` encodes both the _"before field"_ state and the _"end field
+at the current position"_ action. The first element in each cell is always the state.<br/>
 States and actions appear in the code as three-letter mnemonics, shown in alphabetical order in the tables below.
 
 ```
@@ -151,9 +153,6 @@ States and actions appear in the code as three-letter mnemonics, shown in alphab
 | ELH             | end line at the current position       | STP             | stop processing                        |
 | ERH             | report error at the current position   |                 |                                        |
 ```
-
-Cells encode both the next state and the actions. For example, the cell `BFF|EFH` encodes both the _"before field"_
-state and the _"end field at the current position"_ action. The first element in each cell is always the state.
 
 The transition table is hidden behind the `Format`'s `consume()` method.
 ```java
@@ -250,13 +249,19 @@ intrinsic and the result is calculated in a couple of CPU cycles.
 Experiments have shown that 50-70% of the characters in popular benchmarks are skipped, leading to a considerable
 performance gain. For example, in the classic CSV benchmark `worldcitiespop.txt` from MaxMind, out of the `129,212,350`
 total characters, the vectorised parser is able to safely ignore `72.80%` of them (`94,072,029` characters), processing
-only the remaining `35,140,321`.
+only the remaining `27.20%` (`35,140,321` characters). Calculating the mask is not free, but the cost is very well
+offset by the savings downstream.
 
 # Low-Level Optimisations
 Maintaining the state in a local variable or relying on the execution stack to keep an _implicit state_ (like
 `SimpleFlatMapper` and `sesseltjonna-csv` do respectively) is generally faster than querying a transition table for
 every character in the stream. `mneri/csv` tries to mitigate this architectural penalty with a series of low-level
 optimisations.
+
+## Facilitating Code Inlining
+
+
+## Branchless Column Mapping
 
 
 # Performances
