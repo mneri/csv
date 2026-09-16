@@ -58,7 +58,7 @@ the fastest Java CSV parser. In both `SimpleFlatMapper` and `sesseltjonna-csv`, 
 are not explicit, and their logic is pushed deep within the code. _Understanding state transitions with these two models
 is difficult._
 
-`mneri/csv` takes a different approach: all the states of the parser are explicitly laid out in a transition table. Rows
+`mneri/csv` takes a different approach: all the different states are explicitly laid out in a transition table. Rows
 represent states, columns represent input characters, and the intersection indicates the next state.
 
 ```
@@ -151,9 +151,15 @@ States and actions appear in the code as three-letter mnemonics, shown in alphab
 | ERH             | report error at this position          |                 |                                        |
 ```
 
-Cells encode both the next state and the actions. For example, the cell `BFF|EFH` encodes both the `BEFORE_FIELD` state
-and the _"end field at the current position"_ action. The first element in each cell is always the state.
+Cells encode both the next state and the actions. For example, the cell `BFF|EFH` encodes both the _"before field"_
+state and the _"end field at the current position"_ action. The first element in each cell is always the state.
 
+The transition table is hidden behind the `Format`'s `consume()` method.
+```java
+state = format.consume(state, nextChar);
+```
+Given the current state and the next input character, `consume()` returns the next state and actions, consulting the
+transition table.
 
 # Parsers
 
