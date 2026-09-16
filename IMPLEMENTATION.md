@@ -195,18 +195,20 @@ Vector operations (also known as SIMD, Single Instruction Multiple Data) can sub
 of processing values one-by-one in a sequential loop, the CPU operates on entire blocks of data in a single clock cycle.
 For some time now, the Java C2 just-in-time compiler can transform tight loops into vector operations, but the result
 has always been somewhat unreliable. The Vector API gives engineers explicit control. If the Java runtime supports the
-Vector API, `mneri/csv` will leverage vector operations.
+Vector API, `mneri/csv` will leverage vector operations. If not, it will fall back to sequential operations.
 
 Rather than processing every character, `mneri/csv` uses vector operations to calculate a 64 bit mask. The mask
 indicates which characters must be processed, and which can be ignored. In the example below, bits are set at key
-positions (such as start of the fields, commas, and new lines).
+positions (such as start of a field, commas, and new lines).
 ```
 CSV chunk: a a a a , b b b b , c c c c \r\n
 Mask:      1 0 0 0 1 1 0 0 0 1 1 0 0 0 1 1
 ```
-Processing only these characters is sufficient to keep state machine consistent, while the intermediate characters (i.e.
-the characters with bits set to zero) can be safely skipped. Experiments have shown that 50-70% of characters in popular
-benchmarks is skipped, leading to a considerable performance gain.
+Processing only these characters is sufficient to keep state machine consistent, while the characters with bits set to
+zero can be safely skipped.
+
+Experiments have shown that 50-70% of characters in popular benchmarks is skipped, leading to a considerable performance
+gain.
 
 # Low-Level Optimizations
 
