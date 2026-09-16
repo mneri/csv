@@ -58,8 +58,8 @@ the fastest Java CSV parser. In both `SimpleFlatMapper` and `sesseltjonna-csv`, 
 are not explicit, and their logic is pushed deep within the code. _Understanding state transitions with these two models
 is difficult._
 
-`mneri/csv` takes a different approach: all the different states are explicitly laid out in a transition table. Rows
-represent states, columns represent input characters, and the intersection indicates the next state.
+`mneri/csv` takes a different approach: all the states are explicitly laid out in a transition table. Rows represent
+states, columns represent input characters, and the intersection indicates the next state.
 
 ```
 |                 | [A-Za-z0-9]     | ,               | \r              | \n              | "               | EOF         |
@@ -183,7 +183,9 @@ private boolean isStartOfField(int state) {
     return (state & SFH) != 0; 
 }
 ```
-
+Action flags are checked using a simple bitwise `&` operation (`state & SFH`). If the flag is set, the parser shall take
+the corresponding action. _This separation allows different CSV dialects to be plugged seamlessly into high-performance
+parsing pipelines without duplicating stream-handling or optimization logic._
 
 # Footnotes
 [^1]: See `SimpleFlatMapper`'s [ConfigurableCharConsumer.java](https://github.com/arnaudroger/SimpleFlatMapper/blob/0f0977f4c1e03cfeb3c4ca1dd5d4050462b01df8/lightningcsv/src/main/java/org/simpleflatmapper/lightningcsv/parser/ConfigurableCharConsumer.java#L204)
