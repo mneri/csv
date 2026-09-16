@@ -162,11 +162,16 @@ Given the current state and the next input character, `consume()` returns the ne
 private transition table.
 
 As mentioned before, `mneri/csv` implements different CSV formats; most notably:
-* `Rfc4180StrictFormat`
-* `Rfc4180HalfRelaxedFormat`
-* `Rfc4180FullyRelaxedFormat`
-* `MsExcelFormat`
-* `MachintoshFormat`
+
+* `Rfc4180StrictFormat`: a strict interpretation of the RFC 4180 specification, throwing an exception if the document is
+  not fully compliant.
+* `Rfc4180HalfRelaxedFormat`: a more relaxed interpretation of RFC 4180, allowing for different line termination and
+  easy-misses.
+* `Rfc4180FullyRelaxedFormat`: a fully relaxed interpretation of RFC 4180 that is guaranteed to never throw an
+  exception, even if the document does not conform to the specification.
+* `MsExcelFormat`: a format implementation inspired by Microsoft Excel's behaviour.
+* `MachintoshFormat`: an interpretation of RFC 4180 compliant with legacy Machintosh systems where the line separator
+  was `\r`.
 
 # Parsers
 In this architecture, parsers are responsible for reading characters from the input stream, feeding them to the format,
@@ -228,11 +233,11 @@ do {
     bitmask &= bitmask - 1L; // Kernighan's trick
     pos = strideStart + shift;
 
-    s = format.consume(s, getChar(pos));
-    if (isStartOfField(s)) {
+    state = format.consume(state, getChar(pos));
+    if (isStartOfField(state)) {
         // ...
     }
-    if (isEndOfField(s)) {
+    if (isEndOfField(state)) {
         // ...
     }
 } while // ...
