@@ -192,10 +192,22 @@ The [Vector API](https://openjdk.org/jeps/508) is an exciting feature of JDK 16 
 access CPU vector operations.
 
 Vector operations (also known as SIMD, Single Instruction Multiple Data) can substantially speed up computation. Instead
-of processing values one by one in a sequential loop, the CPU operates on entire blocks of data packed into hardware
-vector lanes in a single clock cycle.  For some time now, the Java C2 just-in-time compiler can transform tight loops
-into vector operations, but the result is somewhat unreliable. The Vector API gives engineers explicit control.
+of processing values one-by-one in a sequential loop, the CPU operates on entire blocks of data in a single clock cycle.
+For some time now, the Java C2 just-in-time compiler can transform tight loops into vector operations, but the result
+has always been somewhat unreliable. The Vector API gives engineers explicit control.If the Java runtime supports the
+Vector API, `mneri/csv` will leverage vector operations.
 
+Rather than processing every character, `mneri/csv` uses vector operations to calculate a 64 bit mask. The mask
+indicates which characters must be processed, and which can be ignored. In the example below, bits are set at key
+positions (such as the commas).
+```
+CSV chunk: a a a a , b b b b , c c c c \r\n
+Mask:      1 0 0 0 1 1 0 0 0 1 1 0 0 0 1 1
+```
+Processing only these characters is sufficient to keep state machine consistent, while the intermediate characters (i.e.
+the characters with bits set to zero) can be safely skipped.
+
+# Performances
 
 [^1]: See `SimpleFlatMapper`'s [ConfigurableCharConsumer.java](https://github.com/arnaudroger/SimpleFlatMapper/blob/0f0977f4c1e03cfeb3c4ca1dd5d4050462b01df8/lightningcsv/src/main/java/org/simpleflatmapper/lightningcsv/parser/ConfigurableCharConsumer.java#L204)
 [^2]: See `sesseltjonna-csv`'s [DefaultStringArrayCsvReader.java](https://github.com/skjolber/sesseltjonna-csv/blob/master/parser/src/main/java/com/github/skjolber/stcsv/sa/DefaultStringArrayCsvReader.java#L65)
