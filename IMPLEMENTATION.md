@@ -209,10 +209,39 @@ to zero can be safely skipped. The mask can occasionally contain false-positives
 qualified field (this is unavoidable, but luckily rare). In this case the state machine knows it is inside a qualified
 field and correctly ignores the comma.
 
+Below is an abstraction of the vectorised parser's loop.
+```java
+do {
+    while (bitmask == 0L) {
+        strideStart = strideEnd;
+        strideEnd += STRIDE; // The stride is 64 characters for a 64-bit bitmask
+        bitmask = bitmask(s, strideStart);
+    }
+    shift = Long.numberOfTrailingZeros(bitmask);
+    bitmask &= bitmask - 1L; // Kernighan's trick
+    pos = strideStart + shift;
+
+    s = format.consume(s, getChar(pos));
+    if (isStartOfField(s)) {
+        // ...
+    }
+    if (isEndOfField(s)) {
+        // ...
+    }
+} while // ...
+```
+The parser maintains a 64-character window (stride). The bitmask tells which characters to process, and which not. Using
+Kernighan's trick the bitmask is zeroed one bit at a time. Please, note that `Long.numberOfTrailingZeros()` is a HotSpot
+intrinsic and the result is calculated in a couple of CPU cycles. 
+
 Experiments have shown that 50-70% of the characters in popular benchmarks are skipped, leading to a considerable
 performance gain.
 
-# Low-Level Optimizations
+# Low-Level Optimisations
+Maintaining state in a local variable or relying on the _implicit state_ on the execution stack is generally faster than
+querying a transition table for every character in the stream. `mneri/csv` tries to mitigate this architectural penalty
+with a series of low-level optimisations.
+
 
 
 # Performances
