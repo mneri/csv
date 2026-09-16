@@ -266,7 +266,7 @@ completely), and it is more likely to do so when its bytecode is small.
 
 `mneri/csv` structures hot methods to keep the common case short and inlineable, pushing uncommon code paths and error
 handling into a separate, cold method that is only reached when needed. An example of this can be found in `CsvReader`.
-Clients are expected to use this class following the idiomatic `hasNext()`-`next()` pattern.
+Clients are expected to use this class following the idiomatic `hasNext()`-`next()` pattern, as shown below.
 
 ```java
 try (CsvReader<Contact> reader = CsvReader.open(new File("contacts.csv"), StandardCharsets.UTF_8, new ContactDeserializer())) {
@@ -328,8 +328,9 @@ This technique is not limited to the `CsvReader` class, but used throughout the 
 ```
 `getChar()` only checks if the position is within range and immediately returns; if not, it delegates to `getChar2()`.
 The cold method performs further checks and might make calls to reload the buffer (`cb`). `getChar2()` is invoked 
-approximately once every `8,000` times. We need `getChar()` to be inlined, and to push the JIT compiler to do so we kept
-it as lean as possible. We are happy to pay for a full method call for `getChar2()` because it happens so infrequently.
+approximately once every `8,000` calls of `getChar()`. We need `getChar()` to be inlined, and to push the JIT compiler
+to do so we must keep it as lean as possible. We are happy to pay a full method call for `getChar2()` because it happens
+so infrequently.
 
 ## Branchless Column Mapping
 
