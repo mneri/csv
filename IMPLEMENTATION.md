@@ -197,7 +197,8 @@ private boolean isStartOfField(int state) {
 ```
 Action flags are checked using a simple bitwise `&` operation (`state & SFH`). If the flag is set, the parser shall take
 the corresponding action. _This separation allows different CSV dialects to be plugged seamlessly into high-performance
-parsing pipelines without duplicating stream-handling or optimization logic._
+parsing pipelines without duplicating stream-handling or optimization logic._ The parser components are deliberately
+kept stupid (and that's a compliment).
 
 # Vector API
 The [Vector API](https://openjdk.org/jeps/508) is an exciting feature of JDK 16 and above that allows engineers to
@@ -258,7 +259,7 @@ Maintaining the state in a local variable or relying on the execution stack to k
 every character in the stream. `mneri/csv` mitigagtes this architectural penalty with a series of low-level
 optimisations.
 
-## Facilitating Code Inlining
+## Facilitating Method Inlining
 Every time a method is invoked, the CPU must incur the cost of setting up a stack frame, jumping to a new memory
 address, and returning once finished. For small, frequently executed methods (like getters), the overhead can easily
 eclipse the actual execution time. The JIT compiler is capable of inlining short methods (removing the cost of the call
