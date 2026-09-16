@@ -126,10 +126,10 @@ private static final int[] DFA = {
    0,           0,           0,           0,           0,           0,                   0,0,
    0,           0,           0,           0,           0,           0,                   0,0};
 ```
-Rows represent the current state, and columns represent classes of characters. Each line has a comment on the right
-indicating the state, and the starting state is noted with an `*`. A line comment above the table labels the columns.
-The first column is labelled with `*`, meaning any character other than those listed in the subsequent columns. Next, in
-order, come the columns for `,`, `\r`, `\n`, `"`, and `EOF` (end of file).<br/>
+Rows represent the current state, and columns represent classes of characters. On the right-hand side of each row there
+is a comment indicating the state, and the starting state is noted with an `*`. A line comment above the table labels
+the columns. The first column is labelled with `*`, meaning any character other than those listed in the subsequent
+columns. Next, in order, come the columns for `,`, `\r`, `\n`, `"`, and `EOF` (end of file).<br/>
 States and actions appear in the code as three-letter mnemonics, shown in alphabetical order in the tables below.
 
 ```
@@ -209,9 +209,9 @@ For some time now, the Java C2 just-in-time compiler can transform tight loops i
 has always been somewhat unreliable. The Vector API gives engineers explicit control. If the Java runtime supports the
 Vector API, `mneri/csv` will leverage vector operations. If not, it will fall back to sequential operations.
 
-Rather than processing every character, `mneri/csv` uses vector operations to calculate a 64 bit mask. The mask
+Rather than processing every character, `mneri/csv` uses vector operations to calculate a 64-bit mask. The mask
 indicates which characters must be processed, and which can be ignored. In the example below, bits are set at key
-positions (such as the start of a field, commas, and new lines).
+positions (such as the start of a field, commas, and new-line characters).
 ```
 CSV chunk: a a a a , b b b b , c c c c \r\n
 Mask:      1 0 0 0 1 1 0 0 0 1 1 0 0 0 1 1
@@ -244,7 +244,7 @@ do {
 ```
 The parser maintains a 64-character window (stride). The bitmask tells which characters to process, and which not. Using
 Kernighan's trick the bitmask is zeroed one bit at a time. Please, note that `Long.numberOfTrailingZeros()` is a HotSpot
-intrinsic and the result is calculated in a couple of CPU cyclesto. 
+intrinsic and the result is calculated in a couple of CPU cycles. 
 
 Experiments have shown that 50-70% of the characters in popular benchmarks are skipped, leading to a considerable
 performance gain.
@@ -253,8 +253,6 @@ performance gain.
 Maintaining state in a local variable or relying on the _implicit state_ on the execution stack is generally faster than
 querying a transition table for every character in the stream. `mneri/csv` tries to mitigate this architectural penalty
 with a series of low-level optimisations.
-
-
 
 # Performances
 
