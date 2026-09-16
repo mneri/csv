@@ -102,7 +102,8 @@ start of a field (`START_FIELD` action).
 a [`Format`](https://github.com/mneri/csv/tree/master/src/main/java/me/mneri/csv/format) implementation.
 
 Transition tables are implemented using `int[]` and as explained before, states and actions are encoded together: the
-low 16 bits of each element encode the target state, while the high 16 bits encode the corresponding actions.
+low 16 bits of each element encode the target state, while the high 16 bits encode the corresponding actions. Below is
+the transition table for `Rfc4180StrictFormat`. While it looks complex, it is actually quite straightforward.
 
 ```java
 private static final int[] DFA = {
@@ -124,10 +125,36 @@ private static final int[] DFA = {
    0,                   0,                   0,                   0,                   0,                   0,                   0,0,
    0,                   0,                   0,                   0,                   0,                   0,                   0,0};
 ```
-States and actions appear in the code as three-letters mnemonics.
+Rows represent the current state, and columns represent classes of characters. A line comment above the table labels the
+columns. The first column is labelled with `*`, meaning any character other than those listed in the subsequent columns.
+Next, in order, come the columns for `,`, `\r`, `\n`, `"`, and `EOF` (end of file).<br/>
+States and actions appear in the code as three-letters mnemonics, shown in alphabetical order in the table below.
+
+```
+| STATE MNEMONIC  | MEANING                                | STATE MNEMONIC  | MEANING                                |
+|-----------------|----------------------------------------|-----------------|----------------------------------------|
+| BFF             | before field                           | ESC             | escape in qualified field              |
+| BFL             | before line                            | FLD             | field                                  |
+| CAR             | carriage return                        | QOT             | qualified field                        |
+| EOF             | end of file                            | SQE             | escape at the start of qualified field |
+| ERR             | error                                  | SQT             | start of qualified field               |
+
+
+| ACTION MNEMONIC | MEANING                                | ACTION MNEMONIC | MEANING                                |
+|-----------------|----------------------------------------|-----------------|----------------------------------------|
+| EFB             | end field at the previous position     | RMB             | remove the previous character          |
+| EFH             | end field at the current position      | RPL             | replay the last character              |
+| ELB             | end line at the previous position      | SFH             | start field at the current position    |
+| ELH             | end line at the current position       | STP             | stop processing                        |
+| ERH             | report error at this position          |                 |                                        |
+```
+
+Cells encode both the next state and the actions. For example the cell `BFF|EFH` encodes both the `BEFORE_FIELD` state
+and the _"end field at the current position"_ action. The first element in each cell is always the state.
+
 
 # Parsers
 
 # Footnotes
-[^1]: See, [ConfigurableCharConsumer.java](https://github.com/arnaudroger/SimpleFlatMapper/blob/0f0977f4c1e03cfeb3c4ca1dd5d4050462b01df8/lightningcsv/src/main/java/org/simpleflatmapper/lightningcsv/parser/ConfigurableCharConsumer.java#L204)
-[^2]: See, [DefaultStringArrayCsvReader.java](https://github.com/skjolber/sesseltjonna-csv/blob/master/parser/src/main/java/com/github/skjolber/stcsv/sa/DefaultStringArrayCsvReader.java#L65)
+[^1]: See `SimpleFlatMapper`'s [ConfigurableCharConsumer.java](https://github.com/arnaudroger/SimpleFlatMapper/blob/0f0977f4c1e03cfeb3c4ca1dd5d4050462b01df8/lightningcsv/src/main/java/org/simpleflatmapper/lightningcsv/parser/ConfigurableCharConsumer.java#L204)
+[^2]: See `sesseltjonna-csv`'s [DefaultStringArrayCsvReader.java](https://github.com/skjolber/sesseltjonna-csv/blob/master/parser/src/main/java/com/github/skjolber/stcsv/sa/DefaultStringArrayCsvReader.java#L65)
