@@ -1,16 +1,15 @@
 # Transition Tables
-
 The CSV grammar defines a [regular language](https://en.wikipedia.org/wiki/Regular_language). By definition, a regular
 language is the set of strings recognised by a
 [finite state automaton](https://en.wikipedia.org/wiki/Finite-state_machine) (FSA).
 
 Under the hood, most CSV parsers are finite state automata. For example, when a parser encounters a double quote
-character, it could transition to the `INSIDE_QUALIFIED_FIELD` state; a second double quote character could make the
-parser transition to the `END_QUALIFIED_FIELD` state. These states would be two of the finite number of states in the
-parser.
+character, it could transition to the `INSIDE_QUALIFIED_FIELD` state; a second double quote could make the parser
+transition to the `END_QUALIFIED_FIELD` state. These would be two of the finite number of states in the parser.
 
-There are many ways to implement a finite state automaton, one of which is to keep a variable with the current state. In
-[`SimpleFlatMapper`](https://github.com/arnaudroger/SimpleFlatMapper), author `arnaudroger` uses this technique.
+There are many ways to implement a finite state automaton, one of which is to keep the current state in a variable. In
+[`SimpleFlatMapper`](https://github.com/arnaudroger/SimpleFlatMapper), the author `arnaudroger` uses precisely this
+technique.
 
 ```java
 while (currentIndex < bufferSize) {
@@ -27,16 +26,16 @@ while (currentIndex < bufferSize) {
         // ...
         currentState = LAST_CHAR_WAS_CR;
         continue;
-    }
+    } // ...
 }
 ```
-In the code above, the state of the parser changes by updating the `currentState` variable and the change is driven by
-the flow of the code: a cascade of `if-else` statements decides what state is next. This technique is simple and very
-effective and, in fact, `SimpleFlatMapper` is one of the fastest Java CSV parsers in circulation.
+In the example above[^1], the state of the parser changes by updating `currentState` and the change is driven by the flow of
+the code: a cascade of `if-else` statements decides which state is next. This technique is simple and very effective
+and, in fact, `SimpleFlatMapper` is one of the fastest Java CSV parsers in circulation.
 
 `skjolberg `takes a slightly different approach. In [`sesseltjonna-csv`](https://github.com/skjolber/sesseltjonna-csv)
-the state is kept _implicit_. There is no `currentState` variable; instead, the execution point implicitly defines the
-state of the automaton.
+the state is kept _implicit_. There is no `currentState` variable; instead, the _execution point_ implicitly defines the
+state of the automaton[^2].
 
 ```java
 if (current[currentOffset] != quoteCharacter) {
@@ -78,10 +77,13 @@ represent states, columns represent input characters, and the intersection indic
 The transition table above can be used to parse a CSV file that is fully compliant with
 [RFC 4180](https://datatracker.ietf.org/doc/rfc4180/). The initial state is `BEFORE_LINE` (marked with `*`). Upon
 consuming the character `a` (first column), the state transitions to `FIELD`. From the `FIELD` state, a comma sets the
-transition to `BEFORE_FIELD`. Transitions continue until either the state `END_OF_FILE` or `ERROR` is reached. `ERROR`
-is called a _sink state_; once entered, it cannot be left because all outgoing transitions loop back to itself. _A
-transition table makes it easier to reason about the parser and document its behaviour._ All the states and transitions
-are laid out in a single point.
+transition to `BEFORE_FIELD` (the "cursor" is positioned before the _next_ field). Transitions continue until either the
+state `END_OF_FILE` or `ERROR` are reached. To be fully compliant with RFC 4180, the transition table must reject
+malformed inputs. In the example above, `ERROR` is a _sink state_; once entered, it cannot be left because all outgoing
+transitions loop back to itself.
+
+_A transition table makes it easier to reason about the parser and document its behaviour._ All the states and
+transitions are laid out clearly in a single point.
 
 When transitioning from one state to the next, the parser shall perform some actions. Actions can be encoded in the
 transition table along with the state changes. Below is an example for the `BEFORE_LINE` state shown above.
@@ -95,11 +97,12 @@ transition table along with the state changes. Below is an example for the `BEFO
 Consuming the character `a` while in state `BEFORE_LINE` makes the parser transition to the state `FIELD` and record the
 start of a field (`START_FIELD` action).
 
-`mneri/csv` supports many different CSV dialects, and for each one there is a separate transition table (in the code
-[they're called formats](https://github.com/mneri/csv/tree/master/src/main/java/me/mneri/csv/format)). Transition tables
-are implemented using `int[]` and as explained before, states and actions are encoded together: the low 16 bits of each
-element encode the target state, while the high 16 bits encode the corresponding actions. States and actions appear in
-the code as three-letters mnemonics.
+# Formats
+`mneri/csv` supports many different CSV dialects each one implemented as a _separate transition table_ and enclosed in
+a [`Format`](https://github.com/mneri/csv/tree/master/src/main/java/me/mneri/csv/format) implementation.
+
+Transition tables are implemented using `int[]` and as explained before, states and actions are encoded together: the
+low 16 bits of each element encode the target state, while the high 16 bits encode the corresponding actions.
 
 ```java
 private static final int[] DFA = {
@@ -121,3 +124,10 @@ private static final int[] DFA = {
    0,                   0,                   0,                   0,                   0,                   0,                   0,0,
    0,                   0,                   0,                   0,                   0,                   0,                   0,0};
 ```
+States and actions appear in the code as three-letters mnemonics.
+
+# Parsers
+
+# Footnotes
+[^1]: See, [ConfigurableCharConsumer.java](https://github.com/arnaudroger/SimpleFlatMapper/blob/0f0977f4c1e03cfeb3c4ca1dd5d4050462b01df8/lightningcsv/src/main/java/org/simpleflatmapper/lightningcsv/parser/ConfigurableCharConsumer.java#L204)
+[^2]: See, [DefaultStringArrayCsvReader.java](https://github.com/skjolber/sesseltjonna-csv/blob/master/parser/src/main/java/com/github/skjolber/stcsv/sa/DefaultStringArrayCsvReader.java#L65)
