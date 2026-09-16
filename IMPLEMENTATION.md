@@ -259,6 +259,7 @@ Maintaining the state in a local variable or relying on the execution stack to k
 every character in the stream. `mneri/csv` mitigagtes this architectural penalty with a series of low-level
 optimisations.
 
+# Other Low-Level Optimisations
 ## Facilitating Method Inlining
 Every time a method is invoked, the CPU must incur the cost of setting up a stack frame, jumping to a new memory
 address, and returning once finished. For small, frequently executed methods (like getters), the overhead can easily
