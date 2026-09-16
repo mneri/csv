@@ -283,7 +283,15 @@ However, branching introduces a major performance bottleneck due to possible mis
 predictors to guess execution paths and pre-fill the pipeline. In a CSV stream, this mechanism breaks down. Real-world
 data alternates unpredictably between long stretches of ordinary text and sparse structural markers like commas, quotes,
 and newlines. Because these tokens appear at irregular intervals depending on the data content, branch predictors cannot
-establish a reliable pattern. Every misprediction triggers a costly pipeline flush, stalling the CPU.
+establish a reliable pattern. Every misprediction triggers a costly pipeline flush, stalling the CPU. Luckily, we can
+remove most of these branches by changing our approach.
+
+Column mapping happens in two distinct steps. The first step uses a bitmask to quickly filter out ordinary text
+characters.
+
+We construct a 64-bit mask where individual bit positions correspond to the ASCII values of our control characters. For
+example, line feed (`\n`) has an ASCII code of `10`, so the 10th bit of the mask is set to `1`. Carriage return (`\r`)
+has an ASCII code of `13`, setting the 13th bit. The same goes for the characters `,` and `"`.
 
 # Other Low-Level Optimisations
 ## Facilitating Method Inlining
