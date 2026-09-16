@@ -205,9 +205,9 @@ access CPU vector operations.
 
 Vector operations (also known as SIMD, Single Instruction Multiple Data) can substantially speed up computation. Instead
 of processing values one-by-one in a sequential loop, the CPU operates on entire blocks of data in a single clock cycle.
-For some time now, the Java C2 just-in-time compiler can transform tight loops into vector operations, but the result
-has always been somewhat unreliable. The Vector API gives engineers explicit control. If the Java runtime supports the
-Vector API, `mneri/csv` will leverage vector operations. If not, it will fall back to sequential operations.
+For some time now, the Java C2 JIT compiler can transform tight loops into vector operations, but the result has always
+been somewhat unreliable. The Vector API gives engineers explicit control. If the Java runtime supports the Vector API,
+`mneri/csv` will leverage vector operations. If not, it will fall back to sequential operations.
 
 Rather than processing every character, `mneri/csv` uses vector operations to calculate a 64-bit mask. The mask
 indicates which characters must be processed, and which can be ignored. In the example below, bits are set at key
@@ -255,10 +255,25 @@ offset by the savings downstream.
 # Low-Level Optimisations
 Maintaining the state in a local variable or relying on the execution stack to keep an _implicit state_ (like
 `SimpleFlatMapper` and `sesseltjonna-csv` do respectively) is generally faster than querying a transition table for
-every character in the stream. `mneri/csv` tries to mitigate this architectural penalty with a series of low-level
+every character in the stream. `mneri/csv` mitigagtes this architectural penalty with a series of low-level
 optimisations.
 
 ## Facilitating Code Inlining
+Every time a method is invoked, the CPU must incur the cost of setting up a stack frame, jumping to a new memory
+address, and returning once finished. For small, frequently executed methods (like getters or validators), the overhead
+can easily eclipse the actual execution time. The JIT compiler is capable of inlining short methods (removing the cost
+of the call completely), and it is more likely to do so when its bytecode is small.
+
+`mneri/csv` structures hot methods to keep the common case short, pushing uncommon code paths and error handling into a
+separate, cold method that is only reached when needed. An example of this can be found in `CsvReader`. Clients are
+expected to use this class following the idiomatic pattern `hasNext()`/`next()`.
+
+```java
+while (reader.hasNext()) {
+    Contact contact = reader.next();
+    // ...
+}
+```
 
 
 ## Branchless Column Mapping
