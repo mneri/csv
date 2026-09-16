@@ -247,7 +247,9 @@ Kernighan's trick the bitmask is zeroed one bit at a time. Please, note that `Lo
 intrinsic and the result is calculated in a couple of CPU cycles. 
 
 Experiments have shown that 50-70% of the characters in popular benchmarks are skipped, leading to a considerable
-performance gain.
+performance gain. For example, in the popular benchmark `worldcitiespop.txt` out of the `129,212,350` total characters,
+the vectorised parser is able to safely ignore `72.80%` of them (`94,072,029` characters), processing only the remaining
+`35,140,321`.
 
 # Low-Level Optimisations
 Maintaining state in a local variable or relying on the _implicit state_ on the execution stack is generally faster than
