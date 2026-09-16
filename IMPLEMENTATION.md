@@ -256,7 +256,7 @@ offset by the savings downstream.
 # Low-Level Optimisations
 Maintaining the state in a local variable or relying on the execution stack to keep an _implicit state_ (like
 `SimpleFlatMapper` and `sesseltjonna-csv` do respectively) is generally faster than querying a transition table for
-every character in the stream. `mneri/csv` mitigagtes this architectural penalty with a series of low-level
+every character in the stream. `mneri/csv` mitigates this architectural penalty with a series of low-level
 optimisations.
 
 ## Branchless Column Mapping
@@ -310,7 +310,8 @@ public T next() throws IOException {
 ```
 Notice how `next()` performs only a single check (`state == ELEMENT_PREPARED`), skipping other sanity checks like
 verifying whether the reader is still open or trying to prepare an element on-the-fly. This minimalism keeps the
-bytecode footprint tiny. All the edge-cases are handled by the `next2()` method.
+bytecode footprint tiny and the method is very likely to be inlined in the caller. All the edge-cases are handled by the
+`next2()` method.
 
 ```java
   private T next2() throws IOException {
@@ -324,6 +325,7 @@ bytecode footprint tiny. All the edge-cases are handled by the `next2()` method.
       return deserializer.deserialize(line);
     }
 ```
+If the client behaves correctly, `next2()` will never be called.
 
 This technique is not limited to the `CsvReader` class, but used throughout the code. Another example can be found in
 `RandomAccessStream`.
