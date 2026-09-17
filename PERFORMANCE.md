@@ -1,23 +1,3 @@
-# Hardware Specifications
-| Category                | Specification                                          |
-|-------------------------|--------------------------------------------------------|
-| **Laptop**              | Dell XPS 13 7390                                       |
-| **CPU**                 | Intel Core i7-10510U                                   |
-| **CPU Cores / Threads** | 4 cores / 8 threads                                    |
-| **CPU Max Frequency**   | 4.9 GHz                                                |
-| **GPU**                 | Intel UHD Graphics (Comet Lake-U GT2)                  |
-| **RAM**                 | 16 GB LPDDR3-2133                                      |
-| **Storage**             | Toshiba KXG60ZNV512G NVMe SSD                          |
-| **Storage Capacity**    | 512.11 GB                                              |
-| **Storage Firmware**    | `10604107`                                             |
-| **Operating System**    | Ubuntu 26.04.1 LTS                                     |
-| **Kernel**              | Linux 7.0.0-31-generic                                 |
-| **Architecture**        | x86-64                                                 |
-| **SIMD Support**        | SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, FMA |
-| **Maximum SIMD Width**  | 256-bit (AVX2)                                         |
-| **Power Profile**       | Balanced                                               |
-| **Discrete GPU**        | None                                                   |
-
 # Benchmark Results
 | Dataset              | Rank | Benchmark                | Score (ms/op) |    Error |
 |----------------------|-----:|--------------------------|--------------:|---------:|
@@ -46,3 +26,22 @@
 |                      |    7 | `opencsv`                |    **69.657** |  ± 0.966 |
 |                      |    8 | `Apache Commons CSV`     |   **255.345** | ± 13.122 |
 
+# Hardware Specifications
+| Category                | Specification                                          |
+|-------------------------|--------------------------------------------------------|
+| **Laptop**              | Dell XPS 13 7390                                       |
+| **CPU**                 | Intel Core i7-10510U                                   |
+| **CPU Cores / Threads** | 4 cores / 8 threads                                    |
+| **CPU Max Frequency**   | 4.9 GHz                                                |
+| **GPU**                 | Intel UHD Graphics (Comet Lake-U GT2)                  |
+| **RAM**                 | 16 GB LPDDR3-2133                                      |
+| **Storage**             | Toshiba KXG60ZNV512G NVMe SSD                          |
+| **Storage Capacity**    | 512.11 GB                                              |
+| **Storage Firmware**    | `10604107`                                             |
+| **Operating System**    | Ubuntu 26.04.1 LTS                                     |
+| **Kernel**              | Linux 7.0.0-31-generic                                 |
+| **Architecture**        | x86-64                                                 |
+| **SIMD Support**        | SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, FMA |
+| **Maximum SIMD Width**  | 256-bit (AVX2)                                         |
+| **Power Profile**       | Balanced                                               |
+| **Discrete GPU**        | None                                                   |
