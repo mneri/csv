@@ -305,7 +305,7 @@ bypass: it immediately accepts any character above the comma's ASCII value (sinc
 while preventing high-value inputs from wrapping around and colliding with our bitmask.
 
 Once a character passes our filter, we know for a fact that it is one of our control tokens. Now, instead of a slow
-`switch` statement, we use a compressed _lookup table_ packed inside a single 64-bit constant.
+`switch` statement, we use a compressed _lookup table_ packed inside a single 64-bit constant. This is step two.
 
 ```java
 return (int) (0x00_00_20_20_00_00_98_05L >>> (c + 1)) & 0x7;
@@ -315,6 +315,11 @@ character, we store a 3-bit integer representing its column index in the transit
 `Rfc4180StrictFormat`, the character `\r` is mapped to column `2` of the transition table and `2` in binary is `010`.
 So, we place `010` in the map at position `13` in the bit map. `\n` is mapped to column `3` of the transition table and
 `3` in binary is `011`. So, we place `011` at position `10` in the bit map.
+
+By replacing a switch or `if`-`else` chain with a bit-packed map, we trade unpredictable control flow for pure register
+math. A conditional chain forces the CPU to guess execution paths, risking costly pipeline stalls every time a branch
+mispredicts. This new approach executes in fixed time with zero memory lookups, turning a branching bottleneck into a
+single, lightning-fast shift.
 
 # Other Low-Level Optimisations
 ## Facilitating Method Inlining
