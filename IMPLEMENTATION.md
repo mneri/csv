@@ -263,7 +263,7 @@ optimisations.
 As explained earlier, the parser decides its next state by querying a transition table. To do the lookup, it first needs
 to translate the current character into a column index.
 
-`Rfc4180StrictFormat` performs a mapping similar to the following:
+`Rfc4180StrictFormat` performs a mapping equivalent to the following:
 ```java
 if (c == ',') {
     return 1;
