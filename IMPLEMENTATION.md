@@ -255,11 +255,11 @@ code.
 Experiments have shown that 60-80% of the characters in popular benchmarks are skipped, leading to a considerable
 performance gain. Calculating the mask is not free, but the cost is very well offset by the savings downstream.
 
-| Benchmark                    | Size (Characters) | Processed (Characters) | Reduction |
-|------------------------------|-------------------|------------------------|-----------|
-| `maxmind/worldcitiespop.txt` | `129,212,350`     | `35,140,321`           | `72.80%`  |
-| `gtfs/trips.txt`             | `12,274,080`      | `1,715,898`            | `86.02%`  |
-| `gtfs/stop_times.txt`        | `253,105,642`     | `53,130,902`           | `79.01%`  |
+| Benchmark                    | Size (Characters) | Transition Table Lookups | Reduction |
+|------------------------------|-------------------|--------------------------|-----------|
+| `maxmind/worldcitiespop.txt` | `129,212,350`     | `35,140,321`             | `72.80%`  |
+| `gtfs/trips.txt`             | `12,274,080`      | `1,715,898`              | `86.02%`  |
+| `gtfs/stop_times.txt`        | `253,105,642`     | `53,130,902`             | `79.01%`  |
 
 # Low-Level Optimisations
 Maintaining the state in a local variable or relying on the execution stack to keep an _implicit state_ (like
