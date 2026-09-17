@@ -321,6 +321,21 @@ math. A conditional chain forces the CPU to guess execution paths, risking costl
 mispredicts. This new approach executes in fixed time with zero memory lookups, turning a branching bottleneck into a
 single, lightning-fast shift.
 
+## Super-Hot Path Shortcut
+_Table lookups can be cheap, but a single register comparison is certainly cheaper._ Profiling showed that the single
+most common transition is from state `FLD` (`FIELD`) and receiving an ordinary character. This case accounts for the
+majority of transitions of a typical CSV file, so it's been _hardcoded._
+
+```java
+public int consume(int s, int c) {
+    if (s == FLD && c > ',') {
+        return FLD;
+    }
+    // Otherwise, perform a table lookup.
+}
+```
+Everything else falls through a transition table lookup.
+
 # Other Low-Level Optimisations
 ## Facilitating Method Inlining
 Every time a method is invoked, the CPU must incur the cost of setting up a stack frame, jumping to a new memory
