@@ -247,13 +247,10 @@ do {
 ```
 The parser maintains a 64-character window (stride). The bitmask tells which characters to process, and which not. Using
 Kernighan's trick the bitmask is zeroed one bit at a time. Please, note that `Long.numberOfTrailingZeros()` is a HotSpot
-intrinsic and the result is calculated in a couple of CPU cycles. 
+intrinsic and the result is calculated in a couple of CPU cycles. Much like the sequential parser, the vector parser
+logic is incredibly simple and its main loop is about 30 lines of code.
 
-Much like the sequential parser, the vector parser logic is incredibly simple and its main loop is about 30 lines of
-code.
-
-Experiments have shown that 60-80% of the characters in popular benchmarks are skipped, leading to a considerable
-performance gain. Calculating the mask is not free, but the cost is very well offset by the savings downstream.
+Calculating the mask is not free, but the cost is very well offset by the savings downstream.
 
 | Benchmark                    | Size (Characters) | Transition Table Lookups | Reduction |
 |------------------------------|-------------------|--------------------------|-----------|
