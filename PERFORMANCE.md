@@ -1,0 +1,27 @@
+| Dataset              | Rank | Benchmark                | Score (ms/op) |    Error |
+|----------------------|-----:|--------------------------|--------------:|---------:|
+| **WORLD_CITIES_POP** |    1 | `sesseltjonna-csv`       |   **302.635** |  ± 1.895 |
+|                      |    2 | `mneri/csv` (Vector API) |   **474.905** | ± 14.964 |
+|                      |    3 | `SimpleFlatMapper`       |   **502.712** |  ± 8.108 |
+|                      |    4 | `FastCSV`                |   **505.844** |  ± 6.906 |
+|                      |    5 | `univocity-parsers`      |   **537.645** |  ± 8.434 |
+|                      |    6 | `mneri/csv` (Sequential) |   **598.214** |  ± 5.530 |
+|                      |    7 | `opencsv`                | **1,198.996** | ± 14.248 |
+|                      |    8 | `Apache Commons CSV`     | **2,723.402** | ± 13.448 |
+| **GTFS_STOP_TIMES**  |    1 | `sesseltjonna-csv`       |   **448.088** |  ± 3.640 |
+|                      |    2 | `SimpleFlatMapper`       |   **666.533** |  ± 7.048 |
+|                      |    3 | `mneri/csv` (Vector API) |   **674.093** |  ± 7.697 |
+|                      |    4 | `FastCSV`                |   **728.479** |  ± 8.795 |
+|                      |    5 | `univocity-parsers`      |   **733.639** | ± 10.656 |
+|                      |    6 | `mneri/csv` (Sequential) |   **882.787** | ± 10.441 |
+|                      |    7 | `opencsv`                | **1,545.418** | ± 20.339 |
+|                      |    8 | `Apache Commons CSV`     | **5,224.941** | ± 29.130 |
+| **GTFS_TRIPS**       |    1 | `sesseltjonna-csv`       |    **24.174** |  ± 0.274 |
+|                      |    2 | `SimpleFlatMapper`       |    **25.591** |  ± 0.518 |
+|                      |    3 | `mneri/csv` (Vector API) |    **27.791** |  ± 1.059 |
+|                      |    4 | `univocity-parsers`      |    **27.839** |  ± 0.421 |
+|                      |    5 | `FastCSV`                |    **33.321** |  ± 0.445 |
+|                      |    6 | `mneri/csv` (Sequential) |    **40.957** |  ± 0.494 |
+|                      |    7 | `opencsv`                |    **69.657** |  ± 0.966 |
+|                      |    8 | `Apache Commons CSV`     |   **255.345** | ± 13.122 |
+

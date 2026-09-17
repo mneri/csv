@@ -1,0 +1,1665 @@
+3:16:45 PM: Executing 'jmh'...
+
+
+> Task :compileJava
+
+> Task :compileGroovy NO-SOURCE
+> Task :processResources NO-SOURCE
+> Task :classes
+> Task :compileTestJava NO-SOURCE
+warning: using incubating module(s): jdk.incubator.vector
+1 warning
+> Task :compileTestGroovy
+> Task :processTestResources NO-SOURCE
+> Task :testClasses
+
+> Task :compileJmhJava
+
+> Task :compileJmhGroovy NO-SOURCE
+warning: using incubating module(s): jdk.incubator.vector
+warning: using incubating module(s): jdk.incubator.vector
+warning: using incubating module(s): jdk.incubator.vector
+warning: using incubating module(s): jdk.incubator.vector
+4 warnings
+> Task :processJmhResources
+> Task :jmhClasses
+
+> Task :jmhRunBytecodeGenerator
+Processing 56 classes from /home/mneri/Projects/csv/build/classes/java/jmh with "reflection" generator
+Writing out Java source to /home/mneri/Projects/csv/build/jmh-generated-sources and resources to /home/mneri/Projects/csv/build/jmh-generated-resources
+Processing 0 classes from /home/mneri/Projects/csv/build/classes/groovy/jmh with "reflection" generator
+Writing out Java source to /home/mneri/Projects/csv/build/jmh-generated-sources and resources to /home/mneri/Projects/csv/build/jmh-generated-resources
+Processing 0 classes from /home/mneri/Projects/csv/build/classes/java/test with "reflection" generator
+Writing out Java source to /home/mneri/Projects/csv/build/jmh-generated-sources and resources to /home/mneri/Projects/csv/build/jmh-generated-resources
+Processing 29 classes from /home/mneri/Projects/csv/build/classes/groovy/test with "reflection" generator
+Writing out Java source to /home/mneri/Projects/csv/build/jmh-generated-sources and resources to /home/mneri/Projects/csv/build/jmh-generated-resources
+
+> Task :jmhCompileGeneratedClasses
+warning: using incubating module(s): jdk.incubator.vector
+1 warning
+
+> Task :jmhJar
+
+> Task :jmh
+# JMH version: 1.37
+# VM version: JDK 21.0.12, OpenJDK 64-Bit Server VM, 21.0.12+8-1-26.04-Ubuntu
+# VM invoker: /usr/lib/jvm/java-21-openjdk-amd64/bin/java
+# VM options: -Dfile.encoding=UTF-8 -Djava.io.tmpdir=/home/mneri/Projects/csv/build/tmp/jmh -Duser.country=US -Duser.language=en -Duser.variant
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 6 iterations, 10 s each
+# Measurement: 6 iterations, 10 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: me.mneri.csv.benchmark.runner.CommonsCsvBenchmark.run
+# Parameters: (datasetName = WORLD_CITIES_POP)
+
+# Run progress: 0.00% complete, ETA 02:24:00
+# Fork: 1 of 3
+# Warmup Iteration   1: 2813.296 ms/op
+# Warmup Iteration   2: 2736.776 ms/op
+# Warmup Iteration   3: 2845.841 ms/op
+# Warmup Iteration   4: 2790.442 ms/op
+# Warmup Iteration   5: 2739.827 ms/op
+# Warmup Iteration   6: 2735.612 ms/op
+Iteration   1: 2715.184 ms/op
+Iteration   2: 2738.234 ms/op
+Iteration   3: 2714.197 ms/op
+Iteration   4: 2704.853 ms/op
+Iteration   5: 2725.009 ms/op
+Iteration   6: 2724.895 ms/op
+
+# Run progress: 1.39% complete, ETA 02:37:19
+# Fork: 2 of 3
+# Warmup Iteration   1: 2780.393 ms/op
+# Warmup Iteration   2: 2717.164 ms/op
+# Warmup Iteration   3: 2721.789 ms/op
+# Warmup Iteration   4: 2723.680 ms/op
+# Warmup Iteration   5: 2719.628 ms/op
+# Warmup Iteration   6: 2712.775 ms/op
+Iteration   1: 2721.638 ms/op
+Iteration   2: 2738.024 ms/op
+Iteration   3: 2704.175 ms/op
+Iteration   4: 2762.942 ms/op
+Iteration   5: 2727.750 ms/op
+Iteration   6: 2713.068 ms/op
+
+# Run progress: 2.78% complete, ETA 02:34:05
+# Fork: 3 of 3
+# Warmup Iteration   1: 2782.053 ms/op
+# Warmup Iteration   2: 2733.569 ms/op
+# Warmup Iteration   3: 2731.975 ms/op
+# Warmup Iteration   4: 2710.609 ms/op
+# Warmup Iteration   5: 2714.963 ms/op
+# Warmup Iteration   6: 2713.600 ms/op
+Iteration   1: 2712.150 ms/op
+Iteration   2: 2714.082 ms/op
+Iteration   3: 2729.579 ms/op
+Iteration   4: 2719.654 ms/op
+Iteration   5: 2717.485 ms/op
+Iteration   6: 2738.314 ms/op
+
+
+Result "me.mneri.csv.benchmark.runner.CommonsCsvBenchmark.run":
+  2723.402 ±(99.9%) 13.448 ms/op [Average]
+  (min, avg, max) = (2704.175, 2723.402, 2762.942), stdev = 14.389
+  CI (99.9%): [2709.954, 2736.850] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.12, OpenJDK 64-Bit Server VM, 21.0.12+8-1-26.04-Ubuntu
+# VM invoker: /usr/lib/jvm/java-21-openjdk-amd64/bin/java
+# VM options: -Dfile.encoding=UTF-8 -Djava.io.tmpdir=/home/mneri/Projects/csv/build/tmp/jmh -Duser.country=US -Duser.language=en -Duser.variant
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 6 iterations, 10 s each
+# Measurement: 6 iterations, 10 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: me.mneri.csv.benchmark.runner.CommonsCsvBenchmark.run
+# Parameters: (datasetName = GTFS_STOP_TIMES)
+
+# Run progress: 4.17% complete, ETA 02:31:31
+# Fork: 1 of 3
+# Warmup Iteration   1: 5504.882 ms/op
+# Warmup Iteration   2: 5243.299 ms/op
+# Warmup Iteration   3: 5178.562 ms/op
+# Warmup Iteration   4: 5227.079 ms/op
+# Warmup Iteration   5: 5209.795 ms/op
+# Warmup Iteration   6: 5190.683 ms/op
+Iteration   1: 5200.601 ms/op
+Iteration   2: 5201.839 ms/op
+Iteration   3: 5222.186 ms/op
+Iteration   4: 5213.069 ms/op
+Iteration   5: 5210.148 ms/op
+Iteration   6: 5214.031 ms/op
+
+# Run progress: 5.56% complete, ETA 02:27:52
+# Fork: 2 of 3
+# Warmup Iteration   1: 5496.458 ms/op
+# Warmup Iteration   2: 5235.257 ms/op
+# Warmup Iteration   3: 5245.885 ms/op
+# Warmup Iteration   4: 5249.217 ms/op
+# Warmup Iteration   5: 5234.900 ms/op
+# Warmup Iteration   6: 5223.032 ms/op
+Iteration   1: 5289.925 ms/op
+Iteration   2: 5283.703 ms/op
+Iteration   3: 5284.631 ms/op
+Iteration   4: 5238.798 ms/op
+Iteration   5: 5232.528 ms/op
+Iteration   6: 5229.204 ms/op
+
+# Run progress: 6.94% complete, ETA 02:24:52
+# Fork: 3 of 3
+# Warmup Iteration   1: 5364.725 ms/op
+# Warmup Iteration   2: 5196.965 ms/op
+# Warmup Iteration   3: 5221.310 ms/op
+# Warmup Iteration   4: 5181.171 ms/op
+# Warmup Iteration   5: 5192.087 ms/op
+# Warmup Iteration   6: 5224.443 ms/op
+Iteration   1: 5213.503 ms/op
+Iteration   2: 5199.103 ms/op
+Iteration   3: 5226.962 ms/op
+Iteration   4: 5199.704 ms/op
+Iteration   5: 5187.304 ms/op
+Iteration   6: 5201.696 ms/op
+
+
+Result "me.mneri.csv.benchmark.runner.CommonsCsvBenchmark.run":
+  5224.941 ±(99.9%) 29.130 ms/op [Average]
+  (min, avg, max) = (5187.304, 5224.941, 5289.925), stdev = 31.169
+  CI (99.9%): [5195.811, 5254.071] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.12, OpenJDK 64-Bit Server VM, 21.0.12+8-1-26.04-Ubuntu
+# VM invoker: /usr/lib/jvm/java-21-openjdk-amd64/bin/java
+# VM options: -Dfile.encoding=UTF-8 -Djava.io.tmpdir=/home/mneri/Projects/csv/build/tmp/jmh -Duser.country=US -Duser.language=en -Duser.variant
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 6 iterations, 10 s each
+# Measurement: 6 iterations, 10 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: me.mneri.csv.benchmark.runner.CommonsCsvBenchmark.run
+# Parameters: (datasetName = GTFS_TRIPS)
+
+# Run progress: 8.33% complete, ETA 02:21:56
+# Fork: 1 of 3
+# Warmup Iteration   1: 249.364 ms/op
+# Warmup Iteration   2: 244.292 ms/op
+# Warmup Iteration   3: 243.524 ms/op
+# Warmup Iteration   4: 244.039 ms/op
+# Warmup Iteration   5: 242.804 ms/op
+# Warmup Iteration   6: 242.853 ms/op
+Iteration   1: 243.075 ms/op
+Iteration   2: 242.924 ms/op
+Iteration   3: 242.923 ms/op
+Iteration   4: 243.718 ms/op
+Iteration   5: 244.324 ms/op
+Iteration   6: 244.842 ms/op
+
+# Run progress: 9.72% complete, ETA 02:18:42
+# Fork: 2 of 3
+# Warmup Iteration   1: 264.278 ms/op
+# Warmup Iteration   2: 269.355 ms/op
+# Warmup Iteration   3: 261.262 ms/op
+# Warmup Iteration   4: 271.667 ms/op
+# Warmup Iteration   5: 261.465 ms/op
+# Warmup Iteration   6: 261.390 ms/op
+Iteration   1: 261.089 ms/op
+Iteration   2: 273.584 ms/op
+Iteration   3: 277.604 ms/op
+Iteration   4: 275.412 ms/op
+Iteration   5: 278.883 ms/op
+Iteration   6: 276.189 ms/op
+
+# Run progress: 11.11% complete, ETA 02:15:50
+# Fork: 3 of 3
+# Warmup Iteration   1: 253.043 ms/op
+# Warmup Iteration   2: 248.007 ms/op
+# Warmup Iteration   3: 249.472 ms/op
+# Warmup Iteration   4: 247.745 ms/op
+# Warmup Iteration   5: 248.167 ms/op
+# Warmup Iteration   6: 248.234 ms/op
+Iteration   1: 248.812 ms/op
+Iteration   2: 248.439 ms/op
+Iteration   3: 248.511 ms/op
+Iteration   4: 248.403 ms/op
+Iteration   5: 248.603 ms/op
+Iteration   6: 248.870 ms/op
+
+
+Result "me.mneri.csv.benchmark.runner.CommonsCsvBenchmark.run":
+  255.345 ±(99.9%) 13.122 ms/op [Average]
+  (min, avg, max) = (242.923, 255.345, 278.883), stdev = 14.040
+  CI (99.9%): [242.223, 268.466] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.12, OpenJDK 64-Bit Server VM, 21.0.12+8-1-26.04-Ubuntu
+# VM invoker: /usr/lib/jvm/java-21-openjdk-amd64/bin/java
+# VM options: -Dfile.encoding=UTF-8 -Djava.io.tmpdir=/home/mneri/Projects/csv/build/tmp/jmh -Duser.country=US -Duser.language=en -Duser.variant
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 6 iterations, 10 s each
+# Measurement: 6 iterations, 10 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: me.mneri.csv.benchmark.runner.FastCsvBenchmark.run
+# Parameters: (datasetName = WORLD_CITIES_POP)
+
+# Run progress: 12.50% complete, ETA 02:13:08
+# Fork: 1 of 3
+# Warmup Iteration   1: 528.097 ms/op
+# Warmup Iteration   2: 502.085 ms/op
+# Warmup Iteration   3: 509.780 ms/op
+# Warmup Iteration   4: 519.465 ms/op
+# Warmup Iteration   5: 521.758 ms/op
+# Warmup Iteration   6: 509.830 ms/op
+Iteration   1: 502.638 ms/op
+Iteration   2: 508.814 ms/op
+Iteration   3: 511.431 ms/op
+Iteration   4: 513.223 ms/op
+Iteration   5: 515.589 ms/op
+Iteration   6: 515.474 ms/op
+
+# Run progress: 13.89% complete, ETA 02:10:37
+# Fork: 2 of 3
+# Warmup Iteration   1: 523.386 ms/op
+# Warmup Iteration   2: 513.005 ms/op
+# Warmup Iteration   3: 502.163 ms/op
+# Warmup Iteration   4: 498.298 ms/op
+# Warmup Iteration   5: 509.605 ms/op
+# Warmup Iteration   6: 512.655 ms/op
+Iteration   1: 494.441 ms/op
+Iteration   2: 496.030 ms/op
+Iteration   3: 494.969 ms/op
+Iteration   4: 497.600 ms/op
+Iteration   5: 508.187 ms/op
+Iteration   6: 502.016 ms/op
+
+# Run progress: 15.28% complete, ETA 02:08:16
+# Fork: 3 of 3
+# Warmup Iteration   1: 517.806 ms/op
+# Warmup Iteration   2: 505.726 ms/op
+# Warmup Iteration   3: 505.865 ms/op
+# Warmup Iteration   4: 503.525 ms/op
+# Warmup Iteration   5: 511.421 ms/op
+# Warmup Iteration   6: 494.775 ms/op
+Iteration   1: 500.806 ms/op
+Iteration   2: 498.815 ms/op
+Iteration   3: 508.722 ms/op
+Iteration   4: 512.478 ms/op
+Iteration   5: 511.450 ms/op
+Iteration   6: 512.510 ms/op
+
+
+Result "me.mneri.csv.benchmark.runner.FastCsvBenchmark.run":
+  505.844 ±(99.9%) 6.906 ms/op [Average]
+  (min, avg, max) = (494.441, 505.844, 515.589), stdev = 7.389
+  CI (99.9%): [498.938, 512.750] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.12, OpenJDK 64-Bit Server VM, 21.0.12+8-1-26.04-Ubuntu
+# VM invoker: /usr/lib/jvm/java-21-openjdk-amd64/bin/java
+# VM options: -Dfile.encoding=UTF-8 -Djava.io.tmpdir=/home/mneri/Projects/csv/build/tmp/jmh -Duser.country=US -Duser.language=en -Duser.variant
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 6 iterations, 10 s each
+# Measurement: 6 iterations, 10 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: me.mneri.csv.benchmark.runner.FastCsvBenchmark.run
+# Parameters: (datasetName = GTFS_STOP_TIMES)
+
+# Run progress: 16.67% complete, ETA 02:05:56
+# Fork: 1 of 3
+# Warmup Iteration   1: 755.605 ms/op
+# Warmup Iteration   2: 735.080 ms/op
+# Warmup Iteration   3: 733.360 ms/op
+# Warmup Iteration   4: 729.493 ms/op
+# Warmup Iteration   5: 716.129 ms/op
+# Warmup Iteration   6: 731.602 ms/op
+Iteration   1: 716.409 ms/op
+Iteration   2: 726.241 ms/op
+Iteration   3: 747.008 ms/op
+Iteration   4: 725.427 ms/op
+Iteration   5: 739.018 ms/op
+Iteration   6: 735.831 ms/op
+
+# Run progress: 18.06% complete, ETA 02:03:38
+# Fork: 2 of 3
+# Warmup Iteration   1: 764.213 ms/op
+# Warmup Iteration   2: 736.977 ms/op
+# Warmup Iteration   3: 743.856 ms/op
+# Warmup Iteration   4: 723.621 ms/op
+# Warmup Iteration   5: 745.070 ms/op
+# Warmup Iteration   6: 744.025 ms/op
+Iteration   1: 732.537 ms/op
+Iteration   2: 715.482 ms/op
+Iteration   3: 741.897 ms/op
+Iteration   4: 726.493 ms/op
+Iteration   5: 722.228 ms/op
+Iteration   6: 722.510 ms/op
+
+# Run progress: 19.44% complete, ETA 02:01:24
+# Fork: 3 of 3
+# Warmup Iteration   1: 748.237 ms/op
+# Warmup Iteration   2: 729.633 ms/op
+# Warmup Iteration   3: 727.081 ms/op
+# Warmup Iteration   4: 724.896 ms/op
+# Warmup Iteration   5: 721.154 ms/op
+# Warmup Iteration   6: 733.438 ms/op
+Iteration   1: 737.807 ms/op
+Iteration   2: 724.724 ms/op
+Iteration   3: 736.076 ms/op
+Iteration   4: 721.838 ms/op
+Iteration   5: 726.223 ms/op
+Iteration   6: 714.876 ms/op
+
+
+Result "me.mneri.csv.benchmark.runner.FastCsvBenchmark.run":
+  728.479 ±(99.9%) 8.795 ms/op [Average]
+  (min, avg, max) = (714.876, 728.479, 747.008), stdev = 9.411
+  CI (99.9%): [719.684, 737.275] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.12, OpenJDK 64-Bit Server VM, 21.0.12+8-1-26.04-Ubuntu
+# VM invoker: /usr/lib/jvm/java-21-openjdk-amd64/bin/java
+# VM options: -Dfile.encoding=UTF-8 -Djava.io.tmpdir=/home/mneri/Projects/csv/build/tmp/jmh -Duser.country=US -Duser.language=en -Duser.variant
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 6 iterations, 10 s each
+# Measurement: 6 iterations, 10 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: me.mneri.csv.benchmark.runner.FastCsvBenchmark.run
+# Parameters: (datasetName = GTFS_TRIPS)
+
+# Run progress: 20.83% complete, ETA 01:59:11
+# Fork: 1 of 3
+# Warmup Iteration   1: 34.824 ms/op
+# Warmup Iteration   2: 33.739 ms/op
+# Warmup Iteration   3: 33.902 ms/op
+# Warmup Iteration   4: 33.299 ms/op
+# Warmup Iteration   5: 33.758 ms/op
+# Warmup Iteration   6: 33.758 ms/op
+Iteration   1: 34.230 ms/op
+Iteration   2: 33.369 ms/op
+Iteration   3: 33.043 ms/op
+Iteration   4: 34.194 ms/op
+Iteration   5: 33.542 ms/op
+Iteration   6: 34.061 ms/op
+
+# Run progress: 22.22% complete, ETA 01:56:48
+# Fork: 2 of 3
+# Warmup Iteration   1: 33.763 ms/op
+# Warmup Iteration   2: 33.010 ms/op
+# Warmup Iteration   3: 33.267 ms/op
+# Warmup Iteration   4: 33.071 ms/op
+# Warmup Iteration   5: 33.251 ms/op
+# Warmup Iteration   6: 33.020 ms/op
+Iteration   1: 33.043 ms/op
+Iteration   2: 33.133 ms/op
+Iteration   3: 32.709 ms/op
+Iteration   4: 32.809 ms/op
+Iteration   5: 32.903 ms/op
+Iteration   6: 32.810 ms/op
+
+# Run progress: 23.61% complete, ETA 01:54:27
+# Fork: 3 of 3
+# Warmup Iteration   1: 34.249 ms/op
+# Warmup Iteration   2: 34.033 ms/op
+# Warmup Iteration   3: 33.709 ms/op
+# Warmup Iteration   4: 33.698 ms/op
+# Warmup Iteration   5: 32.693 ms/op
+# Warmup Iteration   6: 33.444 ms/op
+Iteration   1: 33.495 ms/op
+Iteration   2: 32.865 ms/op
+Iteration   3: 33.336 ms/op
+Iteration   4: 33.495 ms/op
+Iteration   5: 33.625 ms/op
+Iteration   6: 33.114 ms/op
+
+
+Result "me.mneri.csv.benchmark.runner.FastCsvBenchmark.run":
+  33.321 ±(99.9%) 0.445 ms/op [Average]
+  (min, avg, max) = (32.709, 33.321, 34.230), stdev = 0.476
+  CI (99.9%): [32.876, 33.766] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.12, OpenJDK 64-Bit Server VM, 21.0.12+8-1-26.04-Ubuntu
+# VM invoker: /usr/lib/jvm/java-21-openjdk-amd64/bin/java
+# VM options: -Dfile.encoding=UTF-8 -Djava.io.tmpdir=/home/mneri/Projects/csv/build/tmp/jmh -Duser.country=US -Duser.language=en -Duser.variant
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 6 iterations, 10 s each
+# Measurement: 6 iterations, 10 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: me.mneri.csv.benchmark.runner.MneriCsvBenchmark.Sequential.run
+# Parameters: (datasetName = WORLD_CITIES_POP)
+
+# Run progress: 25.00% complete, ETA 01:52:09
+# Fork: 1 of 3
+# Warmup Iteration   1: 618.078 ms/op
+# Warmup Iteration   2: 596.509 ms/op
+# Warmup Iteration   3: 601.144 ms/op
+# Warmup Iteration   4: 595.175 ms/op
+# Warmup Iteration   5: 601.252 ms/op
+# Warmup Iteration   6: 605.231 ms/op
+Iteration   1: 607.615 ms/op
+Iteration   2: 604.019 ms/op
+Iteration   3: 601.611 ms/op
+Iteration   4: 605.505 ms/op
+Iteration   5: 595.628 ms/op
+Iteration   6: 594.334 ms/op
+
+# Run progress: 26.39% complete, ETA 01:50:00
+# Fork: 2 of 3
+# Warmup Iteration   1: 614.415 ms/op
+# Warmup Iteration   2: 598.863 ms/op
+# Warmup Iteration   3: 605.196 ms/op
+# Warmup Iteration   4: 589.785 ms/op
+# Warmup Iteration   5: 591.958 ms/op
+# Warmup Iteration   6: 589.756 ms/op
+Iteration   1: 592.647 ms/op
+Iteration   2: 599.072 ms/op
+Iteration   3: 608.859 ms/op
+Iteration   4: 601.126 ms/op
+Iteration   5: 594.388 ms/op
+Iteration   6: 593.794 ms/op
+
+# Run progress: 27.78% complete, ETA 01:47:49
+# Fork: 3 of 3
+# Warmup Iteration   1: 611.910 ms/op
+# Warmup Iteration   2: 592.858 ms/op
+# Warmup Iteration   3: 597.632 ms/op
+# Warmup Iteration   4: 592.674 ms/op
+# Warmup Iteration   5: 592.274 ms/op
+# Warmup Iteration   6: 592.641 ms/op
+Iteration   1: 592.970 ms/op
+Iteration   2: 592.133 ms/op
+Iteration   3: 604.588 ms/op
+Iteration   4: 595.909 ms/op
+Iteration   5: 589.955 ms/op
+Iteration   6: 593.692 ms/op
+
+
+Result "me.mneri.csv.benchmark.runner.MneriCsvBenchmark.Sequential.run":
+  598.214 ±(99.9%) 5.530 ms/op [Average]
+  (min, avg, max) = (589.955, 598.214, 608.859), stdev = 5.917
+  CI (99.9%): [592.683, 603.744] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.12, OpenJDK 64-Bit Server VM, 21.0.12+8-1-26.04-Ubuntu
+# VM invoker: /usr/lib/jvm/java-21-openjdk-amd64/bin/java
+# VM options: -Dfile.encoding=UTF-8 -Djava.io.tmpdir=/home/mneri/Projects/csv/build/tmp/jmh -Duser.country=US -Duser.language=en -Duser.variant
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 6 iterations, 10 s each
+# Measurement: 6 iterations, 10 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: me.mneri.csv.benchmark.runner.MneriCsvBenchmark.Sequential.run
+# Parameters: (datasetName = GTFS_STOP_TIMES)
+
+# Run progress: 29.17% complete, ETA 01:45:39
+# Fork: 1 of 3
+# Warmup Iteration   1: 897.464 ms/op
+# Warmup Iteration   2: 879.737 ms/op
+# Warmup Iteration   3: 890.951 ms/op
+# Warmup Iteration   4: 892.468 ms/op
+# Warmup Iteration   5: 890.177 ms/op
+# Warmup Iteration   6: 883.474 ms/op
+Iteration   1: 863.588 ms/op
+Iteration   2: 870.117 ms/op
+Iteration   3: 880.781 ms/op
+Iteration   4: 884.326 ms/op
+Iteration   5: 888.107 ms/op
+Iteration   6: 878.894 ms/op
+
+# Run progress: 30.56% complete, ETA 01:43:42
+# Fork: 2 of 3
+# Warmup Iteration   1: 913.332 ms/op
+# Warmup Iteration   2: 868.878 ms/op
+# Warmup Iteration   3: 874.161 ms/op
+# Warmup Iteration   4: 874.116 ms/op
+# Warmup Iteration   5: 894.512 ms/op
+# Warmup Iteration   6: 891.005 ms/op
+Iteration   1: 897.222 ms/op
+Iteration   2: 884.741 ms/op
+Iteration   3: 893.529 ms/op
+Iteration   4: 882.478 ms/op
+Iteration   5: 871.058 ms/op
+Iteration   6: 865.410 ms/op
+
+# Run progress: 31.94% complete, ETA 01:41:42
+# Fork: 3 of 3
+# Warmup Iteration   1: 923.903 ms/op
+# Warmup Iteration   2: 873.376 ms/op
+# Warmup Iteration   3: 871.604 ms/op
+# Warmup Iteration   4: 895.496 ms/op
+# Warmup Iteration   5: 882.717 ms/op
+# Warmup Iteration   6: 880.126 ms/op
+Iteration   1: 882.070 ms/op
+Iteration   2: 886.024 ms/op
+Iteration   3: 896.901 ms/op
+Iteration   4: 897.091 ms/op
+Iteration   5: 897.297 ms/op
+Iteration   6: 870.534 ms/op
+
+
+Result "me.mneri.csv.benchmark.runner.MneriCsvBenchmark.Sequential.run":
+  882.787 ±(99.9%) 10.441 ms/op [Average]
+  (min, avg, max) = (863.588, 882.787, 897.297), stdev = 11.172
+  CI (99.9%): [872.346, 893.228] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.12, OpenJDK 64-Bit Server VM, 21.0.12+8-1-26.04-Ubuntu
+# VM invoker: /usr/lib/jvm/java-21-openjdk-amd64/bin/java
+# VM options: -Dfile.encoding=UTF-8 -Djava.io.tmpdir=/home/mneri/Projects/csv/build/tmp/jmh -Duser.country=US -Duser.language=en -Duser.variant
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 6 iterations, 10 s each
+# Measurement: 6 iterations, 10 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: me.mneri.csv.benchmark.runner.MneriCsvBenchmark.Sequential.run
+# Parameters: (datasetName = GTFS_TRIPS)
+
+# Run progress: 33.33% complete, ETA 01:39:43
+# Fork: 1 of 3
+# Warmup Iteration   1: 41.796 ms/op
+# Warmup Iteration   2: 41.441 ms/op
+# Warmup Iteration   3: 40.755 ms/op
+# Warmup Iteration   4: 40.575 ms/op
+# Warmup Iteration   5: 40.500 ms/op
+# Warmup Iteration   6: 40.375 ms/op
+Iteration   1: 41.874 ms/op
+Iteration   2: 41.895 ms/op
+Iteration   3: 41.326 ms/op
+Iteration   4: 40.219 ms/op
+Iteration   5: 40.838 ms/op
+Iteration   6: 40.980 ms/op
+
+# Run progress: 34.72% complete, ETA 01:37:30
+# Fork: 2 of 3
+# Warmup Iteration   1: 41.986 ms/op
+# Warmup Iteration   2: 40.265 ms/op
+# Warmup Iteration   3: 40.275 ms/op
+# Warmup Iteration   4: 40.866 ms/op
+# Warmup Iteration   5: 40.551 ms/op
+# Warmup Iteration   6: 40.431 ms/op
+Iteration   1: 41.084 ms/op
+Iteration   2: 40.931 ms/op
+Iteration   3: 40.365 ms/op
+Iteration   4: 40.464 ms/op
+Iteration   5: 40.429 ms/op
+Iteration   6: 40.748 ms/op
+
+# Run progress: 36.11% complete, ETA 01:35:19
+# Fork: 3 of 3
+# Warmup Iteration   1: 42.398 ms/op
+# Warmup Iteration   2: 40.882 ms/op
+# Warmup Iteration   3: 40.444 ms/op
+# Warmup Iteration   4: 40.576 ms/op
+# Warmup Iteration   5: 42.184 ms/op
+# Warmup Iteration   6: 40.319 ms/op
+Iteration   1: 40.244 ms/op
+Iteration   2: 40.602 ms/op
+Iteration   3: 41.134 ms/op
+Iteration   4: 41.025 ms/op
+Iteration   5: 41.336 ms/op
+Iteration   6: 41.725 ms/op
+
+
+Result "me.mneri.csv.benchmark.runner.MneriCsvBenchmark.Sequential.run":
+  40.957 ±(99.9%) 0.494 ms/op [Average]
+  (min, avg, max) = (40.219, 40.957, 41.895), stdev = 0.529
+  CI (99.9%): [40.463, 41.451] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.12, OpenJDK 64-Bit Server VM, 21.0.12+8-1-26.04-Ubuntu
+# VM invoker: /usr/lib/jvm/java-21-openjdk-amd64/bin/java
+# VM options: --add-modules=jdk.incubator.vector -Dfile.encoding=UTF-8 -Djava.io.tmpdir=/home/mneri/Projects/csv/build/tmp/jmh -Duser.country=US -Duser.language=en -Duser.variant
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 6 iterations, 10 s each
+# Measurement: 6 iterations, 10 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: me.mneri.csv.benchmark.runner.MneriCsvBenchmark.Vector.run
+# Parameters: (datasetName = WORLD_CITIES_POP)
+
+# Run progress: 37.50% complete, ETA 01:33:08
+# Fork: 1 of 3
+WARNING: Using incubator modules: jdk.incubator.vector
+# Warmup Iteration   1: 472.460 ms/op
+# Warmup Iteration   2: 458.491 ms/op
+# Warmup Iteration   3: 463.367 ms/op
+# Warmup Iteration   4: 454.246 ms/op
+# Warmup Iteration   5: 456.836 ms/op
+# Warmup Iteration   6: 456.931 ms/op
+Iteration   1: 451.582 ms/op
+Iteration   2: 454.736 ms/op
+Iteration   3: 457.371 ms/op
+Iteration   4: 451.860 ms/op
+Iteration   5: 451.283 ms/op
+Iteration   6: 453.582 ms/op
+
+# Run progress: 38.89% complete, ETA 01:31:03
+# Fork: 2 of 3
+WARNING: Using incubator modules: jdk.incubator.vector
+# Warmup Iteration   1: 503.251 ms/op
+# Warmup Iteration   2: 491.338 ms/op
+# Warmup Iteration   3: 491.398 ms/op
+# Warmup Iteration   4: 494.410 ms/op
+# Warmup Iteration   5: 484.813 ms/op
+# Warmup Iteration   6: 487.582 ms/op
+Iteration   1: 484.701 ms/op
+Iteration   2: 485.139 ms/op
+Iteration   3: 488.669 ms/op
+Iteration   4: 494.221 ms/op
+Iteration   5: 491.157 ms/op
+Iteration   6: 484.018 ms/op
+
+# Run progress: 40.28% complete, ETA 01:28:58
+# Fork: 3 of 3
+WARNING: Using incubator modules: jdk.incubator.vector
+# Warmup Iteration   1: 498.602 ms/op
+# Warmup Iteration   2: 487.650 ms/op
+# Warmup Iteration   3: 484.969 ms/op
+# Warmup Iteration   4: 483.090 ms/op
+# Warmup Iteration   5: 489.096 ms/op
+# Warmup Iteration   6: 489.667 ms/op
+Iteration   1: 484.747 ms/op
+Iteration   2: 483.423 ms/op
+Iteration   3: 481.695 ms/op
+Iteration   4: 480.373 ms/op
+Iteration   5: 485.766 ms/op
+Iteration   6: 483.970 ms/op
+
+
+Result "me.mneri.csv.benchmark.runner.MneriCsvBenchmark.Vector.run":
+  474.905 ±(99.9%) 14.964 ms/op [Average]
+  (min, avg, max) = (451.283, 474.905, 494.221), stdev = 16.011
+  CI (99.9%): [459.942, 489.869] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.12, OpenJDK 64-Bit Server VM, 21.0.12+8-1-26.04-Ubuntu
+# VM invoker: /usr/lib/jvm/java-21-openjdk-amd64/bin/java
+# VM options: --add-modules=jdk.incubator.vector -Dfile.encoding=UTF-8 -Djava.io.tmpdir=/home/mneri/Projects/csv/build/tmp/jmh -Duser.country=US -Duser.language=en -Duser.variant
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 6 iterations, 10 s each
+# Measurement: 6 iterations, 10 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: me.mneri.csv.benchmark.runner.MneriCsvBenchmark.Vector.run
+# Parameters: (datasetName = GTFS_STOP_TIMES)
+
+# Run progress: 41.67% complete, ETA 01:26:51
+# Fork: 1 of 3
+WARNING: Using incubator modules: jdk.incubator.vector
+# Warmup Iteration   1: 695.770 ms/op
+# Warmup Iteration   2: 678.630 ms/op
+# Warmup Iteration   3: 673.897 ms/op
+# Warmup Iteration   4: 691.571 ms/op
+# Warmup Iteration   5: 669.147 ms/op
+# Warmup Iteration   6: 680.776 ms/op
+Iteration   1: 680.825 ms/op
+Iteration   2: 676.420 ms/op
+Iteration   3: 672.295 ms/op
+Iteration   4: 681.100 ms/op
+Iteration   5: 672.856 ms/op
+Iteration   6: 678.019 ms/op
+
+# Run progress: 43.06% complete, ETA 01:24:45
+# Fork: 2 of 3
+WARNING: Using incubator modules: jdk.incubator.vector
+# Warmup Iteration   1: 694.126 ms/op
+# Warmup Iteration   2: 680.229 ms/op
+# Warmup Iteration   3: 665.229 ms/op
+# Warmup Iteration   4: 689.705 ms/op
+# Warmup Iteration   5: 679.320 ms/op
+# Warmup Iteration   6: 679.313 ms/op
+Iteration   1: 684.335 ms/op
+Iteration   2: 679.171 ms/op
+Iteration   3: 675.719 ms/op
+Iteration   4: 687.369 ms/op
+Iteration   5: 667.556 ms/op
+Iteration   6: 684.144 ms/op
+
+# Run progress: 44.44% complete, ETA 01:22:41
+# Fork: 3 of 3
+WARNING: Using incubator modules: jdk.incubator.vector
+# Warmup Iteration   1: 675.889 ms/op
+# Warmup Iteration   2: 671.338 ms/op
+# Warmup Iteration   3: 662.081 ms/op
+# Warmup Iteration   4: 666.956 ms/op
+# Warmup Iteration   5: 664.006 ms/op
+# Warmup Iteration   6: 668.242 ms/op
+Iteration   1: 667.320 ms/op
+Iteration   2: 656.001 ms/op
+Iteration   3: 669.154 ms/op
+Iteration   4: 663.241 ms/op
+Iteration   5: 666.421 ms/op
+Iteration   6: 671.722 ms/op
+
+
+Result "me.mneri.csv.benchmark.runner.MneriCsvBenchmark.Vector.run":
+  674.093 ±(99.9%) 7.697 ms/op [Average]
+  (min, avg, max) = (656.001, 674.093, 687.369), stdev = 8.236
+  CI (99.9%): [666.395, 681.790] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.12, OpenJDK 64-Bit Server VM, 21.0.12+8-1-26.04-Ubuntu
+# VM invoker: /usr/lib/jvm/java-21-openjdk-amd64/bin/java
+# VM options: --add-modules=jdk.incubator.vector -Dfile.encoding=UTF-8 -Djava.io.tmpdir=/home/mneri/Projects/csv/build/tmp/jmh -Duser.country=US -Duser.language=en -Duser.variant
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 6 iterations, 10 s each
+# Measurement: 6 iterations, 10 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: me.mneri.csv.benchmark.runner.MneriCsvBenchmark.Vector.run
+# Parameters: (datasetName = GTFS_TRIPS)
+
+# Run progress: 45.83% complete, ETA 01:20:37
+# Fork: 1 of 3
+WARNING: Using incubator modules: jdk.incubator.vector
+# Warmup Iteration   1: 29.965 ms/op
+# Warmup Iteration   2: 29.415 ms/op
+# Warmup Iteration   3: 29.299 ms/op
+# Warmup Iteration   4: 29.163 ms/op
+# Warmup Iteration   5: 29.212 ms/op
+# Warmup Iteration   6: 29.489 ms/op
+Iteration   1: 29.368 ms/op
+Iteration   2: 29.054 ms/op
+Iteration   3: 29.120 ms/op
+Iteration   4: 29.422 ms/op
+Iteration   5: 29.246 ms/op
+Iteration   6: 29.410 ms/op
+
+# Run progress: 47.22% complete, ETA 01:18:29
+# Fork: 2 of 3
+WARNING: Using incubator modules: jdk.incubator.vector
+# Warmup Iteration   1: 27.259 ms/op
+# Warmup Iteration   2: 26.660 ms/op
+# Warmup Iteration   3: 26.607 ms/op
+# Warmup Iteration   4: 26.487 ms/op
+# Warmup Iteration   5: 26.438 ms/op
+# Warmup Iteration   6: 26.625 ms/op
+Iteration   1: 26.576 ms/op
+Iteration   2: 26.993 ms/op
+Iteration   3: 26.681 ms/op
+Iteration   4: 26.393 ms/op
+Iteration   5: 26.636 ms/op
+Iteration   6: 26.711 ms/op
+
+# Run progress: 48.61% complete, ETA 01:16:21
+# Fork: 3 of 3
+WARNING: Using incubator modules: jdk.incubator.vector
+# Warmup Iteration   1: 28.257 ms/op
+# Warmup Iteration   2: 27.216 ms/op
+# Warmup Iteration   3: 27.305 ms/op
+# Warmup Iteration   4: 27.387 ms/op
+# Warmup Iteration   5: 27.981 ms/op
+# Warmup Iteration   6: 27.724 ms/op
+Iteration   1: 27.566 ms/op
+Iteration   2: 27.337 ms/op
+Iteration   3: 27.419 ms/op
+Iteration   4: 27.308 ms/op
+Iteration   5: 27.501 ms/op
+Iteration   6: 27.501 ms/op
+
+
+Result "me.mneri.csv.benchmark.runner.MneriCsvBenchmark.Vector.run":
+  27.791 ±(99.9%) 1.059 ms/op [Average]
+  (min, avg, max) = (26.393, 27.791, 29.422), stdev = 1.133
+  CI (99.9%): [26.732, 28.850] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.12, OpenJDK 64-Bit Server VM, 21.0.12+8-1-26.04-Ubuntu
+# VM invoker: /usr/lib/jvm/java-21-openjdk-amd64/bin/java
+# VM options: -Dfile.encoding=UTF-8 -Djava.io.tmpdir=/home/mneri/Projects/csv/build/tmp/jmh -Duser.country=US -Duser.language=en -Duser.variant
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 6 iterations, 10 s each
+# Measurement: 6 iterations, 10 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: me.mneri.csv.benchmark.runner.OpenCsvBenchmark.run
+# Parameters: (datasetName = WORLD_CITIES_POP)
+
+# Run progress: 50.00% complete, ETA 01:14:14
+# Fork: 1 of 3
+# Warmup Iteration   1: 1240.379 ms/op
+# Warmup Iteration   2: 1198.062 ms/op
+# Warmup Iteration   3: 1196.036 ms/op
+# Warmup Iteration   4: 1207.436 ms/op
+# Warmup Iteration   5: 1187.529 ms/op
+# Warmup Iteration   6: 1213.254 ms/op
+Iteration   1: 1211.560 ms/op
+Iteration   2: 1207.189 ms/op
+Iteration   3: 1192.569 ms/op
+Iteration   4: 1196.678 ms/op
+Iteration   5: 1181.686 ms/op
+Iteration   6: 1199.622 ms/op
+
+# Run progress: 51.39% complete, ETA 01:12:16
+# Fork: 2 of 3
+# Warmup Iteration   1: 1237.351 ms/op
+# Warmup Iteration   2: 1198.747 ms/op
+# Warmup Iteration   3: 1202.637 ms/op
+# Warmup Iteration   4: 1201.861 ms/op
+# Warmup Iteration   5: 1229.940 ms/op
+# Warmup Iteration   6: 1213.605 ms/op
+Iteration   1: 1212.625 ms/op
+Iteration   2: 1201.732 ms/op
+Iteration   3: 1220.943 ms/op
+Iteration   4: 1223.424 ms/op
+Iteration   5: 1218.180 ms/op
+Iteration   6: 1202.930 ms/op
+
+# Run progress: 52.78% complete, ETA 01:10:19
+# Fork: 3 of 3
+# Warmup Iteration   1: 1210.957 ms/op
+# Warmup Iteration   2: 1172.634 ms/op
+# Warmup Iteration   3: 1172.613 ms/op
+# Warmup Iteration   4: 1184.607 ms/op
+# Warmup Iteration   5: 1194.816 ms/op
+# Warmup Iteration   6: 1192.871 ms/op
+Iteration   1: 1189.247 ms/op
+Iteration   2: 1194.812 ms/op
+Iteration   3: 1173.750 ms/op
+Iteration   4: 1172.821 ms/op
+Iteration   5: 1182.031 ms/op
+Iteration   6: 1200.129 ms/op
+
+
+Result "me.mneri.csv.benchmark.runner.OpenCsvBenchmark.run":
+  1198.996 ±(99.9%) 14.248 ms/op [Average]
+  (min, avg, max) = (1172.821, 1198.996, 1223.424), stdev = 15.245
+  CI (99.9%): [1184.748, 1213.244] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.12, OpenJDK 64-Bit Server VM, 21.0.12+8-1-26.04-Ubuntu
+# VM invoker: /usr/lib/jvm/java-21-openjdk-amd64/bin/java
+# VM options: -Dfile.encoding=UTF-8 -Djava.io.tmpdir=/home/mneri/Projects/csv/build/tmp/jmh -Duser.country=US -Duser.language=en -Duser.variant
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 6 iterations, 10 s each
+# Measurement: 6 iterations, 10 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: me.mneri.csv.benchmark.runner.OpenCsvBenchmark.run
+# Parameters: (datasetName = GTFS_STOP_TIMES)
+
+# Run progress: 54.17% complete, ETA 01:08:19
+# Fork: 1 of 3
+# Warmup Iteration   1: 1596.435 ms/op
+# Warmup Iteration   2: 1574.078 ms/op
+# Warmup Iteration   3: 1563.576 ms/op
+# Warmup Iteration   4: 1543.052 ms/op
+# Warmup Iteration   5: 1541.095 ms/op
+# Warmup Iteration   6: 1545.919 ms/op
+Iteration   1: 1564.001 ms/op
+Iteration   2: 1570.448 ms/op
+Iteration   3: 1561.296 ms/op
+Iteration   4: 1549.907 ms/op
+Iteration   5: 1579.518 ms/op
+Iteration   6: 1570.705 ms/op
+
+# Run progress: 55.56% complete, ETA 01:06:20
+# Fork: 2 of 3
+# Warmup Iteration   1: 1583.585 ms/op
+# Warmup Iteration   2: 1513.203 ms/op
+# Warmup Iteration   3: 1520.553 ms/op
+# Warmup Iteration   4: 1520.444 ms/op
+# Warmup Iteration   5: 1541.917 ms/op
+# Warmup Iteration   6: 1517.575 ms/op
+Iteration   1: 1505.587 ms/op
+Iteration   2: 1514.397 ms/op
+Iteration   3: 1534.543 ms/op
+Iteration   4: 1537.515 ms/op
+Iteration   5: 1520.246 ms/op
+Iteration   6: 1517.336 ms/op
+
+# Run progress: 56.94% complete, ETA 01:04:19
+# Fork: 3 of 3
+# Warmup Iteration   1: 1566.060 ms/op
+# Warmup Iteration   2: 1563.132 ms/op
+# Warmup Iteration   3: 1529.507 ms/op
+# Warmup Iteration   4: 1547.417 ms/op
+# Warmup Iteration   5: 1554.229 ms/op
+# Warmup Iteration   6: 1517.693 ms/op
+Iteration   1: 1559.556 ms/op
+Iteration   2: 1562.867 ms/op
+Iteration   3: 1557.453 ms/op
+Iteration   4: 1534.835 ms/op
+Iteration   5: 1539.093 ms/op
+Iteration   6: 1538.216 ms/op
+
+
+Result "me.mneri.csv.benchmark.runner.OpenCsvBenchmark.run":
+  1545.418 ±(99.9%) 20.339 ms/op [Average]
+  (min, avg, max) = (1505.587, 1545.418, 1579.518), stdev = 21.762
+  CI (99.9%): [1525.079, 1565.757] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.12, OpenJDK 64-Bit Server VM, 21.0.12+8-1-26.04-Ubuntu
+# VM invoker: /usr/lib/jvm/java-21-openjdk-amd64/bin/java
+# VM options: -Dfile.encoding=UTF-8 -Djava.io.tmpdir=/home/mneri/Projects/csv/build/tmp/jmh -Duser.country=US -Duser.language=en -Duser.variant
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 6 iterations, 10 s each
+# Measurement: 6 iterations, 10 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: me.mneri.csv.benchmark.runner.OpenCsvBenchmark.run
+# Parameters: (datasetName = GTFS_TRIPS)
+
+# Run progress: 58.33% complete, ETA 01:02:19
+# Fork: 1 of 3
+# Warmup Iteration   1: 71.581 ms/op
+# Warmup Iteration   2: 71.052 ms/op
+# Warmup Iteration   3: 70.622 ms/op
+# Warmup Iteration   4: 71.308 ms/op
+# Warmup Iteration   5: 70.677 ms/op
+# Warmup Iteration   6: 69.945 ms/op
+Iteration   1: 70.905 ms/op
+Iteration   2: 70.457 ms/op
+Iteration   3: 71.125 ms/op
+Iteration   4: 70.545 ms/op
+Iteration   5: 70.682 ms/op
+Iteration   6: 70.890 ms/op
+
+# Run progress: 59.72% complete, ETA 01:00:11
+# Fork: 2 of 3
+# Warmup Iteration   1: 71.703 ms/op
+# Warmup Iteration   2: 69.482 ms/op
+# Warmup Iteration   3: 70.722 ms/op
+# Warmup Iteration   4: 70.190 ms/op
+# Warmup Iteration   5: 70.657 ms/op
+# Warmup Iteration   6: 68.194 ms/op
+Iteration   1: 69.765 ms/op
+Iteration   2: 69.225 ms/op
+Iteration   3: 68.605 ms/op
+Iteration   4: 68.727 ms/op
+Iteration   5: 68.932 ms/op
+Iteration   6: 69.833 ms/op
+
+# Run progress: 61.11% complete, ETA 00:58:04
+# Fork: 3 of 3
+# Warmup Iteration   1: 70.536 ms/op
+# Warmup Iteration   2: 69.080 ms/op
+# Warmup Iteration   3: 69.318 ms/op
+# Warmup Iteration   4: 68.761 ms/op
+# Warmup Iteration   5: 70.029 ms/op
+# Warmup Iteration   6: 68.896 ms/op
+Iteration   1: 69.076 ms/op
+Iteration   2: 68.845 ms/op
+Iteration   3: 68.113 ms/op
+Iteration   4: 68.460 ms/op
+Iteration   5: 68.633 ms/op
+Iteration   6: 71.016 ms/op
+
+
+Result "me.mneri.csv.benchmark.runner.OpenCsvBenchmark.run":
+  69.657 ±(99.9%) 0.966 ms/op [Average]
+  (min, avg, max) = (68.113, 69.657, 71.125), stdev = 1.033
+  CI (99.9%): [68.692, 70.623] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.12, OpenJDK 64-Bit Server VM, 21.0.12+8-1-26.04-Ubuntu
+# VM invoker: /usr/lib/jvm/java-21-openjdk-amd64/bin/java
+# VM options: -Dfile.encoding=UTF-8 -Djava.io.tmpdir=/home/mneri/Projects/csv/build/tmp/jmh -Duser.country=US -Duser.language=en -Duser.variant
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 6 iterations, 10 s each
+# Measurement: 6 iterations, 10 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: me.mneri.csv.benchmark.runner.SesseltjonnaBenchmark.run
+# Parameters: (datasetName = WORLD_CITIES_POP)
+
+# Run progress: 62.50% complete, ETA 00:55:58
+# Fork: 1 of 3
+# Warmup Iteration   1: 304.795 ms/op
+# Warmup Iteration   2: 302.115 ms/op
+# Warmup Iteration   3: 298.960 ms/op
+# Warmup Iteration   4: 306.985 ms/op
+# Warmup Iteration   5: 302.578 ms/op
+# Warmup Iteration   6: 303.763 ms/op
+Iteration   1: 303.192 ms/op
+Iteration   2: 300.377 ms/op
+Iteration   3: 298.826 ms/op
+Iteration   4: 305.883 ms/op
+Iteration   5: 303.357 ms/op
+Iteration   6: 300.149 ms/op
+
+# Run progress: 63.89% complete, ETA 00:53:52
+# Fork: 2 of 3
+# Warmup Iteration   1: 307.719 ms/op
+# Warmup Iteration   2: 314.129 ms/op
+# Warmup Iteration   3: 315.942 ms/op
+# Warmup Iteration   4: 301.217 ms/op
+# Warmup Iteration   5: 303.066 ms/op
+# Warmup Iteration   6: 301.974 ms/op
+Iteration   1: 303.947 ms/op
+Iteration   2: 300.450 ms/op
+Iteration   3: 303.125 ms/op
+Iteration   4: 302.302 ms/op
+Iteration   5: 303.393 ms/op
+Iteration   6: 304.689 ms/op
+
+# Run progress: 65.28% complete, ETA 00:51:46
+# Fork: 3 of 3
+# Warmup Iteration   1: 306.288 ms/op
+# Warmup Iteration   2: 305.607 ms/op
+# Warmup Iteration   3: 303.278 ms/op
+# Warmup Iteration   4: 306.557 ms/op
+# Warmup Iteration   5: 305.641 ms/op
+# Warmup Iteration   6: 304.854 ms/op
+Iteration   1: 304.910 ms/op
+Iteration   2: 305.710 ms/op
+Iteration   3: 300.304 ms/op
+Iteration   4: 302.908 ms/op
+Iteration   5: 302.025 ms/op
+Iteration   6: 301.893 ms/op
+
+
+Result "me.mneri.csv.benchmark.runner.SesseltjonnaBenchmark.run":
+  302.635 ±(99.9%) 1.895 ms/op [Average]
+  (min, avg, max) = (298.826, 302.635, 305.883), stdev = 2.027
+  CI (99.9%): [300.741, 304.530] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.12, OpenJDK 64-Bit Server VM, 21.0.12+8-1-26.04-Ubuntu
+# VM invoker: /usr/lib/jvm/java-21-openjdk-amd64/bin/java
+# VM options: -Dfile.encoding=UTF-8 -Djava.io.tmpdir=/home/mneri/Projects/csv/build/tmp/jmh -Duser.country=US -Duser.language=en -Duser.variant
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 6 iterations, 10 s each
+# Measurement: 6 iterations, 10 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: me.mneri.csv.benchmark.runner.SesseltjonnaBenchmark.run
+# Parameters: (datasetName = GTFS_STOP_TIMES)
+
+# Run progress: 66.67% complete, ETA 00:49:41
+# Fork: 1 of 3
+# Warmup Iteration   1: 462.665 ms/op
+# Warmup Iteration   2: 450.887 ms/op
+# Warmup Iteration   3: 454.154 ms/op
+# Warmup Iteration   4: 449.431 ms/op
+# Warmup Iteration   5: 449.625 ms/op
+# Warmup Iteration   6: 447.062 ms/op
+Iteration   1: 449.099 ms/op
+Iteration   2: 447.356 ms/op
+Iteration   3: 444.800 ms/op
+Iteration   4: 452.578 ms/op
+Iteration   5: 460.425 ms/op
+Iteration   6: 446.364 ms/op
+
+# Run progress: 68.06% complete, ETA 00:47:37
+# Fork: 2 of 3
+# Warmup Iteration   1: 451.908 ms/op
+# Warmup Iteration   2: 447.542 ms/op
+# Warmup Iteration   3: 446.095 ms/op
+# Warmup Iteration   4: 437.472 ms/op
+# Warmup Iteration   5: 444.443 ms/op
+# Warmup Iteration   6: 436.991 ms/op
+Iteration   1: 448.668 ms/op
+Iteration   2: 447.314 ms/op
+Iteration   3: 447.315 ms/op
+Iteration   4: 448.305 ms/op
+Iteration   5: 452.116 ms/op
+Iteration   6: 444.315 ms/op
+
+# Run progress: 69.44% complete, ETA 00:45:32
+# Fork: 3 of 3
+# Warmup Iteration   1: 456.858 ms/op
+# Warmup Iteration   2: 442.301 ms/op
+# Warmup Iteration   3: 443.729 ms/op
+# Warmup Iteration   4: 444.168 ms/op
+# Warmup Iteration   5: 444.702 ms/op
+# Warmup Iteration   6: 452.414 ms/op
+Iteration   1: 444.862 ms/op
+Iteration   2: 446.218 ms/op
+Iteration   3: 449.279 ms/op
+Iteration   4: 446.412 ms/op
+Iteration   5: 444.095 ms/op
+Iteration   6: 446.059 ms/op
+
+
+Result "me.mneri.csv.benchmark.runner.SesseltjonnaBenchmark.run":
+  448.088 ±(99.9%) 3.640 ms/op [Average]
+  (min, avg, max) = (444.095, 448.088, 460.425), stdev = 3.895
+  CI (99.9%): [444.447, 451.728] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.12, OpenJDK 64-Bit Server VM, 21.0.12+8-1-26.04-Ubuntu
+# VM invoker: /usr/lib/jvm/java-21-openjdk-amd64/bin/java
+# VM options: -Dfile.encoding=UTF-8 -Djava.io.tmpdir=/home/mneri/Projects/csv/build/tmp/jmh -Duser.country=US -Duser.language=en -Duser.variant
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 6 iterations, 10 s each
+# Measurement: 6 iterations, 10 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: me.mneri.csv.benchmark.runner.SesseltjonnaBenchmark.run
+# Parameters: (datasetName = GTFS_TRIPS)
+
+# Run progress: 70.83% complete, ETA 00:43:27
+# Fork: 1 of 3
+# Warmup Iteration   1: 24.827 ms/op
+# Warmup Iteration   2: 24.270 ms/op
+# Warmup Iteration   3: 24.341 ms/op
+# Warmup Iteration   4: 24.738 ms/op
+# Warmup Iteration   5: 23.934 ms/op
+# Warmup Iteration   6: 24.330 ms/op
+Iteration   1: 24.462 ms/op
+Iteration   2: 24.175 ms/op
+Iteration   3: 24.266 ms/op
+Iteration   4: 23.875 ms/op
+Iteration   5: 23.865 ms/op
+Iteration   6: 24.254 ms/op
+
+# Run progress: 72.22% complete, ETA 00:41:22
+# Fork: 2 of 3
+# Warmup Iteration   1: 24.373 ms/op
+# Warmup Iteration   2: 23.902 ms/op
+# Warmup Iteration   3: 23.730 ms/op
+# Warmup Iteration   4: 24.366 ms/op
+# Warmup Iteration   5: 23.933 ms/op
+# Warmup Iteration   6: 24.189 ms/op
+Iteration   1: 24.278 ms/op
+Iteration   2: 23.884 ms/op
+Iteration   3: 24.091 ms/op
+Iteration   4: 23.629 ms/op
+Iteration   5: 23.925 ms/op
+Iteration   6: 24.749 ms/op
+
+# Run progress: 73.61% complete, ETA 00:39:16
+# Fork: 3 of 3
+# Warmup Iteration   1: 24.781 ms/op
+# Warmup Iteration   2: 24.381 ms/op
+# Warmup Iteration   3: 24.286 ms/op
+# Warmup Iteration   4: 23.857 ms/op
+# Warmup Iteration   5: 24.352 ms/op
+# Warmup Iteration   6: 24.078 ms/op
+Iteration   1: 24.504 ms/op
+Iteration   2: 24.461 ms/op
+Iteration   3: 24.407 ms/op
+Iteration   4: 24.081 ms/op
+Iteration   5: 24.370 ms/op
+Iteration   6: 23.862 ms/op
+
+
+Result "me.mneri.csv.benchmark.runner.SesseltjonnaBenchmark.run":
+  24.174 ±(99.9%) 0.274 ms/op [Average]
+  (min, avg, max) = (23.629, 24.174, 24.749), stdev = 0.294
+  CI (99.9%): [23.900, 24.449] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.12, OpenJDK 64-Bit Server VM, 21.0.12+8-1-26.04-Ubuntu
+# VM invoker: /usr/lib/jvm/java-21-openjdk-amd64/bin/java
+# VM options: -Dfile.encoding=UTF-8 -Djava.io.tmpdir=/home/mneri/Projects/csv/build/tmp/jmh -Duser.country=US -Duser.language=en -Duser.variant
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 6 iterations, 10 s each
+# Measurement: 6 iterations, 10 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: me.mneri.csv.benchmark.runner.SimpleFlatMapperBenchmark.run
+# Parameters: (datasetName = WORLD_CITIES_POP)
+
+# Run progress: 75.00% complete, ETA 00:37:11
+# Fork: 1 of 3
+# Warmup Iteration   1: 503.698 ms/op
+# Warmup Iteration   2: 490.399 ms/op
+# Warmup Iteration   3: 501.115 ms/op
+# Warmup Iteration   4: 509.015 ms/op
+# Warmup Iteration   5: 505.492 ms/op
+# Warmup Iteration   6: 493.952 ms/op
+Iteration   1: 498.398 ms/op
+Iteration   2: 488.975 ms/op
+Iteration   3: 510.274 ms/op
+Iteration   4: 511.584 ms/op
+Iteration   5: 504.906 ms/op
+Iteration   6: 500.756 ms/op
+
+# Run progress: 76.39% complete, ETA 00:35:07
+# Fork: 2 of 3
+# Warmup Iteration   1: 540.843 ms/op
+# Warmup Iteration   2: 509.704 ms/op
+# Warmup Iteration   3: 508.695 ms/op
+# Warmup Iteration   4: 502.899 ms/op
+# Warmup Iteration   5: 498.871 ms/op
+# Warmup Iteration   6: 513.625 ms/op
+Iteration   1: 507.876 ms/op
+Iteration   2: 505.655 ms/op
+Iteration   3: 517.537 ms/op
+Iteration   4: 500.918 ms/op
+Iteration   5: 500.588 ms/op
+Iteration   6: 514.200 ms/op
+
+# Run progress: 77.78% complete, ETA 00:33:03
+# Fork: 3 of 3
+# Warmup Iteration   1: 519.226 ms/op
+# Warmup Iteration   2: 497.164 ms/op
+# Warmup Iteration   3: 483.779 ms/op
+# Warmup Iteration   4: 484.153 ms/op
+# Warmup Iteration   5: 486.326 ms/op
+# Warmup Iteration   6: 503.674 ms/op
+Iteration   1: 503.792 ms/op
+Iteration   2: 509.727 ms/op
+Iteration   3: 492.511 ms/op
+Iteration   4: 503.192 ms/op
+Iteration   5: 489.357 ms/op
+Iteration   6: 488.572 ms/op
+
+
+Result "me.mneri.csv.benchmark.runner.SimpleFlatMapperBenchmark.run":
+  502.712 ±(99.9%) 8.108 ms/op [Average]
+  (min, avg, max) = (488.572, 502.712, 517.537), stdev = 8.676
+  CI (99.9%): [494.604, 510.821] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.12, OpenJDK 64-Bit Server VM, 21.0.12+8-1-26.04-Ubuntu
+# VM invoker: /usr/lib/jvm/java-21-openjdk-amd64/bin/java
+# VM options: -Dfile.encoding=UTF-8 -Djava.io.tmpdir=/home/mneri/Projects/csv/build/tmp/jmh -Duser.country=US -Duser.language=en -Duser.variant
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 6 iterations, 10 s each
+# Measurement: 6 iterations, 10 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: me.mneri.csv.benchmark.runner.SimpleFlatMapperBenchmark.run
+# Parameters: (datasetName = GTFS_STOP_TIMES)
+
+# Run progress: 79.17% complete, ETA 00:30:58
+# Fork: 1 of 3
+# Warmup Iteration   1: 693.184 ms/op
+# Warmup Iteration   2: 663.670 ms/op
+# Warmup Iteration   3: 664.338 ms/op
+# Warmup Iteration   4: 664.757 ms/op
+# Warmup Iteration   5: 679.588 ms/op
+# Warmup Iteration   6: 664.336 ms/op
+Iteration   1: 663.783 ms/op
+Iteration   2: 676.853 ms/op
+Iteration   3: 673.761 ms/op
+Iteration   4: 661.241 ms/op
+Iteration   5: 667.510 ms/op
+Iteration   6: 665.667 ms/op
+
+# Run progress: 80.56% complete, ETA 00:28:55
+# Fork: 2 of 3
+# Warmup Iteration   1: 709.569 ms/op
+# Warmup Iteration   2: 681.767 ms/op
+# Warmup Iteration   3: 665.773 ms/op
+# Warmup Iteration   4: 681.040 ms/op
+# Warmup Iteration   5: 673.694 ms/op
+# Warmup Iteration   6: 659.727 ms/op
+Iteration   1: 677.703 ms/op
+Iteration   2: 673.840 ms/op
+Iteration   3: 664.506 ms/op
+Iteration   4: 662.568 ms/op
+Iteration   5: 662.648 ms/op
+Iteration   6: 677.556 ms/op
+
+# Run progress: 81.94% complete, ETA 00:26:51
+# Fork: 3 of 3
+# Warmup Iteration   1: 694.917 ms/op
+# Warmup Iteration   2: 657.737 ms/op
+# Warmup Iteration   3: 671.867 ms/op
+# Warmup Iteration   4: 656.187 ms/op
+# Warmup Iteration   5: 651.617 ms/op
+# Warmup Iteration   6: 673.603 ms/op
+Iteration   1: 669.189 ms/op
+Iteration   2: 661.533 ms/op
+Iteration   3: 666.022 ms/op
+Iteration   4: 651.579 ms/op
+Iteration   5: 653.233 ms/op
+Iteration   6: 668.408 ms/op
+
+
+Result "me.mneri.csv.benchmark.runner.SimpleFlatMapperBenchmark.run":
+  666.533 ±(99.9%) 7.048 ms/op [Average]
+  (min, avg, max) = (651.579, 666.533, 677.703), stdev = 7.542
+  CI (99.9%): [659.485, 673.582] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.12, OpenJDK 64-Bit Server VM, 21.0.12+8-1-26.04-Ubuntu
+# VM invoker: /usr/lib/jvm/java-21-openjdk-amd64/bin/java
+# VM options: -Dfile.encoding=UTF-8 -Djava.io.tmpdir=/home/mneri/Projects/csv/build/tmp/jmh -Duser.country=US -Duser.language=en -Duser.variant
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 6 iterations, 10 s each
+# Measurement: 6 iterations, 10 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: me.mneri.csv.benchmark.runner.SimpleFlatMapperBenchmark.run
+# Parameters: (datasetName = GTFS_TRIPS)
+
+# Run progress: 83.33% complete, ETA 00:24:47
+# Fork: 1 of 3
+# Warmup Iteration   1: 30.458 ms/op
+# Warmup Iteration   2: 25.974 ms/op
+# Warmup Iteration   3: 26.788 ms/op
+# Warmup Iteration   4: 25.795 ms/op
+# Warmup Iteration   5: 25.301 ms/op
+# Warmup Iteration   6: 25.764 ms/op
+Iteration   1: 26.201 ms/op
+Iteration   2: 26.099 ms/op
+Iteration   3: 26.215 ms/op
+Iteration   4: 25.399 ms/op
+Iteration   5: 25.328 ms/op
+Iteration   6: 25.784 ms/op
+
+# Run progress: 84.72% complete, ETA 00:22:43
+# Fork: 2 of 3
+# Warmup Iteration   1: 26.798 ms/op
+# Warmup Iteration   2: 25.800 ms/op
+# Warmup Iteration   3: 25.311 ms/op
+# Warmup Iteration   4: 25.571 ms/op
+# Warmup Iteration   5: 25.765 ms/op
+# Warmup Iteration   6: 26.839 ms/op
+Iteration   1: 25.535 ms/op
+Iteration   2: 24.883 ms/op
+Iteration   3: 24.748 ms/op
+Iteration   4: 25.297 ms/op
+Iteration   5: 25.785 ms/op
+Iteration   6: 25.300 ms/op
+
+# Run progress: 86.11% complete, ETA 00:20:38
+# Fork: 3 of 3
+# Warmup Iteration   1: 27.315 ms/op
+# Warmup Iteration   2: 25.535 ms/op
+# Warmup Iteration   3: 25.696 ms/op
+# Warmup Iteration   4: 25.321 ms/op
+# Warmup Iteration   5: 25.924 ms/op
+# Warmup Iteration   6: 25.995 ms/op
+Iteration   1: 26.604 ms/op
+Iteration   2: 25.420 ms/op
+Iteration   3: 25.296 ms/op
+Iteration   4: 26.487 ms/op
+Iteration   5: 25.493 ms/op
+Iteration   6: 24.770 ms/op
+
+
+Result "me.mneri.csv.benchmark.runner.SimpleFlatMapperBenchmark.run":
+  25.591 ±(99.9%) 0.518 ms/op [Average]
+  (min, avg, max) = (24.748, 25.591, 26.604), stdev = 0.554
+  CI (99.9%): [25.074, 26.109] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.12, OpenJDK 64-Bit Server VM, 21.0.12+8-1-26.04-Ubuntu
+# VM invoker: /usr/lib/jvm/java-21-openjdk-amd64/bin/java
+# VM options: -Dfile.encoding=UTF-8 -Djava.io.tmpdir=/home/mneri/Projects/csv/build/tmp/jmh -Duser.country=US -Duser.language=en -Duser.variant
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 6 iterations, 10 s each
+# Measurement: 6 iterations, 10 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: me.mneri.csv.benchmark.runner.UnivocityBenchmark.run
+# Parameters: (datasetName = WORLD_CITIES_POP)
+
+# Run progress: 87.50% complete, ETA 00:18:34
+# Fork: 1 of 3
+# Warmup Iteration   1: 547.124 ms/op
+# Warmup Iteration   2: 529.445 ms/op
+# Warmup Iteration   3: 543.044 ms/op
+# Warmup Iteration   4: 541.320 ms/op
+# Warmup Iteration   5: 540.240 ms/op
+# Warmup Iteration   6: 539.203 ms/op
+Iteration   1: 528.305 ms/op
+Iteration   2: 557.144 ms/op
+Iteration   3: 545.788 ms/op
+Iteration   4: 542.633 ms/op
+Iteration   5: 556.061 ms/op
+Iteration   6: 541.932 ms/op
+
+# Run progress: 88.89% complete, ETA 00:16:30
+# Fork: 2 of 3
+# Warmup Iteration   1: 545.338 ms/op
+# Warmup Iteration   2: 529.379 ms/op
+# Warmup Iteration   3: 531.290 ms/op
+# Warmup Iteration   4: 528.704 ms/op
+# Warmup Iteration   5: 527.657 ms/op
+# Warmup Iteration   6: 527.998 ms/op
+Iteration   1: 531.848 ms/op
+Iteration   2: 542.799 ms/op
+Iteration   3: 535.079 ms/op
+Iteration   4: 531.679 ms/op
+Iteration   5: 532.847 ms/op
+Iteration   6: 528.939 ms/op
+
+# Run progress: 90.28% complete, ETA 00:14:26
+# Fork: 3 of 3
+# Warmup Iteration   1: 542.595 ms/op
+# Warmup Iteration   2: 533.669 ms/op
+# Warmup Iteration   3: 537.015 ms/op
+# Warmup Iteration   4: 531.872 ms/op
+# Warmup Iteration   5: 546.251 ms/op
+# Warmup Iteration   6: 529.627 ms/op
+Iteration   1: 532.003 ms/op
+Iteration   2: 535.615 ms/op
+Iteration   3: 523.635 ms/op
+Iteration   4: 537.339 ms/op
+Iteration   5: 541.102 ms/op
+Iteration   6: 532.867 ms/op
+
+
+Result "me.mneri.csv.benchmark.runner.UnivocityBenchmark.run":
+  537.645 ±(99.9%) 8.434 ms/op [Average]
+  (min, avg, max) = (523.635, 537.645, 557.144), stdev = 9.024
+  CI (99.9%): [529.211, 546.079] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.12, OpenJDK 64-Bit Server VM, 21.0.12+8-1-26.04-Ubuntu
+# VM invoker: /usr/lib/jvm/java-21-openjdk-amd64/bin/java
+# VM options: -Dfile.encoding=UTF-8 -Djava.io.tmpdir=/home/mneri/Projects/csv/build/tmp/jmh -Duser.country=US -Duser.language=en -Duser.variant
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 6 iterations, 10 s each
+# Measurement: 6 iterations, 10 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: me.mneri.csv.benchmark.runner.UnivocityBenchmark.run
+# Parameters: (datasetName = GTFS_STOP_TIMES)
+
+# Run progress: 91.67% complete, ETA 00:12:22
+# Fork: 1 of 3
+# Warmup Iteration   1: 782.113 ms/op
+# Warmup Iteration   2: 742.185 ms/op
+# Warmup Iteration   3: 722.172 ms/op
+# Warmup Iteration   4: 739.618 ms/op
+# Warmup Iteration   5: 704.965 ms/op
+# Warmup Iteration   6: 725.139 ms/op
+Iteration   1: 746.575 ms/op
+Iteration   2: 724.897 ms/op
+Iteration   3: 715.621 ms/op
+Iteration   4: 730.759 ms/op
+Iteration   5: 732.756 ms/op
+Iteration   6: 724.157 ms/op
+
+# Run progress: 93.06% complete, ETA 00:10:18
+# Fork: 2 of 3
+# Warmup Iteration   1: 778.555 ms/op
+# Warmup Iteration   2: 752.075 ms/op
+# Warmup Iteration   3: 734.807 ms/op
+# Warmup Iteration   4: 751.220 ms/op
+# Warmup Iteration   5: 733.961 ms/op
+# Warmup Iteration   6: 722.558 ms/op
+Iteration   1: 759.156 ms/op
+Iteration   2: 724.879 ms/op
+Iteration   3: 734.371 ms/op
+Iteration   4: 739.533 ms/op
+Iteration   5: 737.364 ms/op
+Iteration   6: 747.041 ms/op
+
+# Run progress: 94.44% complete, ETA 00:08:15
+# Fork: 3 of 3
+# Warmup Iteration   1: 772.588 ms/op
+# Warmup Iteration   2: 745.686 ms/op
+# Warmup Iteration   3: 748.885 ms/op
+# Warmup Iteration   4: 739.198 ms/op
+# Warmup Iteration   5: 719.693 ms/op
+# Warmup Iteration   6: 752.334 ms/op
+Iteration   1: 713.717 ms/op
+Iteration   2: 730.894 ms/op
+Iteration   3: 736.704 ms/op
+Iteration   4: 726.719 ms/op
+Iteration   5: 735.781 ms/op
+Iteration   6: 744.586 ms/op
+
+
+Result "me.mneri.csv.benchmark.runner.UnivocityBenchmark.run":
+  733.639 ±(99.9%) 10.656 ms/op [Average]
+  (min, avg, max) = (713.717, 733.639, 759.156), stdev = 11.402
+  CI (99.9%): [722.983, 744.296] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.12, OpenJDK 64-Bit Server VM, 21.0.12+8-1-26.04-Ubuntu
+# VM invoker: /usr/lib/jvm/java-21-openjdk-amd64/bin/java
+# VM options: -Dfile.encoding=UTF-8 -Djava.io.tmpdir=/home/mneri/Projects/csv/build/tmp/jmh -Duser.country=US -Duser.language=en -Duser.variant
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 6 iterations, 10 s each
+# Measurement: 6 iterations, 10 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: me.mneri.csv.benchmark.runner.UnivocityBenchmark.run
+# Parameters: (datasetName = GTFS_TRIPS)
+
+# Run progress: 95.83% complete, ETA 00:06:11
+# Fork: 1 of 3
+# Warmup Iteration   1: 28.489 ms/op
+# Warmup Iteration   2: 28.025 ms/op
+# Warmup Iteration   3: 27.927 ms/op
+# Warmup Iteration   4: 28.103 ms/op
+# Warmup Iteration   5: 27.877 ms/op
+# Warmup Iteration   6: 27.679 ms/op
+Iteration   1: 28.129 ms/op
+Iteration   2: 27.810 ms/op
+Iteration   3: 28.631 ms/op
+Iteration   4: 27.989 ms/op
+Iteration   5: 28.138 ms/op
+Iteration   6: 28.109 ms/op
+
+# Run progress: 97.22% complete, ETA 00:04:07
+# Fork: 2 of 3
+# Warmup Iteration   1: 28.456 ms/op
+# Warmup Iteration   2: 28.060 ms/op
+# Warmup Iteration   3: 28.058 ms/op
+# Warmup Iteration   4: 27.513 ms/op
+# Warmup Iteration   5: 28.024 ms/op
+# Warmup Iteration   6: 28.119 ms/op
+Iteration   1: 27.135 ms/op
+Iteration   2: 27.721 ms/op
+Iteration   3: 27.422 ms/op
+Iteration   4: 27.136 ms/op
+Iteration   5: 27.154 ms/op
+Iteration   6: 27.802 ms/op
+
+# Run progress: 98.61% complete, ETA 00:02:03
+# Fork: 3 of 3
+# Warmup Iteration   1: 29.071 ms/op
+# Warmup Iteration   2: 28.322 ms/op
+# Warmup Iteration   3: 28.297 ms/op
+# Warmup Iteration   4: 28.275 ms/op
+# Warmup Iteration   5: 28.682 ms/op
+# Warmup Iteration   6: 28.402 ms/op
+Iteration   1: 28.031 ms/op
+Iteration   2: 27.537 ms/op
+Iteration   3: 28.348 ms/op
+Iteration   4: 27.666 ms/op
+Iteration   5: 28.534 ms/op
+Iteration   6: 27.800 ms/op
+
+
+Result "me.mneri.csv.benchmark.runner.UnivocityBenchmark.run":
+  27.839 ±(99.9%) 0.421 ms/op [Average]
+  (min, avg, max) = (27.135, 27.839, 28.631), stdev = 0.450
+  CI (99.9%): [27.418, 28.259] (assumes normal distribution)
+
+
+# Run complete. Total time: 02:28:20
+
+REMEMBER: The numbers below are just data. To gain reusable insights, you need to follow up on
+why the numbers are the way they are. Use profilers (see -prof, -lprof), design factorial
+experiments, perform baseline and negative tests that provide experimental control, make sure
+the benchmarking environment is safe on JVM/OS/HW level, ask for reviews from the domain experts.
+Do not assume the numbers tell you what you want them to tell.
+
+NOTE: Current JVM experimentally supports Compiler Blackholes, and they are in use. Please exercise
+extra caution when trusting the results, look into the generated code to check the benchmark still
+works, and factor in a small probability of new VM bugs. Additionally, while comparisons between
+different JVMs are already problematic, the performance difference caused by different Blackhole
+modes can be very significant. Please make sure you use the consistent Blackhole mode for comparisons.
+
+Benchmark                            (datasetName)  Mode  Cnt     Score    Error  Units
+CommonsCsvBenchmark.run           WORLD_CITIES_POP  avgt   18  2723.402 ± 13.448  ms/op
+CommonsCsvBenchmark.run            GTFS_STOP_TIMES  avgt   18  5224.941 ± 29.130  ms/op
+CommonsCsvBenchmark.run                 GTFS_TRIPS  avgt   18   255.345 ± 13.122  ms/op
+FastCsvBenchmark.run              WORLD_CITIES_POP  avgt   18   505.844 ±  6.906  ms/op
+FastCsvBenchmark.run               GTFS_STOP_TIMES  avgt   18   728.479 ±  8.795  ms/op
+FastCsvBenchmark.run                    GTFS_TRIPS  avgt   18    33.321 ±  0.445  ms/op
+MneriCsvBenchmark.Sequential.run  WORLD_CITIES_POP  avgt   18   598.214 ±  5.530  ms/op
+MneriCsvBenchmark.Sequential.run   GTFS_STOP_TIMES  avgt   18   882.787 ± 10.441  ms/op
+MneriCsvBenchmark.Sequential.run        GTFS_TRIPS  avgt   18    40.957 ±  0.494  ms/op
+MneriCsvBenchmark.Vector.run      WORLD_CITIES_POP  avgt   18   474.905 ± 14.964  ms/op
+MneriCsvBenchmark.Vector.run       GTFS_STOP_TIMES  avgt   18   674.093 ±  7.697  ms/op
+MneriCsvBenchmark.Vector.run            GTFS_TRIPS  avgt   18    27.791 ±  1.059  ms/op
+OpenCsvBenchmark.run              WORLD_CITIES_POP  avgt   18  1198.996 ± 14.248  ms/op
+OpenCsvBenchmark.run               GTFS_STOP_TIMES  avgt   18  1545.418 ± 20.339  ms/op
+OpenCsvBenchmark.run                    GTFS_TRIPS  avgt   18    69.657 ±  0.966  ms/op
+SesseltjonnaBenchmark.run         WORLD_CITIES_POP  avgt   18   302.635 ±  1.895  ms/op
+SesseltjonnaBenchmark.run          GTFS_STOP_TIMES  avgt   18   448.088 ±  3.640  ms/op
+SesseltjonnaBenchmark.run               GTFS_TRIPS  avgt   18    24.174 ±  0.274  ms/op
+SimpleFlatMapperBenchmark.run     WORLD_CITIES_POP  avgt   18   502.712 ±  8.108  ms/op
+SimpleFlatMapperBenchmark.run      GTFS_STOP_TIMES  avgt   18   666.533 ±  7.048  ms/op
+SimpleFlatMapperBenchmark.run           GTFS_TRIPS  avgt   18    25.591 ±  0.518  ms/op
+UnivocityBenchmark.run            WORLD_CITIES_POP  avgt   18   537.645 ±  8.434  ms/op
+UnivocityBenchmark.run             GTFS_STOP_TIMES  avgt   18   733.639 ± 10.656  ms/op
+UnivocityBenchmark.run                  GTFS_TRIPS  avgt   18    27.839 ±  0.421  ms/op
+
+Benchmark result is saved to /home/mneri/Projects/csv/build/results/jmh/results.txt
+
+[Incubating] Problems report is available at: file:///home/mneri/Projects/csv/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.13/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 2h 28m 32s
+8 actionable tasks: 8 executed
+5:45:18 PM: Execution finished 'jmh'.
