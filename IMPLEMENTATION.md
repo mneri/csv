@@ -197,8 +197,10 @@ private boolean isStartOfField(int state) {
 ```
 Action flags are checked using a simple bitwise `&` operation (`state & SFH`). If the flag is set, the parser shall take
 the corresponding action. _This separation allows different CSV dialects to be plugged seamlessly into high-performance
-parsing pipelines without duplicating stream-handling or optimization logic._ The parser components are deliberately
-kept stupid (and that's a compliment).
+parsing pipelines without duplicating stream-handling or optimization logic._
+
+The parser components are deliberately kept stupid (and that's a compliment). The parser's main loop is incredibly
+simple and just about 20 lines of code.
 
 # Vector API
 The [Vector API](https://openjdk.org/jeps/508) is an exciting feature of JDK 16 and above that allows engineers to
@@ -246,6 +248,8 @@ do {
 The parser maintains a 64-character window (stride). The bitmask tells which characters to process, and which not. Using
 Kernighan's trick the bitmask is zeroed one bit at a time. Please, note that `Long.numberOfTrailingZeros()` is a HotSpot
 intrinsic and the result is calculated in a couple of CPU cycles. 
+
+Much as the sequential parser, the vector parser logic is incredibly simple and its main loop is about 30 lines of code.
 
 Experiments have shown that 50-70% of the characters in popular benchmarks are skipped, leading to a considerable
 performance gain. For example, in the classic CSV benchmark `worldcitiespop.txt` from MaxMind, out of the `129,212,350`
