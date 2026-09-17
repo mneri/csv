@@ -1,3 +1,4 @@
+# Hardware Specifications
 | Category                | Specification                                          |
 |-------------------------|--------------------------------------------------------|
 | **Laptop**              | Dell XPS 13 7390                                       |
@@ -17,6 +18,7 @@
 | **Power Profile**       | Balanced                                               |
 | **Discrete GPU**        | None                                                   |
 
+# Benchmark Results
 | Dataset              | Rank | Benchmark                | Score (ms/op) |    Error |
 |----------------------|-----:|--------------------------|--------------:|---------:|
 | **WORLD_CITIES_POP** |    1 | `sesseltjonna-csv`       |   **302.635** |  ± 1.895 |
