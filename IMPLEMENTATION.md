@@ -293,6 +293,29 @@ We construct a 64-bit mask where individual bit positions correspond to the ASCI
 example, line feed (`\n`) has an ASCII code of `10`, so the 10th bit of the mask is set to `1`. Carriage return (`\r`)
 has an ASCII code of `13`, setting the 13th bit. The same goes for the characters `,` and `"`.
 
+```java
+if (c > ',' || ((1L << c) & 0x80_00_10_04_00_00_24_00L) == 0) {
+    return 0;
+}
+```
+Java's shift operators automatically mask shift amounts to `63` (`c & 63`). That means any character code of `64` or
+higher will wrap around and risk hitting one of our precious bit flags. Since the comma (`44`) is our highest-value
+control character, anything strictly greater than it is guaranteed to be ordinary text. The `c > ','` check acts as a
+bypass: it immediately accepts any character above the comma's ASCII value (since nothing higher is a control token)
+while preventing high-value inputs from wrapping around and colliding with our bitmask.
+
+Once a character passes our filter, we know for a fact that it is one of our control tokens. Now, instead of a slow
+`switch` statement, we use a compressed _lookup table_ packed inside a single 64-bit constant.
+
+```java
+return (int) (0x00_00_20_20_00_00_98_05L >>> (c + 1)) & 0x7;
+```
+Building this lookup table follows the same logic as our mask, but instead of setting a single `1` bit to flag a control
+character, we store a 3-bit integer representing its column index in the transition table. For example, in
+`Rfc4180StrictFormat`, the character `\r` is mapped to column `2` of the transition table and `2` in binary is `010`.
+So, we place `010` in the map at position `13` in the bit map. `\n` is mapped to column `3` of the transition table and
+`3` in binary is `011`. So, we place `011` at position `10` in the bit map.
+
 # Other Low-Level Optimisations
 ## Facilitating Method Inlining
 Every time a method is invoked, the CPU must incur the cost of setting up a stack frame, jumping to a new memory
