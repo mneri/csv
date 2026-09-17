@@ -249,13 +249,17 @@ The parser maintains a 64-character window (stride). The bitmask tells which cha
 Kernighan's trick the bitmask is zeroed one bit at a time. Please, note that `Long.numberOfTrailingZeros()` is a HotSpot
 intrinsic and the result is calculated in a couple of CPU cycles. 
 
-Much as the sequential parser, the vector parser logic is incredibly simple and its main loop is about 30 lines of code.
+Much like the sequential parser, the vector parser logic is incredibly simple and its main loop is about 30 lines of
+code.
 
-Experiments have shown that 50-70% of the characters in popular benchmarks are skipped, leading to a considerable
-performance gain. For example, in the classic CSV benchmark `worldcitiespop.txt` from MaxMind, out of the `129,212,350`
-total characters, the vectorised parser is able to safely ignore `72.80%` of them (`94,072,029` characters), processing
-only the remaining `27.20%` (`35,140,321` characters). Calculating the mask is not free, but the cost is very well
-offset by the savings downstream.
+Experiments have shown that 60-80% of the characters in popular benchmarks are skipped, leading to a considerable
+performance gain. Calculating the mask is not free, but the cost is very well offset by the savings downstream.
+
+| Benchmark                    | Size (Characters) | Processed (Characters) | Reduction |
+|------------------------------|-------------------|------------------------|-----------|
+| `maxmind/worldcitiespop.txt` | `129,212,350`     | `35,140,321`           | `72.80%`  |
+| `gtfs/trips.txt`             | `12,274,080`      | `1,715,898`            | `86.02%`  |
+| `gtfs/stop_times.txt`        | `253,105,642`     | `53,130,902`           | `79.01%`  |
 
 # Low-Level Optimisations
 Maintaining the state in a local variable or relying on the execution stack to keep an _implicit state_ (like
