@@ -312,9 +312,9 @@ return (int) (0x00_00_20_20_00_00_98_05L >>> (c + 1)) & 0x7;
 ```
 Building this lookup table follows the same logic as our mask, but instead of setting a single `1` bit to flag a control
 character, we store a 3-bit integer representing its column index in the transition table. For example, in
-`Rfc4180StrictFormat`, the character `\r` is mapped to column `2` of the transition table and `2` in binary is `010`.
-So, we place `010` in the map at position `13` in the bit map. `\n` is mapped to column `3` of the transition table and
-`3` in binary is `011`. So, we place `011` at position `10` in the bit map.
+`Rfc4180StrictFormat`, the character `\r` (ASCII `13`) is mapped to column `2` of the transition table and `2` in binary
+is `010`; so, we place `010` in the map at position `13` in the bit map. `\n` (ASCII `10`) is mapped to column `3` of
+the transition table and `3` in binary is `011`; so, we place `011` at position `10` in the bit map.
 
 By replacing a switch or `if`-`else` chain with a bit-packed map, we trade unpredictable control flow for pure register
 math. A conditional chain forces the CPU to guess execution paths, risking costly pipeline stalls every time a branch
