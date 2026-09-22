@@ -101,8 +101,7 @@ There are a number of critical performance optimizations. Please see [IMPLEMENTA
 details.
 
 The published benchmarks compare `mneri/csv` with several Java CSV libraries. Results depend on the dataset, JDK, CPU,
-operating system, JVM options, and system load. See [PERFORMANCE.md](PERFORMANCE.md) for the full results, hardware
-details, and commands for running the benchmarks.
+operating system, JVM options, and system load.
 
 Below, the comparison of `mneri/csv` performances against other Java frameworks using the popular `worldcitiespop.txt`
 benchmark.
@@ -118,7 +117,7 @@ benchmark.
 |                      |    7 | `opencsv`                | **1,198.996** | ± 14.248 |
 |                      |    8 | `Apache Commons CSV`     | **2,723.402** | ± 13.448 |
 
-For more benchmark results, see [PERFORMANCE.md](PERFORMANCE.md).
+See [PERFORMANCE.md](PERFORMANCE.md) for the full results, hardware details, and commands for running the benchmarks.
 
 [^1]: **Variable Number of Fields**: the format accepts files containing a different number of fields on
 different lines.
