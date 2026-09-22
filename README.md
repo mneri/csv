@@ -98,8 +98,11 @@ The project is designed for large CSV files and low overhead. It uses:
 * Small hot methods and separate slow paths for errors and unusual calls.
 
 The published benchmarks compare `mneri/csv` with several Java CSV libraries. Results depend on the dataset, JDK, CPU,
-operating system, JVM options, and system load. See [PERFORMANCE.md](PERFORMANCE.md) for the results, hardware details,
-and commands for running the benchmarks.
+operating system, JVM options, and system load. See [PERFORMANCE.md](PERFORMANCE.md) for the full results, hardware
+details, and commands for running the benchmarks.
+
+Below, the comparison of `mneri/csv` performances against other Java frameworks using the popular `worldcitiespop.txt`
+benchmark.
 
 | Dataset              | Rank | Benchmark                | Score (ms/op) |    Error |
 |----------------------|-----:|--------------------------|--------------:|---------:|
