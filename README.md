@@ -72,13 +72,13 @@ try (CsvReader<Contact> reader = CsvReader.open(new File("contacts.csv"), Standa
 
 The available formats are:
 
-| Format                                      | Line Termination             | Variable Number of Fields[^1] | Quotes in Unqualified Fields[^2] | Extra Text After Quoted Field[^3] | Truncated Quoted Fields[^4] |
-|:--------------------------------------------|:-----------------------------|:-----------------------------:|:--------------------------------:|:---------------------------------:|:---------------------------:|
-| **Machintosh[^5]**                          | `\r`                         |                               |                no                |                no                 |             no              |
-| **RFC&nbsp;4180&nbsp;"Strict"**             | `\r\n`                       |                               |                no                |                no                 |             no              |
-| **RFC&nbsp;4180&nbsp;"Half&nbsp;Relaxed"**  | `\r\n`,&nbsp;`\n`            |                               |                                  |                no                 |             no              |
-| **RFC&nbsp;4180&nbsp;"Fully&nbsp;Relaxed"** | `\r\n`,&nbsp;`\r`,&nbsp;`\n` |                               |                                  |                                   |                             |
-| **MS&nbsp;Excel**                           | `\r\n`,&nbsp;`\r`,&nbsp;`\n` |                               |                                  |                                   |                             |
+| Format                                      | Line Termination             | Variable Number of Fields[^1] | Quotes in Unqualified Fields[^2] | Extra Text After Qualified Field[^3] | Truncated Qualified Fields[^4] |
+|:--------------------------------------------|:-----------------------------|:-----------------------------:|:--------------------------------:|:------------------------------------:|:------------------------------:|
+| **Machintosh[^5]**                          | `\r`                         |                               |                no                |                  no                  |               no               |
+| **RFC&nbsp;4180&nbsp;"Strict"**             | `\r\n`                       |                               |                no                |                  no                  |               no               |
+| **RFC&nbsp;4180&nbsp;"Half&nbsp;Relaxed"**  | `\r\n`,&nbsp;`\n`            |                               |                                  |                  no                  |               no               |
+| **RFC&nbsp;4180&nbsp;"Fully&nbsp;Relaxed"** | `\r\n`,&nbsp;`\r`,&nbsp;`\n` |                               |                                  |                                      |                                |
+| **MS&nbsp;Excel**                           | `\r\n`,&nbsp;`\r`,&nbsp;`\n` |                               |                                  |                                      |                                |
 
 ## Vector API
 `mneri/csv` features an alternative high-performance parser implementation built on top of Java's **Vector API**. By 
@@ -123,9 +123,9 @@ See [PERFORMANCE.md](PERFORMANCE.md) for the full results, hardware details, and
 different lines.
 [^2]: **Quotes in Unqualified Fields**: the format accepts unqualified fields containing double quotes (`"`); for
 example, the line `aaa,b"b"b,ccc CRLF` is interpreted as ⟨`aaa`, `b"b"b`, `ccc`⟩.
-[^3]: **Extra Text After Quoted Field**: the format accepts free text after the closing double quotes (`"`)
+[^3]: **Extra Text After Qualified Field**: the format accepts free text after the closing double quotes (`"`)
 of a qualified field; for example, the line `aaa,"bb"b,ccc` is interpreted as ⟨`aaa`, `bbb`, `ccc`⟩.
-[^4]: **Truncated Quoted Fields**: the format accepts a field starting with a double quote character (`"`)
+[^4]: **Truncated Qualified Fields**: the format accepts a field starting with a double quote character (`"`)
 but the end of file is reached prior to the corresponding closing double quote; for example, the line
 `aaa,bbb,"ccc EOF` is interpreted as ⟨`aaa`, `bbb`, `ccc`⟩.
 [^5]: **Macintosh Format**: refers to the legacy line-termination convention (`\r`) used by classic Mac OS systems
