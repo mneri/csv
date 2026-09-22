@@ -425,7 +425,7 @@ See [PERFORMANCE.md](https://github.com/mneri/csv/blob/master/PERFORMANCE.md) fo
 [^1]: See `SimpleFlatMapper`'s [ConfigurableCharConsumer.java](https://github.com/arnaudroger/SimpleFlatMapper/blob/0f0977f4c1e03cfeb3c4ca1dd5d4050462b01df8/lightningcsv/src/main/java/org/simpleflatmapper/lightningcsv/parser/ConfigurableCharConsumer.java#L204)
 [^2]: See `sesseltjonna-csv`'s [DefaultStringArrayCsvReader.java](https://github.com/skjolber/sesseltjonna-csv/blob/master/parser/src/main/java/com/github/skjolber/stcsv/sa/DefaultStringArrayCsvReader.java#L65)
 [^3]: The statement is imprecise: `Rfc4180StrictFormat` allows lines to contain different number of fields. In section 2
-  (_"Definition of the CSV Format",_), RFC 4180 states _"Within the header and each record, there may be one or more
+  (_"Definition of the CSV Format"_), RFC 4180 states _"Within the header and each record, there may be one or more
   fields, separated by commas. Each line should contain the same number of fields throughout the file"_ (please note,
   the use of _"should"_). The client can easily enforce this rule in their custom `Deserializer`.
 [^4]: `Rfc4180FullyRelaxedFormat` ignores all format errors, but some exceptions (such as `IOException`) can still
