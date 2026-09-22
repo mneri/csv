@@ -1,7 +1,6 @@
 # Transition Tables
-The CSV grammar defines a [regular language](https://en.wikipedia.org/wiki/Regular_language). By definition, a regular
-language is the set of strings recognised by a
-[finite state automaton](https://en.wikipedia.org/wiki/Finite-state_machine) (FSA).
+[RFC 4180](https://datatracker.ietf.org/doc/rfc4180/) grammar defines a [regular language](https://en.wikipedia.org/wiki/Regular_language). By definition, a
+regular language is the set of strings recognised by a [finite state automaton](https://en.wikipedia.org/wiki/Finite-state_machine) (FSA).
 
 Under the hood, many CSV parsers are finite state automata. For example, when a parser encounters a double quote
 character, it could transition to the `INSIDE_QUALIFIED_FIELD` state; a second double quote could make the parser
@@ -74,13 +73,12 @@ states, columns represent input characters, and the intersection indicates the n
 | END_OF_FILE     | ERROR           | ERROR           | ERROR           | ERROR           | ERROR           | ERROR       |
 | ERROR           | ERROR           | ERROR           | ERROR           | ERROR           | ERROR           | ERROR       |
 ```
-The transition table above can be used to parse a CSV file that is fully compliant with
-[RFC 4180](https://datatracker.ietf.org/doc/rfc4180/).[^3] The initial state is `BEFORE_LINE` (marked with `*`). Upon
-consuming the character `a` (first column), the state transitions to `FIELD`. From the `FIELD` state, a comma sets the
-transition to `BEFORE_FIELD` (the "cursor" is positioned before the _next_ field). Transitions continue until either the
-state `END_OF_FILE` or `ERROR` are reached. To be fully compliant with RFC 4180, the transition table must reject
-malformed inputs. In the example above, `ERROR` is a _sink state_; once entered, it cannot be left because all outgoing
-transitions loop back to itself.
+The transition table above can be used to parse a CSV file that is fully compliant with RFC 4180.[^3] The initial state
+is `BEFORE_LINE` (marked with `*`). Upon consuming the character `a` (first column), the state transitions to `FIELD`.
+From the `FIELD` state, a comma sets the transition to `BEFORE_FIELD` (the "cursor" is positioned before the _next_
+field). Transitions continue until either the state `END_OF_FILE` or `ERROR` are reached. To be fully compliant with
+RFC 4180, the transition table must reject malformed inputs. In the example above, `ERROR` is a _sink state_; once
+entered, it cannot be left because all outgoing transitions loop back to itself.
 
 _A transition table makes it easier to reason about the parser and document its behaviour._ All the states and
 transitions are laid out clearly in a single point.
@@ -168,7 +166,7 @@ As mentioned before, `mneri/csv` implements different CSV formats; most notably:
 * `Rfc4180HalfRelaxedFormat`: a more relaxed interpretation of RFC 4180, allowing for different line termination
   characters, and misplaced double-quotes.
 * `Rfc4180FullyRelaxedFormat`: a fully relaxed interpretation of RFC 4180 that is guaranteed to never throw an
-  exception, even if the document does not conform to the specification.[^4]
+  exception because of format errors.[^4]
 * `MsExcelFormat`: a format implementation inspired by Microsoft Excel's behaviour.
 * `MacintoshFormat`: an interpretation of RFC 4180 compliant with legacy Macintosh systems where the line separator
   is `\r`.
@@ -247,8 +245,8 @@ do {
 ```
 The parser maintains a 64-character window (stride). The bitmask tells which characters to process, and which not. Using
 Kernighan's trick the bitmask is zeroed one bit at a time. Please, note that `Long.numberOfTrailingZeros()` is a HotSpot
-intrinsic and the result is calculated in a couple of CPU cycles. Much like the sequential parser, the vector parser
-logic is incredibly simple and its main loop is about 30 lines of code.
+intrinsic which in modern CPUs is compiled into a `tzcnt` instruction with a latency of ~1 CPU cycle. Much like the
+sequential parser, the vector parser logic is incredibly simple and its main loop is about 30 lines of code.
 
 Calculating the mask is not free, but the cost is very well offset by the savings downstream.
 
@@ -257,6 +255,9 @@ Calculating the mask is not free, but the cost is very well offset by the saving
 | `maxmind/worldcitiespop.txt` | `129,212,350`     | `35,140,321`             | `72.80%`  |
 | `gtfs/trips.txt`             | `12,274,080`      | `1,715,898`              | `86.02%`  |
 | `gtfs/stop_times.txt`        | `253,105,642`     | `53,130,902`             | `79.01%`  |
+
+The table above shows the lookup reduction in three popular benchmarks. This result is not absolute and heavily depends
+on the input file.
 
 # Low-Level Optimisations
 Maintaining the state in a local variable or relying on the execution stack to keep an _implicit state_ (like
@@ -431,3 +432,4 @@ See [PERFORMANCE.md](https://github.com/mneri/csv/blob/master/PERFORMANCE.md) fo
 [^4]: `Rfc4180FullyRelaxedFormat` ignores all format errors, but some exceptions (such as `IOException`) can still
   happen.
 [^5]: For the full implementation, see [VectorLineParser.java](https://github.com/mneri/csv/blob/master/src/main/java/me/mneri/csv/parser/internal/VectorLineParser.java)
+[^6]: See [PERFORMANCE.md](https://github.com/mneri/csv/blob/master/PERFORMANCE.md).
