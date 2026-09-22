@@ -46,6 +46,8 @@
 | **Power Profile**       | Balanced                                               |
 | **Discrete GPU**        | None                                                   |
 
+See [PERFORMANCE.jmh](https://github.com/mneri/csv/blob/master/PERFORMANCE.jmh) for the full output of the test.
+
 # Running the benchmarks
 
 The performance tests are implemented using [JMH (Java Microbenchmark Harness)](https://github.com/openjdk/jmh).
