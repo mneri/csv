@@ -3,7 +3,7 @@ The CSV grammar defines a [regular language](https://en.wikipedia.org/wiki/Regul
 language is the set of strings recognised by a
 [finite state automaton](https://en.wikipedia.org/wiki/Finite-state_machine) (FSA).
 
-Under the hood, most CSV parsers are finite state automata. For example, when a parser encounters a double quote
+Under the hood, many CSV parsers are finite state automata. For example, when a parser encounters a double quote
 character, it could transition to the `INSIDE_QUALIFIED_FIELD` state; a second double quote could make the parser
 transition to the `END_QUALIFIED_FIELD` state. These would be two of the finite number of states in the parser.
 
@@ -168,7 +168,7 @@ As mentioned before, `mneri/csv` implements different CSV formats; most notably:
 * `Rfc4180HalfRelaxedFormat`: a more relaxed interpretation of RFC 4180, allowing for different line termination
   characters, and misplaced double-quotes.
 * `Rfc4180FullyRelaxedFormat`: a fully relaxed interpretation of RFC 4180 that is guaranteed to never throw an
-  exception, even if the document does not conform to the specification.
+  exception, even if the document does not conform to the specification.[^4]
 * `MsExcelFormat`: a format implementation inspired by Microsoft Excel's behaviour.
 * `MacintoshFormat`: an interpretation of RFC 4180 compliant with legacy Macintosh systems where the line separator
   is `\r`.
@@ -214,7 +214,7 @@ been somewhat unreliable. The Vector API gives engineers explicit control. If th
 
 Rather than processing every character, `mneri/csv` uses vector operations to calculate a 64-bit mask. The mask
 indicates which characters must be processed, and which can be ignored. In the example below, bits are set at key
-positions (such as the start of a field, commas, and new-line characters).
+positions (such as the first character of a field, commas, and new-line characters).
 ```
 CSV chunk: a a a a , b b b b , c c c c \r\n
 Mask:      1 0 0 0 1 1 0 0 0 1 1 0 0 0 1 1
@@ -224,7 +224,7 @@ to zero can be safely skipped. The mask can occasionally contain false-positives
 qualified field (this is unavoidable, but luckily rare). In this case the state machine knows it is inside a qualified
 field and correctly ignores the comma.
 
-Below is an abstraction of the vectorised parser's loop[^4].
+Below is an abstraction of the vectorised parser's loop[^5].
 ```java
 do {
     while (bitmask == 0L) {
@@ -424,8 +424,10 @@ See [PERFORMANCE.md](https://github.com/mneri/csv/blob/master/PERFORMANCE.md) fo
 
 [^1]: See `SimpleFlatMapper`'s [ConfigurableCharConsumer.java](https://github.com/arnaudroger/SimpleFlatMapper/blob/0f0977f4c1e03cfeb3c4ca1dd5d4050462b01df8/lightningcsv/src/main/java/org/simpleflatmapper/lightningcsv/parser/ConfigurableCharConsumer.java#L204)
 [^2]: See `sesseltjonna-csv`'s [DefaultStringArrayCsvReader.java](https://github.com/skjolber/sesseltjonna-csv/blob/master/parser/src/main/java/com/github/skjolber/stcsv/sa/DefaultStringArrayCsvReader.java#L65)
-[^3]: The statement is imprecise; `Rfc4180StrictFormat` allows lines to contain different number of fields, which is
-explicitly forbidden by RFC 4180: in section 2 _"Definition of the CSV Format",_ the document states _"Within the header
-and each record, there may be one or more fields, separated by commas. Each line should contain the same number of
-fields throughout the file."_ The client can still enforce this rule in their custom `Deserializer`.
-[^4]: For the full implementation, see [VectorLineParser.java](https://github.com/mneri/csv/blob/master/src/main/java/me/mneri/csv/parser/internal/VectorLineParser.java)
+[^3]: The statement is imprecise: `Rfc4180StrictFormat` allows lines to contain different number of fields. In section 2
+  (_"Definition of the CSV Format",_), RFC 4180 states _"Within the header and each record, there may be one or more
+  fields, separated by commas. Each line should contain the same number of fields throughout the file"_ (please note,
+  the use of _"should"_). The client can easily enforce this rule in their custom `Deserializer`.
+[^4]: `Rfc4180FullyRelaxedFormat` ignores all format errors, but some exceptions (such as `IOException`) can still
+  happen.
+[^5]: For the full implementation, see [VectorLineParser.java](https://github.com/mneri/csv/blob/master/src/main/java/me/mneri/csv/parser/internal/VectorLineParser.java)
