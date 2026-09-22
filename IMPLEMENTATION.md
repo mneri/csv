@@ -345,7 +345,7 @@ Everything else falls through a transition table lookup.
 The JIT compiler can optimize array access, if the conditions are right. `mneri/csv` makes heavy use of transition
 tables, and their optimization is very important.
 
-Transition tables are padded to 128 entries, which is a power of two, and the access is masked.
+Transition tables are padded to 128 elements, which is a power of two, and the access is masked as show below.
 
 ```java
 DFA[index & 0x7F]
