@@ -421,6 +421,7 @@ so infrequently.
 _It sounds off, but sometimes you can get better performances by adding a method call._
 
 # Performances
+See [PERFORMANCE.md](https://github.com/mneri/csv/blob/master/PERFORMANCE.md) for a full picture.
 
 [^1]: See `SimpleFlatMapper`'s [ConfigurableCharConsumer.java](https://github.com/arnaudroger/SimpleFlatMapper/blob/0f0977f4c1e03cfeb3c4ca1dd5d4050462b01df8/lightningcsv/src/main/java/org/simpleflatmapper/lightningcsv/parser/ConfigurableCharConsumer.java#L204)
 [^2]: See `sesseltjonna-csv`'s [DefaultStringArrayCsvReader.java](https://github.com/skjolber/sesseltjonna-csv/blob/master/parser/src/main/java/com/github/skjolber/stcsv/sa/DefaultStringArrayCsvReader.java#L65)
