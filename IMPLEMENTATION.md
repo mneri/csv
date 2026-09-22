@@ -368,7 +368,8 @@ above, `movabs` loads the hardcoded constants into the `r11` CPU register, then 
 The lookup happens inside the `Format`'s `consume()` method. We can observe that the method was fully inlined into the
 `SequentialLineParser` and `VectorLineParser` code.
 
-_This is as good as it can get._
+It is to be said that the behaviour of the JIT compiler, and especially inlining, can vary between executions and is
+not a guarantee, but _this is as good as it can get._
 
 # Other Low-Level Optimisations
 ## Facilitating Method Inlining
