@@ -360,9 +360,9 @@ movabs $0x71327cd48,%r11    ; {oop([I{0x000000071327cd48})}
 mov    0x10(%r11,%r10,4),%eax
 ```
 
-The JIT compiler also folded the address of the transition table to a constant (in the example above, `movabs` loads
-a hardcoded constants into `r11`; the constant is the absolute address of the transition table). The lookup can then be
-performed directly using the calculated index, without loading the array reference for each access.
+Moreover, the JIT compiler folded the address of the transition table: the array reference is treated as a constant and
+reused without reloading it from an object field; in the example above, `movabs` loads the hardcoded constants into the
+`r11` CPU register.
 
 # Other Low-Level Optimisations
 ## Facilitating Method Inlining
