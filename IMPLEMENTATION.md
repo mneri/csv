@@ -323,8 +323,7 @@ the transition table and `3` in binary is `011`; so, we place `011` at position 
 
 By replacing a switch or `if`-`else` chain with a bit-packed map, we trade unpredictable control flow for pure register
 math. A conditional chain forces the CPU to guess execution paths, risking costly pipeline stalls every time a branch
-mispredicts. This new approach executes in fixed time with zero memory lookups, turning a branching bottleneck into a
-single, lightning-fast shift.
+mispredicts.
 
 ## Super-Hot Path Shortcut
 _Table lookups can be cheap, but a single register comparison is certainly cheaper._ Profiling showed that the single
