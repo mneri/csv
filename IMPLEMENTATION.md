@@ -52,10 +52,10 @@ if (current[currentOffset] != quoteCharacter) {
     // ...
 }
 ```
-Performance-wise, the implicit state technique works really well, and to my knowledge `sesseltjonna-csv` is currently
-the fastest Java CSV parser. In both `SimpleFlatMapper` and `sesseltjonna-csv`, _transitions_ from one state to the next
-are not explicit, and their logic is pushed deep within the code. _Understanding state transitions with these two models
-is difficult._
+Performance-wise, the implicit state technique works really well, and currently `sesseltjonna-csv` is the fastest Java
+CSV parser of the ones I could find. In both `SimpleFlatMapper` and `sesseltjonna-csv`, _transitions_ from one state to
+the next are not explicit, and their logic is pushed deep within the code. _Understanding state transitions with these
+two models is difficult._
 
 `mneri/csv` takes a different approach: all the states are explicitly laid out in a transition table. Rows represent
 states, columns represent input characters, and the intersection indicates the next state.
