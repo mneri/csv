@@ -1,5 +1,5 @@
 # Transition Tables
-[RFC 4180](https://datatracker.ietf.org/doc/rfc4180/) grammar defines a [regular language](https://en.wikipedia.org/wiki/Regular_language). By definition, a
+[RFC 4180](https://datatracker.ietf.org/doc/rfc4180/) grammar defines a [regular language](https://en.wikipedia.org/wiki/Regular_language).[^1] By definition, a
 regular language is the set of strings recognised by a [finite state automaton](https://en.wikipedia.org/wiki/Finite-state_machine) (FSA).
 
 Under the hood, many CSV parsers are finite state automata. For example, when a parser encounters a double quote
@@ -28,13 +28,13 @@ while (currentIndex < bufferSize) {
     } // ...
 }
 ```
-In the example above[^1], the state of the parser changes by updating `currentState` and the change is driven by the flow of
+In the example above[^2], the state of the parser changes by updating `currentState` and the change is driven by the flow of
 the code: a cascade of `if-else` statements decides which state is next. This technique is simple and very effective
 and, in fact, `SimpleFlatMapper` is one of the fastest Java CSV parsers in circulation.
 
 `skjolberg `takes a slightly different approach. In [`sesseltjonna-csv`](https://github.com/skjolber/sesseltjonna-csv)
 the state is kept _implicit_. There is no `currentState` variable; instead, the _execution point_ implicitly defines the
-state of the automaton[^2].
+state of the automaton[^3].
 
 ```java
 if (current[currentOffset] != quoteCharacter) {
@@ -73,7 +73,7 @@ states, columns represent input characters, and the intersection indicates the n
 | END_OF_FILE     | ERROR           | ERROR           | ERROR           | ERROR           | ERROR           | ERROR       |
 | ERROR           | ERROR           | ERROR           | ERROR           | ERROR           | ERROR           | ERROR       |
 ```
-The transition table above can be used to parse a CSV file that is fully compliant with RFC 4180.[^3] The initial state
+The transition table above can be used to parse a CSV file that is fully compliant with RFC 4180.[^4] The initial state
 is `BEFORE_LINE` (marked with `*`). Upon consuming the character `a` (first column), the state transitions to `FIELD`.
 From the `FIELD` state, a comma sets the transition to `BEFORE_FIELD` (the "cursor" is positioned before the _next_
 field). Transitions continue until either the state `END_OF_FILE` or `ERROR` are reached. To be fully compliant with
@@ -166,7 +166,7 @@ As mentioned before, `mneri/csv` implements different CSV formats; most notably:
 * `Rfc4180HalfRelaxedFormat`: a more relaxed interpretation of RFC 4180, allowing for different line termination
   characters, and misplaced double-quotes.
 * `Rfc4180FullyRelaxedFormat`: a fully relaxed interpretation of RFC 4180 that is guaranteed to never throw an
-  exception because of format errors.[^4]
+  exception because of format errors.[^5]
 * `MsExcelFormat`: a format implementation inspired by Microsoft Excel's behaviour.
 * `MacintoshFormat`: an interpretation of RFC 4180 compliant with legacy Macintosh systems where the line separator
   is `\r`.
@@ -222,7 +222,7 @@ to zero can be safely skipped. The mask can occasionally contain false-positives
 qualified field (this is unavoidable, but luckily rare). In this case the state machine knows it is inside a qualified
 field and correctly ignores the comma.
 
-Below is an abstraction of the vectorised parser's loop[^5].
+Below is an abstraction of the vectorised parser's loop[^6].
 ```java
 do {
     while (bitmask == 0L) {
@@ -423,13 +423,15 @@ _It sounds off, but sometimes you can get better performances by adding a method
 # Performances
 See [PERFORMANCE.md](https://github.com/mneri/csv/blob/master/PERFORMANCE.md) for a full picture.
 
-[^1]: See `SimpleFlatMapper`'s [ConfigurableCharConsumer.java](https://github.com/arnaudroger/SimpleFlatMapper/blob/0f0977f4c1e03cfeb3c4ca1dd5d4050462b01df8/lightningcsv/src/main/java/org/simpleflatmapper/lightningcsv/parser/ConfigurableCharConsumer.java#L204)
-[^2]: See `sesseltjonna-csv`'s [DefaultStringArrayCsvReader.java](https://github.com/skjolber/sesseltjonna-csv/blob/master/parser/src/main/java/com/github/skjolber/stcsv/sa/DefaultStringArrayCsvReader.java#L65)
-[^3]: The statement is imprecise: `Rfc4180StrictFormat` allows lines to contain different number of fields. In section 2
+[^1]: As defined by the ABNF grammar in RFC 4180 it is a regular language. The document also lists a series of rules,
+  one of which saying _"Each line should contain the same number of fields throughout the file"._ This rule would make
+  it _not_ a regular language.
+[^2]: See `SimpleFlatMapper`'s [ConfigurableCharConsumer.java](https://github.com/arnaudroger/SimpleFlatMapper/blob/0f0977f4c1e03cfeb3c4ca1dd5d4050462b01df8/lightningcsv/src/main/java/org/simpleflatmapper/lightningcsv/parser/ConfigurableCharConsumer.java#L204)
+[^3]: See `sesseltjonna-csv`'s [DefaultStringArrayCsvReader.java](https://github.com/skjolber/sesseltjonna-csv/blob/master/parser/src/main/java/com/github/skjolber/stcsv/sa/DefaultStringArrayCsvReader.java#L65)
+[^4]: The statement is imprecise: `Rfc4180StrictFormat` allows lines to contain different number of fields. In section 2
   (_"Definition of the CSV Format"_), RFC 4180 states _"Within the header and each record, there may be one or more
   fields, separated by commas. Each line should contain the same number of fields throughout the file"_ (please note,
   the use of _"should"_). The client can easily enforce this rule in their custom `Deserializer`.
-[^4]: `Rfc4180FullyRelaxedFormat` ignores all format errors, but some exceptions (such as `IOException`) can still
+[^5]: `Rfc4180FullyRelaxedFormat` ignores all format errors, but some exceptions (such as `IOException`) can still
   happen.
-[^5]: For the full implementation, see [VectorLineParser.java](https://github.com/mneri/csv/blob/master/src/main/java/me/mneri/csv/parser/internal/VectorLineParser.java)
-[^6]: See [PERFORMANCE.md](https://github.com/mneri/csv/blob/master/PERFORMANCE.md).
+[^6]: For the full implementation, see [VectorLineParser.java](https://github.com/mneri/csv/blob/master/src/main/java/me/mneri/csv/parser/internal/VectorLineParser.java)
