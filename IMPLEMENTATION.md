@@ -431,7 +431,7 @@ See [PERFORMANCE.md](https://github.com/mneri/csv/blob/master/PERFORMANCE.md) fo
 [^4]: The statement is imprecise: `Rfc4180StrictFormat` allows lines to contain different number of fields. In section 2
   (_"Definition of the CSV Format"_), RFC 4180 states _"Within the header and each record, there may be one or more
   fields, separated by commas. Each line should contain the same number of fields throughout the file"_ (please note,
-  the use of _"should"_). The client can easily enforce this rule in their custom `Deserializer`.
+  the use of _"should"_ and not _"must"_). The client can easily enforce this rule in their custom `Deserializer`.
 [^5]: `Rfc4180FullyRelaxedFormat` ignores all format errors, but some exceptions (such as `IOException`) can still
   happen.
 [^6]: For the full implementation, see [VectorLineParser.java](https://github.com/mneri/csv/blob/master/src/main/java/me/mneri/csv/parser/internal/VectorLineParser.java)
