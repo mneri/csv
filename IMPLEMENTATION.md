@@ -75,7 +75,7 @@ states, columns represent input characters, and the intersection indicates the n
 | ERROR           | ERROR           | ERROR           | ERROR           | ERROR           | ERROR           | ERROR       |
 ```
 The transition table above can be used to parse a CSV file that is fully compliant with
-[RFC 4180](https://datatracker.ietf.org/doc/rfc4180/). The initial state is `BEFORE_LINE` (marked with `*`). Upon
+[RFC 4180](https://datatracker.ietf.org/doc/rfc4180/).[^3] The initial state is `BEFORE_LINE` (marked with `*`). Upon
 consuming the character `a` (first column), the state transitions to `FIELD`. From the `FIELD` state, a comma sets the
 transition to `BEFORE_FIELD` (the "cursor" is positioned before the _next_ field). Transitions continue until either the
 state `END_OF_FILE` or `ERROR` are reached. To be fully compliant with RFC 4180, the transition table must reject
@@ -224,7 +224,7 @@ to zero can be safely skipped. The mask can occasionally contain false-positives
 qualified field (this is unavoidable, but luckily rare). In this case the state machine knows it is inside a qualified
 field and correctly ignores the comma.
 
-Below is an abstraction of the vectorised parser's loop[^3].
+Below is an abstraction of the vectorised parser's loop[^4].
 ```java
 do {
     while (bitmask == 0L) {
@@ -425,4 +425,8 @@ See [PERFORMANCE.md](https://github.com/mneri/csv/blob/master/PERFORMANCE.md) fo
 
 [^1]: See `SimpleFlatMapper`'s [ConfigurableCharConsumer.java](https://github.com/arnaudroger/SimpleFlatMapper/blob/0f0977f4c1e03cfeb3c4ca1dd5d4050462b01df8/lightningcsv/src/main/java/org/simpleflatmapper/lightningcsv/parser/ConfigurableCharConsumer.java#L204)
 [^2]: See `sesseltjonna-csv`'s [DefaultStringArrayCsvReader.java](https://github.com/skjolber/sesseltjonna-csv/blob/master/parser/src/main/java/com/github/skjolber/stcsv/sa/DefaultStringArrayCsvReader.java#L65)
-[^3]: For the full implementation, see [VectorLineParser.java](https://github.com/mneri/csv/blob/master/src/main/java/me/mneri/csv/parser/internal/VectorLineParser.java)
+[^3]: The statement is imprecise; `Rfc4180StrictFormat` allows lines to contain different number of fields, which is
+explicitly forbidden by RFC 4180: in section 2 _"Definition of the CSV Format",_ the document states _"Within the header
+and each record, there may be one or more fields, separated by commas. Each line should contain the same number of
+fields throughout the file."_ The client can still enforce this rule in their custom `Deserializer`.
+[^4]: For the full implementation, see [VectorLineParser.java](https://github.com/mneri/csv/blob/master/src/main/java/me/mneri/csv/parser/internal/VectorLineParser.java)
