@@ -351,8 +351,8 @@ which is a power of two, and the access is masked as show below.
 return DFA[index & 0x7F];
 ```
 
-Thanks to the mask, the JIT compiler is able to prove that the index is always between the bounds and eliminates the
-array bounds check, as shown in the assembly below.
+`0x7F` constrains the `index` to `[0, 127]`. Thanks to the mask, the JIT compiler is able to prove that the index is
+always between the bounds and eliminates the array bounds check, as shown in the assembly below.
 
 ```assembly
 and    $0x7f,%r10d
@@ -360,9 +360,10 @@ movabs $0x71327cd48,%r11    ; {oop([I{0x000000071327cd48})}
 mov    0x10(%r11,%r10,4),%eax
 ```
 
-Moreover, the JIT compiler folded the address of the transition table: the array reference is treated as a constant and
-reused without reloading it from an object field; in the example above, `movabs` loads the hardcoded constants into the
-`r11` CPU register, then `mov` loads the array element into the `eax` register.
+We can also observe that the JIT compiler folded the address of the transition table: the array reference is treated as
+a constant directly embedded in the assembly, and reused without reloading it from an object field; in the example
+above, `movabs` loads the hardcoded constants into the `r11` CPU register, then `mov` loads the array element into the
+`eax` register.
 
 # Other Low-Level Optimisations
 ## Facilitating Method Inlining
