@@ -239,8 +239,8 @@ public final class Rfc4180FullyRelaxedFormat implements Format {
     /**
      * {@inheritDoc}
      *
-     * @param {@inheritDoc}
-     * @param {@inheritDoc}
+     * @param s {@inheritDoc}
+     * @param c {@inheritDoc}
      * @return {@inheritDoc}
      */
     @Override

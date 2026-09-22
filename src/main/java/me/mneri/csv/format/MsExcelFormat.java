@@ -259,8 +259,8 @@ public final class MsExcelFormat implements Format {
     /**
      * {@inheritDoc}
      *
-     * @param {@inheritDoc}
-     * @param {@inheritDoc}
+     * @param s {@inheritDoc}
+     * @param c {@inheritDoc}
      * @return {@inheritDoc}
      */
     @Override

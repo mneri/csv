@@ -200,9 +200,9 @@ public final class Rfc4180HalfRelaxedFormat implements Format {
     /**
      * {@inheritDoc}
      *
-     * @param s The current state as returned by a previous call to {@link Format#base()} or this method.
-     * @param c The character.
-     * @return An integer encoding both the next state and the action to perform.
+     * @param s {@inheritDoc}
+     * @param c {@inheritDoc}
+     * @return {@inheritDoc}
      */
     @Override
     public int consume(int s, int c) { // Bytecode size: 27 (OpenJDK 26)
@@ -218,8 +218,8 @@ public final class Rfc4180HalfRelaxedFormat implements Format {
     /**
      * {@inheritDoc}
      *
-     * @param {@inheritDoc}
-     * @param {@inheritDoc}
+     * @param s {@inheritDoc}
+     * @param c {@inheritDoc}
      * @return {@inheritDoc}
      */
     @Override
