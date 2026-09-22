@@ -362,7 +362,7 @@ mov    0x10(%r11,%r10,4),%eax
 
 Moreover, the JIT compiler folded the address of the transition table: the array reference is treated as a constant and
 reused without reloading it from an object field; in the example above, `movabs` loads the hardcoded constants into the
-`r11` CPU register.
+`r11` CPU register, then `mov` loads the array element into the `eax` register.
 
 # Other Low-Level Optimisations
 ## Facilitating Method Inlining
