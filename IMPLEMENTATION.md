@@ -365,6 +365,11 @@ a constant directly embedded in the assembly, and reused without reloading it fr
 above, `movabs` loads the hardcoded constants into the `r11` CPU register, then `mov` loads the array element into the
 `eax` register.
 
+The lookup happens inside the `Format`'s `consume()` method. We can observe that the method was fully inlined into the
+`SequentialLineParser` and `VectorLineParser` code.
+
+_This is as good as it can get._
+
 # Other Low-Level Optimisations
 ## Facilitating Method Inlining
 Every time a method is invoked, the CPU must incur the cost of setting up a stack frame, jumping to a new memory
