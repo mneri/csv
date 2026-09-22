@@ -342,8 +342,8 @@ public int consume(int s, int c) {
 Everything else falls through a transition table lookup.
 
 ## Optimization of the Lookup
-The JIT compiler can optimize array access, if the conditions are right. `mneri/csv` makes a heavy use of transition
-tables, and optimizing them is very important.
+The JIT compiler can optimize array access, if the conditions are right. `mneri/csv` makes heavy use of transition
+tables, and their optimization is very important.
 
 Transition tables are padded to 128 entries, which is a power of two, and the access is masked.
 
@@ -351,8 +351,8 @@ Transition tables are padded to 128 entries, which is a power of two, and the ac
 DFA[index & 0x7F]
 ```
 
-Thanks to the mask, the JIT compiler is able to prove that the index is always between bounds and eliminates the array
-bounds check, as shown in the assembly below.
+Thanks to the mask, the JIT compiler is able to prove that the index is always between the bounds and eliminates the
+array bounds check, as shown in the assembly below.
 
 ```assembly
 and    $0x7f,%r10d
