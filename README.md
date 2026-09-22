@@ -115,9 +115,11 @@ benchmark.
 |                      |    7 | `opencsv`                | **1,198.996** | ± 14.248 |
 |                      |    8 | `Apache Commons CSV`     | **2,723.402** | ± 13.448 |
 
+For more benchmark results, see [PERFORMANCE.md](PERFORMANCE.md).
+
 [^1]: **Variable Number of Fields**: the format accepts files containing a different number of fields on
 different lines.
-[^2]: *Quotes in Unqualified Fields**: the format accepts unqualified fields containing double quotes (`"`); for
+[^2]: **Quotes in Unqualified Fields**: the format accepts unqualified fields containing double quotes (`"`); for
 example, the line `aaa,b"b"b,ccc CRLF` is interpreted as ⟨`aaa`, `b"b"b`, `ccc`⟩.
 [^3]: **Extra Text After Quoted Field**: the format accepts free text after the closing double quotes (`"`)
 of a qualified field; for example, the line `aaa,"bb"b,ccc` is interpreted as ⟨`aaa`, `bbb`, `ccc`⟩.
