@@ -97,7 +97,7 @@ The project is designed for large CSV files and low overhead. It uses:
 * Sequential and Vector API parsers.
 * Small hot methods and separate slow paths for errors and unusual calls.
 
-There are a number of critical performance optimizations. Please see [IMPLEMENTATION.m](IMPLEMENTATION.md) for more
+There are a number of critical performance optimizations. Please see [IMPLEMENTATION.md](IMPLEMENTATION.md) for more
 details.
 
 The published benchmarks compare `mneri/csv` with several Java CSV libraries. Results depend on the dataset, JDK, CPU,
