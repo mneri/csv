@@ -47,8 +47,7 @@ public final class VectorLineParser implements LineParser {
     private final RandomAccessStream stream;
 
     private long bitmask;
-    private long strideEnd;
-    private long strideStart;
+    private long strideStart = -STRIDE;
 
     /**
      * Create a new {@code SimdLineParser} instance.
@@ -85,7 +84,6 @@ public final class VectorLineParser implements LineParser {
         int s = format.base();
         long bitmask = this.bitmask;
         long strideStart = this.strideStart;
-        long strideEnd = this.strideEnd;
 
         out.reset();
         stream.compact(strideStart);
@@ -99,8 +97,7 @@ public final class VectorLineParser implements LineParser {
             do {
                 // Calculate a bitmask with 1's set on the characters of interest and loop only on them.
                 while (bitmask == 0L) {
-                    strideStart = strideEnd;
-                    strideEnd += STRIDE;
+                    strideStart += STRIDE;
                     bitmask = bitmask(s, strideStart);
                 }
                 shift = Long.numberOfTrailingZeros(bitmask);
@@ -127,7 +124,6 @@ public final class VectorLineParser implements LineParser {
                 }
             }
         } while (isNotEndOfLineAndNotEndOfFileAndNotError(s));
-        this.strideEnd = strideEnd;
         this.strideStart = strideStart;
         this.bitmask = bitmask;
 
