@@ -1,6 +1,9 @@
 # mneri/csv
 
-`mneri/csv` is a fast and easy-to-use library for reading and writing CSV files.
+A high-performance Java CSV parser and writer using the Java Vector API (SIMD).
+
+`mneri/csv` is a solid, allocation-conscious CSV reader/writer for Java. The parser uses the Java Vector API
+(`jdk.incubator.vector`) to accelerate delimiter detection using SIMD instructions.
 
 ## Reading a CSV File
 
