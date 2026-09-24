@@ -18,16 +18,17 @@
 
 package me.mneri.csv.benchmark.compare.runner;
 
-import com.univocity.parsers.common.IterableResult;
-import com.univocity.parsers.common.ParsingContext;
-import com.univocity.parsers.csv.CsvParser;
-import com.univocity.parsers.csv.CsvParserSettings;
 import me.mneri.csv.benchmark.compare.BenchmarkConstants;
 import me.mneri.csv.benchmark.compare.BenchmarkState;
+import org.csveed.api.CsvClient;
+import org.csveed.api.CsvClientImpl;
+import org.csveed.api.Row;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 
 import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
 import java.util.concurrent.TimeUnit;
 
 @BenchmarkMode(Mode.AverageTime)
@@ -35,15 +36,27 @@ import java.util.concurrent.TimeUnit;
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @Warmup(iterations = BenchmarkConstants.WARMUP_ITERATIONS)
 @Measurement(iterations = BenchmarkConstants.MEASUREMENT_ITERATIONS)
-public class UnivocityBenchmark {
+public class CSVeedBenchmark {
     @Benchmark
-    public void run(BenchmarkState state, Blackhole bh) throws Exception {
-        CsvParser parser = new CsvParser(new CsvParserSettings());
-        try (FileReader reader = new FileReader(state.file(), state.charset())) {
-            IterableResult<String[], ParsingContext> iterable = parser.iterate(reader);
-            for (String[] next : iterable) {
-                bh.consume(next);
+    public void run(BenchmarkState state, Blackhole bh) throws IOException {
+        // CSVeed rejects WORLD_CITIES_POP (it throws on quotes inside unquoted fields).
+        try (Reader reader = new FileReader(state.file(), state.charset())) {
+            CsvClient<Object> client = new CsvClientImpl<>(reader)
+                    .setUseHeader(false)
+                    .setSeparator(',');
+
+            Row row;
+            while ((row = client.readRow()) != null) {
+                bh.consume(toDomain(row));
             }
         }
+    }
+
+    private String[] toDomain(Row row) {
+        String[] out = new String[row.size()];
+        for (int i = 0; i < out.length; i++) {
+            out[i] = row.get(i + 1); // Column indexes start at 1
+        }
+        return out;
     }
 }
