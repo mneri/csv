@@ -18,16 +18,17 @@
 
 package me.mneri.csv.benchmark.runner;
 
-import com.univocity.parsers.common.IterableResult;
-import com.univocity.parsers.common.ParsingContext;
-import com.univocity.parsers.csv.CsvParser;
-import com.univocity.parsers.csv.CsvParserSettings;
+import com.fasterxml.jackson.databind.MappingIterator;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.dataformat.csv.CsvMapper;
+import com.fasterxml.jackson.dataformat.csv.CsvParser;
 import me.mneri.csv.benchmark.BenchmarkConstants;
 import me.mneri.csv.benchmark.BenchmarkState;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 @BenchmarkMode(Mode.AverageTime)
@@ -35,14 +36,16 @@ import java.util.concurrent.TimeUnit;
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @Warmup(iterations = BenchmarkConstants.WARMUP_ITERATIONS)
 @Measurement(iterations = BenchmarkConstants.MEASUREMENT_ITERATIONS)
-public class UnivocityBenchmark {
+public class JacksonCsvBenchmark {
+    private static final ObjectReader READER = new CsvMapper()
+            .enable(CsvParser.Feature.WRAP_AS_ARRAY)
+            .readerFor(String[].class);
+
     @Benchmark
-    public void run(BenchmarkState state, Blackhole bh) throws Exception {
-        CsvParser parser = new CsvParser(new CsvParserSettings());
-        try (FileReader reader = new FileReader(state.file(), state.charset())) {
-            IterableResult<String[], ParsingContext> iterable = parser.iterate(reader);
-            for (String[] next : iterable) {
-                bh.consume(next);
+    public void run(BenchmarkState state, Blackhole bh) throws IOException {
+        try (MappingIterator<String[]> iterator = READER.readValues(new FileReader(state.file(), state.charset()))) {
+            while (iterator.hasNextValue()) {
+                bh.consume(iterator.nextValue());
             }
         }
     }

@@ -37,15 +37,7 @@ public class SimpleFlatMapperBenchmark {
     @Benchmark
     public void run(BenchmarkState state, Blackhole bh) throws Exception {
         try (Stream<String[]> stream = CsvParser.stream(new FileReader(state.file(), state.charset()))) {
-            stream.forEach(next -> { // The returned array is recycled
-                bh.consume(toDomain(next));
-            });
+            stream.forEach(bh::consume);
         }
-    }
-
-    private String[] toDomain(String[] in) {
-        String[] out = new String[in.length];
-        System.arraycopy(in, 0, out, 0, in.length);
-        return out;
     }
 }

@@ -18,16 +18,16 @@
 
 package me.mneri.csv.benchmark.runner;
 
-import com.univocity.parsers.common.IterableResult;
-import com.univocity.parsers.common.ParsingContext;
-import com.univocity.parsers.csv.CsvParser;
-import com.univocity.parsers.csv.CsvParserSettings;
 import me.mneri.csv.benchmark.BenchmarkConstants;
 import me.mneri.csv.benchmark.BenchmarkState;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
+import org.supercsv.io.CsvListReader;
+import org.supercsv.prefs.CsvPreference;
 
 import java.io.FileReader;
+import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @BenchmarkMode(Mode.AverageTime)
@@ -35,15 +35,18 @@ import java.util.concurrent.TimeUnit;
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @Warmup(iterations = BenchmarkConstants.WARMUP_ITERATIONS)
 @Measurement(iterations = BenchmarkConstants.MEASUREMENT_ITERATIONS)
-public class UnivocityBenchmark {
+public class SuperCsvBenchmark {
     @Benchmark
-    public void run(BenchmarkState state, Blackhole bh) throws Exception {
-        CsvParser parser = new CsvParser(new CsvParserSettings());
-        try (FileReader reader = new FileReader(state.file(), state.charset())) {
-            IterableResult<String[], ParsingContext> iterable = parser.iterate(reader);
-            for (String[] next : iterable) {
-                bh.consume(next);
+    public void run(BenchmarkState state, Blackhole bh) throws IOException {
+        try (CsvListReader reader = new CsvListReader(new FileReader(state.file(), state.charset()), CsvPreference.STANDARD_PREFERENCE)) {
+            List<String> next;
+            while ((next = reader.read()) != null) {
+                bh.consume(toDomain(next));
             }
         }
+    }
+
+    private String[] toDomain(List<String> in) {
+        return in.toArray(new String[0]);
     }
 }

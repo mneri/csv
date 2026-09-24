@@ -39,15 +39,9 @@ public class OpenCsvBenchmark {
     public void run(BenchmarkState state, Blackhole bh) throws IOException, CsvValidationException {
         try (CSVReader reader = new CSVReader(new FileReader(state.file(), state.charset()))) {
             String[] next;
-            while ((next = reader.readNext()) != null) { // The returned array is recycled
-                bh.consume(toDomain(next));
+            while ((next = reader.readNext()) != null) {
+                bh.consume(next);
             }
         }
-    }
-
-    private String[] toDomain(String[] in) {
-        String[] out = new String[in.length];
-        System.arraycopy(in, 0, out, 0, in.length);
-        return out;
     }
 }
