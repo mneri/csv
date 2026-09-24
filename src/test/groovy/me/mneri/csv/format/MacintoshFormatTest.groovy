@@ -31,12 +31,12 @@ class MacintoshFormatTest extends Specification {
         driver.parse(input) == expected
 
         where:
-        description                        | input              || expected
-        "empty input"                      | ""                 || []
-        "CR only"                          | "\r"               || [[""]]
-        "two CR"                           | "\r\r"             || [[""], [""]]
-        "blank line between lines"         | "a\r\rb"           || [["a"], [""], ["b"]]
-        "blank line at the end"            | "a\r\r"            || [["a"], [""]]
+        description                | input    || expected
+        "empty input"              | ""       || []
+        "CR only"                  | "\r"     || [[""]]
+        "two CR"                   | "\r\r"   || [[""], [""]]
+        "blank line between lines" | "a\r\rb" || [["a"], [""], ["b"]]
+        "blank line at the end"    | "a\r\r"  || [["a"], [""]]
     }
 
     def "unquoted fields: #description"() {
@@ -44,23 +44,23 @@ class MacintoshFormatTest extends Specification {
         driver.parse(input) == expected
 
         where:
-        description                        | input              || expected
-        "one character"                    | "a"                || [["a"]]
-        "one field"                        | "abc"              || [["abc"]]
-        "two fields"                       | "a,b"              || [["a", "b"]]
-        "three fields"                     | "a,b,c"            || [["a", "b", "c"]]
-        "only a comma"                     | ","                || [["", ""]]
-        "only two commas"                  | ",,"               || [["", "", ""]]
-        "empty last field"                 | "a,"               || [["a", ""]]
-        "empty first field"                | ",a"               || [["", "a"]]
-        "empty middle field"               | "a,,b"             || [["a", "", "b"]]
-        "spaces are kept"                  | " a , b "          || [[" a ", " b "]]
-        "tab is ordinary"                  | "a\tb,c"           || [["a\tb", "c"]]
-        "punctuation below comma"          | "!#\$%&'()*+"      || [["!#\$%&'()*+"]]
-        "control characters"               | "\u0000\u0001\u000B\u000C" || [["\u0000\u0001\u000B\u000C"]]
-        "non-ASCII characters"             | "é,中文,😀"         || [["é", "中文", "😀"]]
-        "U+FFFF is not the end of file"    | "a\uFFFFb,c"     || [["a\uFFFFb", "c"]]
-        "long field"                       | "x" * 10_000       || [["x" * 10_000]]
+        description                     | input                      || expected
+        "one character"                 | "a"                        || [["a"]]
+        "one field"                     | "abc"                      || [["abc"]]
+        "two fields"                    | "a,b"                      || [["a", "b"]]
+        "three fields"                  | "a,b,c"                    || [["a", "b", "c"]]
+        "only a comma"                  | ","                        || [["", ""]]
+        "only two commas"               | ",,"                       || [["", "", ""]]
+        "empty last field"              | "a,"                       || [["a", ""]]
+        "empty first field"             | ",a"                       || [["", "a"]]
+        "empty middle field"            | "a,,b"                     || [["a", "", "b"]]
+        "spaces are kept"               | " a , b "                  || [[" a ", " b "]]
+        "tab is ordinary"               | "a\tb,c"                   || [["a\tb", "c"]]
+        "punctuation below comma"       | "!#\$%&'()*+"              || [["!#\$%&'()*+"]]
+        "control characters"            | "\u0000\u0001\u000B\u000C" || [["\u0000\u0001\u000B\u000C"]]
+        "non-ASCII characters"          | "é,中文,😀"                 || [["é", "中文", "😀"]]
+        "U+FFFF is not the end of file" | "a\uFFFFb,c"               || [["a\uFFFFb", "c"]]
+        "long field"                    | "x" * 10_000               || [["x" * 10_000]]
     }
 
     def "line breaks: #description"() {
@@ -68,16 +68,16 @@ class MacintoshFormatTest extends Specification {
         driver.parse(input) == expected
 
         where:
-        description                        | input              || expected
-        "CR between lines"                 | "a,b\rc,d"         || [["a", "b"], ["c", "d"]]
-        "CR at the end"                    | "a,b\r"            || [["a", "b"]]
-        "no line break at the end"         | "a,b\rc"           || [["a", "b"], ["c"]]
-        "different number of fields"       | "a,b,c\rd\re,f"    || [["a", "b", "c"], ["d"], ["e", "f"]]
-        "empty last field before CR"       | "a,\rb"            || [["a", ""], ["b"]]
-        "comma right after a line break"   | "a\r,b"            || [["a"], ["", "b"]]
-        "LF is an ordinary character"      | "a\nb,c"           || [["a\nb", "c"]]
-        "LF alone is a field"              | "\n"               || [["\n"]]
-        "CR LF: the LF starts the next line" | "a\r\nb"         || [["a"], ["\nb"]]
+        description                          | input           || expected
+        "CR between lines"                   | "a,b\rc,d"      || [["a", "b"], ["c", "d"]]
+        "CR at the end"                      | "a,b\r"         || [["a", "b"]]
+        "no line break at the end"           | "a,b\rc"        || [["a", "b"], ["c"]]
+        "different number of fields"         | "a,b,c\rd\re,f" || [["a", "b", "c"], ["d"], ["e", "f"]]
+        "empty last field before CR"         | "a,\rb"         || [["a", ""], ["b"]]
+        "comma right after a line break"     | "a\r,b"         || [["a"], ["", "b"]]
+        "LF is an ordinary character"        | "a\nb,c"        || [["a\nb", "c"]]
+        "LF alone is a field"                | "\n"            || [["\n"]]
+        "CR LF: the LF starts the next line" | "a\r\nb"        || [["a"], ["\nb"]]
     }
 
     def "quoted fields: #description"() {
@@ -85,23 +85,23 @@ class MacintoshFormatTest extends Specification {
         driver.parse(input) == expected
 
         where:
-        description                        | input                  || expected
-        "one quoted field"                 | '"a"'                  || [["a"]]
-        "empty quoted field"               | '""'                   || [[""]]
-        "quoted field with comma"          | '"a,b"'                || [["a,b"]]
-        "quoted field with CR"             | '"a\rb"'               || [["a\rb"]]
-        "quoted field with LF"             | '"a\nb"'               || [["a\nb"]]
-        "quoted field with CR LF"          | '"a\r\nb"'             || [["a\r\nb"]]
-        "quoted first field"               | '"a",b,c'              || [["a", "b", "c"]]
-        "quoted middle field"              | 'a,"b",c'              || [["a", "b", "c"]]
-        "quoted last field"                | 'a,b,"c"'              || [["a", "b", "c"]]
-        "all fields quoted"                | '"a","b","c"'          || [["a", "b", "c"]]
-        "empty quoted middle field"        | 'a,"",b'               || [["a", "", "b"]]
-        "empty quoted last field"          | 'a,""'                 || [["a", ""]]
-        "quoted field before CR"           | '"a"\rb'               || [["a"], ["b"]]
-        "quoted field after a line break"  | 'a\r"b"'               || [["a"], ["b"]]
-        "quoted spaces are kept"           | '" a "'                || [[" a "]]
-        "multiline field then more lines"  | '"a\rb",c\rd'          || [["a\rb", "c"], ["d"]]
+        description                       | input         || expected
+        "one quoted field"                | '"a"'         || [["a"]]
+        "empty quoted field"              | '""'          || [[""]]
+        "quoted field with comma"         | '"a,b"'       || [["a,b"]]
+        "quoted field with CR"            | '"a\rb"'      || [["a\rb"]]
+        "quoted field with LF"            | '"a\nb"'      || [["a\nb"]]
+        "quoted field with CR LF"         | '"a\r\nb"'    || [["a\r\nb"]]
+        "quoted first field"              | '"a",b,c'     || [["a", "b", "c"]]
+        "quoted middle field"             | 'a,"b",c'     || [["a", "b", "c"]]
+        "quoted last field"               | 'a,b,"c"'     || [["a", "b", "c"]]
+        "all fields quoted"               | '"a","b","c"' || [["a", "b", "c"]]
+        "empty quoted middle field"       | 'a,"",b'      || [["a", "", "b"]]
+        "empty quoted last field"         | 'a,""'        || [["a", ""]]
+        "quoted field before CR"          | '"a"\rb'      || [["a"], ["b"]]
+        "quoted field after a line break" | 'a\r"b"'      || [["a"], ["b"]]
+        "quoted spaces are kept"          | '" a "'       || [[" a "]]
+        "multiline field then more lines" | '"a\rb",c\rd' || [["a\rb", "c"], ["d"]]
     }
 
     def "escaped quotes: #description"() {
@@ -109,21 +109,21 @@ class MacintoshFormatTest extends Specification {
         driver.parse(input) == expected
 
         where:
-        description                        | input                  || expected
-        "at the beginning of the field"    | '"""a"'                || [['"a']]
-        "in the middle of the field"       | '"a""b"'               || [['a"b']]
-        "at the end of the field"          | '"a"""'                || [['a"']]
-        "the whole field"                  | '""""'                 || [['"']]
-        "two in a row"                     | '"a""""b"'             || [['a""b']]
-        "several in one field"             | '"""a""b"""'           || [['"a"b"']]
-        "before a comma inside quotes"     | '"a"",b"'              || [['a",b']]
-        "before a CR inside quotes"        | '"a""\rb"'             || [['a"\rb']]
-        "in the first field"               | '"a""b",c'             || [['a"b', "c"]]
-        "in the middle field"              | 'x,"a""b",y'           || [["x", 'a"b', "y"]]
-        "in the last field"                | 'x,"a""b"'             || [["x", 'a"b']]
-        "at the beginning, before a comma" | '"""",b'               || [['"', "b"]]
-        "at the end, before a CR"          | '"a"""\rb'             || [['a"'], ["b"]]
-        "in several fields and lines"      | '"a""",""""\r"""b"'    || [['a"', '"'], ['"b']]
+        description                        | input               || expected
+        "at the beginning of the field"    | '"""a"'             || [['"a']]
+        "in the middle of the field"       | '"a""b"'            || [['a"b']]
+        "at the end of the field"          | '"a"""'             || [['a"']]
+        "the whole field"                  | '""""'              || [['"']]
+        "two in a row"                     | '"a""""b"'          || [['a""b']]
+        "several in one field"             | '"""a""b"""'        || [['"a"b"']]
+        "before a comma inside quotes"     | '"a"",b"'           || [['a",b']]
+        "before a CR inside quotes"        | '"a""\rb"'          || [['a"\rb']]
+        "in the first field"               | '"a""b",c'          || [['a"b', "c"]]
+        "in the middle field"              | 'x,"a""b",y'        || [["x", 'a"b', "y"]]
+        "in the last field"                | 'x,"a""b"'          || [["x", 'a"b']]
+        "at the beginning, before a comma" | '"""",b'            || [['"', "b"]]
+        "at the end, before a CR"          | '"a"""\rb'          || [['a"'], ["b"]]
+        "in several fields and lines"      | '"a""",""""\r"""b"' || [['a"', '"'], ['"b']]
     }
 
     def "rejects what a strict format does not allow: #description"() {
@@ -134,19 +134,19 @@ class MacintoshFormatTest extends Specification {
         thrown(UnexpectedCharacterException)
 
         where:
-        description                                  | input
-        "quote inside an unquoted field"             | 'a"b'
-        "quote at the end of an unquoted field"      | 'a"'
-        "quote after a leading space"                | ' "a"'
-        "text after the closing quote"               | '"a"b'
-        "space after the closing quote"              | '"a" '
-        "LF after the closing quote"                 | '"a"\nb'
-        "text after an empty quoted field"           | '""a'
-        "quoted field never closed"                  | '"a'
-        "only an opening quote"                      | '"'
-        "quoted field never closed, with a comma"    | '"a,b'
-        "escaped quote, then the end of file"        | '"a""'
-        "error on a later line"                      | 'a,b\rc"d'
+        description                               | input
+        "quote inside an unquoted field"          | 'a"b'
+        "quote at the end of an unquoted field"   | 'a"'
+        "quote after a leading space"             | ' "a"'
+        "text after the closing quote"            | '"a"b'
+        "space after the closing quote"           | '"a" '
+        "LF after the closing quote"              | '"a"\nb'
+        "text after an empty quoted field"        | '""a'
+        "quoted field never closed"               | '"a'
+        "only an opening quote"                   | '"'
+        "quoted field never closed, with a comma" | '"a,b'
+        "escaped quote, then the end of file"     | '"a""'
+        "error on a later line"                   | 'a,b\rc"d'
     }
 
     def "either parses or throws UnexpectedCharacterException, on every input of up to 6 characters"() {
