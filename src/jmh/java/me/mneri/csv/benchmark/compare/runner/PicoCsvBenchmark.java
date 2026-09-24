@@ -1,4 +1,4 @@
-package me.mneri.csv.benchmark.runner;
+package me.mneri.csv.benchmark.compare.runner;
 
 import me.mneri.csv.benchmark.compare.BenchmarkConstants;
 import me.mneri.csv.benchmark.compare.BenchmarkState;
