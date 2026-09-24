@@ -31,12 +31,38 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
-tasks.withType(JavaCompile).configureEach {
-    options.compilerArgs += ['--add-modules=jdk.incubator.vector']
+sourceSets {
+    java17
+    main {
+        compileClasspath += java17.output
+        runtimeClasspath += java17.output
+    }
+    test {
+        compileClasspath += java17.output
+        runtimeClasspath += java17.output
+    }
 }
 
-tasks.withType(JavaExec).configureEach {
-    jvmArgs += ['--add-modules=jdk.incubator.vector']
+tasks.named('compileJava17Java') {
+    options.release = 17
+    options.compilerArgs += ['--add-modules', 'jdk.incubator.vector']
+}
+
+tasks.named('compileJava') {
+    options.release = 8
+}
+
+tasks.named('jar') {
+    from sourceSets.java17.output
+}
+
+afterEvaluate {
+    sourceSets.jmh.compileClasspath += sourceSets.java17.output
+    sourceSets.jmh.runtimeClasspath += sourceSets.java17.output
+}
+
+tasks.named('jmhJar') {
+    from sourceSets.java17.output
 }
 
 tasks.withType(Test).configureEach {

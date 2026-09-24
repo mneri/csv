@@ -91,10 +91,11 @@ public class CsvReader<T> implements AutoCloseable {
      * @throws FileNotFoundException If the file does not exist.
      * @see Hint
      */
+    @SuppressWarnings("IOStreamConstructor") // Java 8 compatibility
     public static <T> CsvReader<T> open(
             File f, Charset charset, Format.Provider<? extends Format> p, Deserializer<T> des, int hints)
             throws IOException {
-        return open(new FileReader(f, charset), p, des, hints);
+        return open(new InputStreamReader(new FileInputStream(f), charset), p, des, hints);
     }
 
     /**
