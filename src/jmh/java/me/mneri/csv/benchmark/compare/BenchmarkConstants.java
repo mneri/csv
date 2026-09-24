@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package me.mneri.csv.benchmark;
+package me.mneri.csv.benchmark.compare;
 
 public final class BenchmarkConstants {
     public static final int FORKS = 3;

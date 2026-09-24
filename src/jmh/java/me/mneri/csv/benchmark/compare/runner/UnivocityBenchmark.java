@@ -16,37 +16,34 @@
  * limitations under the License.
  */
 
-package me.mneri.csv.benchmark.runner;
+package me.mneri.csv.benchmark.compare.runner;
 
-import me.mneri.csv.CsvReader;
-import me.mneri.csv.benchmark.BenchmarkState;
-import me.mneri.csv.benchmark.BenchmarkConstants;
-import me.mneri.csv.deserializer.StringArrayDeserializer;
+import com.univocity.parsers.common.IterableResult;
+import com.univocity.parsers.common.ParsingContext;
+import com.univocity.parsers.csv.CsvParser;
+import com.univocity.parsers.csv.CsvParserSettings;
+import me.mneri.csv.benchmark.compare.BenchmarkConstants;
+import me.mneri.csv.benchmark.compare.BenchmarkState;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 
-import java.io.IOException;
+import java.io.FileReader;
 import java.util.concurrent.TimeUnit;
 
 @BenchmarkMode(Mode.AverageTime)
+@Fork(BenchmarkConstants.FORKS)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @Warmup(iterations = BenchmarkConstants.WARMUP_ITERATIONS)
 @Measurement(iterations = BenchmarkConstants.MEASUREMENT_ITERATIONS)
-public abstract class MneriCsvBenchmark {
+public class UnivocityBenchmark {
     @Benchmark
-    public void run(BenchmarkState state, Blackhole bh) throws IOException {
-        try (CsvReader<String[]> reader = CsvReader.open(state.file(), state.charset(), new StringArrayDeserializer())) {
-            while (reader.hasNext()) {
-                bh.consume(reader.next());
+    public void run(BenchmarkState state, Blackhole bh) throws Exception {
+        CsvParser parser = new CsvParser(new CsvParserSettings());
+        try (FileReader reader = new FileReader(state.file(), state.charset())) {
+            IterableResult<String[], ParsingContext> iterable = parser.iterate(reader);
+            for (String[] next : iterable) {
+                bh.consume(next);
             }
         }
-    }
-
-    @Fork(BenchmarkConstants.FORKS)
-    public static class Sequential extends MneriCsvBenchmark {
-    }
-
-    @Fork(value = BenchmarkConstants.FORKS, jvmArgsPrepend = "--add-modules=jdk.incubator.vector")
-    public static class Vector extends MneriCsvBenchmark {
     }
 }

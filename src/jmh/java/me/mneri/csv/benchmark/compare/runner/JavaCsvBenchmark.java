@@ -16,12 +16,11 @@
  * limitations under the License.
  */
 
-package me.mneri.csv.benchmark.runner;
+package me.mneri.csv.benchmark.compare.runner;
 
-import com.opencsv.CSVReader;
-import com.opencsv.exceptions.CsvValidationException;
-import me.mneri.csv.benchmark.BenchmarkState;
-import me.mneri.csv.benchmark.BenchmarkConstants;
+import com.csvreader.CsvReader;
+import me.mneri.csv.benchmark.compare.BenchmarkConstants;
+import me.mneri.csv.benchmark.compare.BenchmarkState;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 
@@ -34,14 +33,18 @@ import java.util.concurrent.TimeUnit;
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @Warmup(iterations = BenchmarkConstants.WARMUP_ITERATIONS)
 @Measurement(iterations = BenchmarkConstants.MEASUREMENT_ITERATIONS)
-public class OpenCsvBenchmark {
+public class JavaCsvBenchmark {
     @Benchmark
-    public void run(BenchmarkState state, Blackhole bh) throws IOException, CsvValidationException {
-        try (CSVReader reader = new CSVReader(new FileReader(state.file(), state.charset()))) {
-            String[] next;
-            while ((next = reader.readNext()) != null) {
-                bh.consume(next);
+    public void run(BenchmarkState state, Blackhole bh) throws IOException {
+        CsvReader reader = new com.csvreader.CsvReader(new FileReader(state.file(), state.charset()), ',');
+        reader.setTrimWhitespace(false);
+
+        try {
+            while (reader.readRecord()) {
+                bh.consume(reader.getValues());
             }
+        } finally {
+            reader.close();
         }
     }
 }

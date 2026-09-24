@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package me.mneri.csv.benchmark;
+package me.mneri.csv.benchmark.compare;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;

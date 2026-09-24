@@ -16,14 +16,13 @@
  * limitations under the License.
  */
 
-package me.mneri.csv.benchmark.runner;
+package me.mneri.csv.benchmark.compare.runner;
 
-import com.fasterxml.jackson.databind.MappingIterator;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.dataformat.csv.CsvMapper;
-import com.fasterxml.jackson.dataformat.csv.CsvParser;
-import me.mneri.csv.benchmark.BenchmarkConstants;
-import me.mneri.csv.benchmark.BenchmarkState;
+import de.siegmar.fastcsv.reader.CsvReader;
+import de.siegmar.fastcsv.reader.CsvRecord;
+import de.siegmar.fastcsv.reader.FieldMismatchStrategy;
+import me.mneri.csv.benchmark.compare.BenchmarkConstants;
+import me.mneri.csv.benchmark.compare.BenchmarkState;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 
@@ -36,17 +35,22 @@ import java.util.concurrent.TimeUnit;
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @Warmup(iterations = BenchmarkConstants.WARMUP_ITERATIONS)
 @Measurement(iterations = BenchmarkConstants.MEASUREMENT_ITERATIONS)
-public class JacksonCsvBenchmark {
-    private static final ObjectReader READER = new CsvMapper()
-            .enable(CsvParser.Feature.WRAP_AS_ARRAY)
-            .readerFor(String[].class);
-
+public class FastCsvBenchmark {
     @Benchmark
     public void run(BenchmarkState state, Blackhole bh) throws IOException {
-        try (MappingIterator<String[]> iterator = READER.readValues(new FileReader(state.file(), state.charset()))) {
-            while (iterator.hasNextValue()) {
-                bh.consume(iterator.nextValue());
-            }
+        CsvReader.builder()
+                .extraFieldStrategy(FieldMismatchStrategy.IGNORE)
+                .missingFieldStrategy(FieldMismatchStrategy.IGNORE)
+                .ofCsvRecord(new FileReader(state.file(), state.charset()))
+                .forEach(record -> bh.consume(toDomain(record)));
+    }
+
+    private String[] toDomain(CsvRecord record) {
+        final int fieldCount = record.getFieldCount();
+        String[] out = new String[fieldCount];
+        for (int i = 0; i < fieldCount; i++) {
+            out[i] = record.getField(i);
         }
+        return out;
     }
 }

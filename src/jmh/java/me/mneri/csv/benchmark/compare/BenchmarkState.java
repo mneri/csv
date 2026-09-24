@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package me.mneri.csv.benchmark;
+package me.mneri.csv.benchmark.compare;
 
 import org.openjdk.jmh.annotations.*;
 

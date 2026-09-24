@@ -16,16 +16,18 @@
  * limitations under the License.
  */
 
-package me.mneri.csv.benchmark.runner;
+package me.mneri.csv.benchmark.compare.runner;
 
-import com.github.skjolber.stcsv.CsvReader;
-import com.github.skjolber.stcsv.sa.StringArrayCsvReader;
-import me.mneri.csv.benchmark.BenchmarkConstants;
-import me.mneri.csv.benchmark.BenchmarkState;
+import me.mneri.csv.benchmark.compare.BenchmarkConstants;
+import me.mneri.csv.benchmark.compare.BenchmarkState;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 @BenchmarkMode(Mode.AverageTime)
@@ -33,20 +35,21 @@ import java.util.concurrent.TimeUnit;
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @Warmup(iterations = BenchmarkConstants.WARMUP_ITERATIONS)
 @Measurement(iterations = BenchmarkConstants.MEASUREMENT_ITERATIONS)
-public class SesseltjonnaBenchmark {
+public class CommonsCsvBenchmark {
     @Benchmark
-    public void run(BenchmarkState state, Blackhole bh) throws Exception {
-        try (CsvReader<String[]> reader = StringArrayCsvReader.builder().build(new FileReader(state.file(), state.charset()))) {
-            String[] next;
-            while ((next = reader.next()) != null) { // The returned array is recycled
-                bh.consume(toDomain(next));
+    public void run(BenchmarkState state, Blackhole bh) throws IOException {
+        try (CSVParser parser = CSVFormat.DEFAULT.parse(new FileReader(state.file(), state.charset()))) {
+            for (CSVRecord record : parser) {
+                bh.consume(toDomain(record));
             }
         }
     }
 
-    private String[] toDomain(String[] in) {
-        String[] out = new String[in.length];
-        System.arraycopy(in, 0, out, 0, in.length);
+    private String[] toDomain(CSVRecord record) {
+        String[] out = new String[record.size()];
+        for (int i = 0; i < out.length; i++) {
+            out[i] = record.get(i);
+        }
         return out;
     }
 }

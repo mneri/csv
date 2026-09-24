@@ -16,16 +16,16 @@
  * limitations under the License.
  */
 
-package me.mneri.csv.benchmark.runner;
+package me.mneri.csv.benchmark.compare.runner;
 
-import com.csvreader.CsvReader;
-import me.mneri.csv.benchmark.BenchmarkConstants;
-import me.mneri.csv.benchmark.BenchmarkState;
+import com.github.skjolber.stcsv.CsvReader;
+import com.github.skjolber.stcsv.sa.StringArrayCsvReader;
+import me.mneri.csv.benchmark.compare.BenchmarkConstants;
+import me.mneri.csv.benchmark.compare.BenchmarkState;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 
 import java.io.FileReader;
-import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 @BenchmarkMode(Mode.AverageTime)
@@ -33,18 +33,20 @@ import java.util.concurrent.TimeUnit;
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @Warmup(iterations = BenchmarkConstants.WARMUP_ITERATIONS)
 @Measurement(iterations = BenchmarkConstants.MEASUREMENT_ITERATIONS)
-public class JavaCsvBenchmark {
+public class SesseltjonnaBenchmark {
     @Benchmark
-    public void run(BenchmarkState state, Blackhole bh) throws IOException {
-        CsvReader reader = new com.csvreader.CsvReader(new FileReader(state.file(), state.charset()), ',');
-        reader.setTrimWhitespace(false);
-
-        try {
-            while (reader.readRecord()) {
-                bh.consume(reader.getValues());
+    public void run(BenchmarkState state, Blackhole bh) throws Exception {
+        try (CsvReader<String[]> reader = StringArrayCsvReader.builder().build(new FileReader(state.file(), state.charset()))) {
+            String[] next;
+            while ((next = reader.next()) != null) { // The returned array is recycled
+                bh.consume(toDomain(next));
             }
-        } finally {
-            reader.close();
         }
+    }
+
+    private String[] toDomain(String[] in) {
+        String[] out = new String[in.length];
+        System.arraycopy(in, 0, out, 0, in.length);
+        return out;
     }
 }
