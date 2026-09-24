@@ -28,6 +28,7 @@ dependencies {
     jmh 'org.csveed:csveed:0.9.0'
     jmh 'org.apache.commons:commons-csv:1.10.0'
     jmh 'org.simpleflatmapper:sfm-csv:9.0.2'
+    jmh 'uk.elementarysoftware:quick-csv-streamer:0.2.4'
 
     testImplementation 'org.spockframework:spock-core:2.4-groovy-4.0'
     testImplementation 'org.apache.groovy:groovy:4.0.18'
