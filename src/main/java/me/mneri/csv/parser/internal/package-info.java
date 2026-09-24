@@ -20,7 +20,7 @@
  * CSV parsing implementations.
  * <ul>
  *   <li>
- *       {@link me.mneri.csv.parser.internal.SequentialLineParser}: A parser that processes CSV input one character at a
+ *       {@link me.mneri.csv.parser.internal.ScalarLineParser}: A parser that processes CSV input one character at a
  *       time.
  *   </li>
  *   <li>
@@ -34,7 +34,7 @@
  * yet available in standard Java installations, but can be enabled by adding the JVM flag
  * {@code --add-modules jdk.incubator.vector}. When the flag is active, CSV files are parsed by
  * {@link me.mneri.csv.parser.internal.VectorLineParser}; when not active
- * {@link me.mneri.csv.parser.internal.SequentialLineParser} is used instead.
+ * {@link me.mneri.csv.parser.internal.ScalarLineParser} is used instead.
  * <p>
  * <strong>Note:</strong> Classes in this package are internal implementation details and should not be used directly by
  * external code.</p>

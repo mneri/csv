@@ -27,7 +27,7 @@ import me.mneri.csv.hint.Hint;
 import me.mneri.csv.io.internal.RandomAccessStream;
 import me.mneri.csv.line.internal.InternalRecycledLine;
 import me.mneri.csv.parser.internal.LineParser;
-import me.mneri.csv.parser.internal.SequentialLineParser;
+import me.mneri.csv.parser.internal.ScalarLineParser;
 import me.mneri.csv.parser.internal.VectorLineParser;
 
 import java.io.*;
@@ -230,7 +230,7 @@ public class CsvReader<T> implements AutoCloseable {
         if (Extensions.SIMD_SUPPORTED && (hints & Hint.TINY_FIELDS) == 0) {
             parser = new VectorLineParser(p, stream);
         } else {
-            parser = new SequentialLineParser(p, stream);
+            parser = new ScalarLineParser(p, stream);
         }
 
         return new CsvReader<>(parser, line, des);

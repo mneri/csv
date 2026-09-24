@@ -33,7 +33,7 @@ import java.util.stream.Stream;
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @Warmup(iterations = BenchmarkConstants.WARMUP_ITERATIONS)
 @Measurement(iterations = BenchmarkConstants.MEASUREMENT_ITERATIONS)
-public class SimpleFlatMapperBenchmark {
+public abstract class SimpleFlatMapperBenchmark {
     @Benchmark
     public void run(BenchmarkState state, Blackhole bh) throws Exception {
         try (Stream<String[]> stream = CsvParser.stream(new FileReader(state.file(), state.charset()))) {

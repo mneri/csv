@@ -125,7 +125,7 @@ public final class MacintoshFormat implements Format {
      */
     @Override
     public long bitmask(int s, char[] buff, int offset) {
-        long bm = VectorHelper.bitmask(buff, offset, (char) -1, '\r', '"', ',');
+        long bm = VectorHelper.bitmaskUleEqEq(buff, offset, '\r', '"', ',');
 
         // A bitmask with 1's set at the positions of commas or any other CSV special character is not sufficient; for
         // example, the Format needs to consume a comma to track the end of the current field and the character after to

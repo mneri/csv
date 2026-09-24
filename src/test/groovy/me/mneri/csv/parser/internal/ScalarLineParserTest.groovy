@@ -26,7 +26,7 @@ import spock.lang.Specification
 
 import static me.mneri.csv.format.Format.*
 
-class SequentialLineParserTest extends Specification {
+class ScalarLineParserTest extends Specification {
     // For performance reasons, RandomAccessStream and InternalRecycledLine are final classes, and it's not possible to
     // mock or spy final classes. Tests make use of these two classes so they don't look properly isolated, but we
     // really can't do better.
@@ -36,7 +36,7 @@ class SequentialLineParserTest extends Specification {
 
     def provider = { format } as Format.Provider
     def format = Mock(Format) { base() >> 0 }
-    def parser = new SequentialLineParser(provider, stream)
+    def parser = new ScalarLineParser(provider, stream)
 
     def "immediately ends the stream"() {
         given:

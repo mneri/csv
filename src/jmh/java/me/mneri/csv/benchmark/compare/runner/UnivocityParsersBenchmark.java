@@ -40,7 +40,7 @@ public abstract class UnivocityParsersBenchmark {
 
     @Benchmark
     public void run(BenchmarkState state, Blackhole bh) throws Exception {
-        CsvParser parser = new CsvParser(new CsvParserSettings());
+        CsvParser parser = new CsvParser(getSettings());
         try (FileReader reader = new FileReader(state.file(), state.charset())) {
             IterableResult<String[], ParsingContext> iterable = parser.iterate(reader);
             for (String[] next : iterable) {

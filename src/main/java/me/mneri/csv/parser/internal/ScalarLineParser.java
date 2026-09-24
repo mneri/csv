@@ -32,13 +32,13 @@ import static me.mneri.csv.format.Format.*;
  *
  * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
  */
-public final class SequentialLineParser implements LineParser {
+public final class ScalarLineParser implements LineParser {
     private static final int EFB_TRAILING_ZEROES = Integer.numberOfTrailingZeros(EFB);
 
     private final Format format;
     private final RandomAccessStream stream;
 
-    private int pos;
+    private long pos;
 
     /**
      * Create a new {@code SequentialLineParser} instance.
@@ -48,7 +48,7 @@ public final class SequentialLineParser implements LineParser {
      *                 {@code Format} instances.
      * @param stream   The character stream.
      */
-    public SequentialLineParser(Provider<? extends Format> provider, RandomAccessStream stream) {
+    public ScalarLineParser(Provider<? extends Format> provider, RandomAccessStream stream) {
         this.format = provider.provide();
         this.stream = stream;
     }
@@ -74,7 +74,7 @@ public final class SequentialLineParser implements LineParser {
     public boolean next(InternalRecycledLine out) throws IOException { // Bytecode size: 209 (OpenJDK 26)
         final Format format = this.format;
         int s = format.base();
-        int pos = this.pos;
+        long pos = this.pos;
 
         out.reset();
         stream.compact(pos);
