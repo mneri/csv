@@ -19,27 +19,33 @@
 package me.mneri.csv.extension
 
 import spock.lang.Specification
-import spock.lang.Unroll
 
 class VectorHelperTest extends Specification {
-    def input = new char[256]
+    def "#description"() {
+        given:
+        def cb = ("x" * 64).toCharArray()
+        positions.each { cb[it] = c }
 
-    @Unroll
-    def "bitmask(4 chars) returns matching positions for '#description'"() {
-//        given:
-//        matches.each { int position ->
-//            input[position] = target as char
-//        }
-//
-//        expect:
-//        FormatHelper.bitmask(input, 0, 'a' as char, 'b' as char, target as char, 'd' as char) == expectedMask
-//
-//        where:
-//        description       | target | matches            | expectedMask
-//        "no matches"      | 'z'    | []                 | 0L
-//        "first character" | 'z'    | [0]                | 1L
-//        "last character"  | 'z'    | [63]               | Long.MIN_VALUE
-//        "several matches" | 'z'    | [0, 1, 10, 31, 63] | maskOf(0, 1, 10, 31, 63)
-//    }
+        expect:
+        VectorHelper.bitmaskUleEqEq(cb, 0, '\r' as char, '"' as char, ',' as char) == mask
+
+        where:
+        description                      | c                 | positions || mask
+        "no match"                       | 'x' as char       | []        || 0L
+        "a character equal to ule"       | '\r' as char      | [0]       || 1L
+        "a character below ule"          | '\n' as char      | [1]       || 2L
+        "a character equal to eq1"       | '"' as char       | [2]       || 4L
+        "a character equal to eq2"       | ',' as char       | [63]      || Long.MIN_VALUE
+        "several matches"                | ',' as char       | [0, 31]   || (1L << 31) + 1
+        "every character matches"        | ',' as char       | (0..63)   || -1L
+        "ule is compared as unsigned"    | '\uFFFF' as char  | [0]       || 0L
+    }
+
+    def "reads the 64 characters starting at the offset"() {
+        given:
+        def cb = ("," + "x" * 64 + ",").toCharArray()
+
+        expect:
+        VectorHelper.bitmaskUleEqEq(cb, 1, '\r' as char, '"' as char, ',' as char) == 0L
     }
 }
