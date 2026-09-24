@@ -35,7 +35,9 @@ import java.util.concurrent.TimeUnit;
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @Warmup(iterations = BenchmarkConstants.WARMUP_ITERATIONS)
 @Measurement(iterations = BenchmarkConstants.MEASUREMENT_ITERATIONS)
-public class UnivocityParsersBenchmark {
+public abstract class UnivocityParsersBenchmark {
+    protected abstract CsvParserSettings getSettings();
+
     @Benchmark
     public void run(BenchmarkState state, Blackhole bh) throws Exception {
         CsvParser parser = new CsvParser(new CsvParserSettings());
@@ -44,6 +46,24 @@ public class UnivocityParsersBenchmark {
             for (String[] next : iterable) {
                 bh.consume(next);
             }
+        }
+    }
+
+    public static class ParallelReader extends UnivocityParsersBenchmark {
+        @Override
+        protected CsvParserSettings getSettings() {
+            CsvParserSettings settings = new CsvParserSettings();
+            settings.setReadInputOnSeparateThread(true);
+            return settings;
+        }
+    }
+
+    public static class StandardReader extends UnivocityParsersBenchmark {
+        @Override
+        protected CsvParserSettings getSettings() {
+            CsvParserSettings settings = new CsvParserSettings();
+            settings.setReadInputOnSeparateThread(false);
+            return settings;
         }
     }
 }
