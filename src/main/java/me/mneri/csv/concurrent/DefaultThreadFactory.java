@@ -16,25 +16,27 @@
  * limitations under the License.
  */
 
-package me.mneri.csv.deserializer;
+package me.mneri.csv.concurrent;
 
-import me.mneri.csv.parser.RecycledLine;
+import me.mneri.csv.reader.CsvReader;
 
-import java.io.IOException;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Simple implementation of the {@link Deserializer} interface returning an array of {@code String}s.
+ * The default {@link ThreadFactory} for the background threads of parallel {@link CsvReader}s.
+ * <p>
+ * The threads are daemon threads, so a reader that the client forgets to close doesn't keep the JVM alive.
  *
  * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
  */
-public class StringArrayDeserializer implements Deserializer<String[]> {
+public final class DefaultThreadFactory implements ThreadFactory {
+    private static final AtomicInteger COUNT = new AtomicInteger();
+
     @Override
-    public String[] deserialize(RecycledLine line) throws IOException {
-        final int len = line.getFieldCount();
-        String[] list = new String[len];
-        for (int i = 0; i < len; i++) {
-            list[i] = line.getString(i);
-        }
-        return list;
+    public Thread newThread(Runnable runnable) {
+        Thread thread = new Thread(runnable, "csv-reader-" + COUNT.incrementAndGet());
+        thread.setDaemon(true);
+        return thread;
     }
 }

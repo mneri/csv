@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package me.mneri.csv
+package me.mneri.csv.writer
 
 import java.io.StringWriter
 import me.mneri.csv.format.Format

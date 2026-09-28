@@ -20,21 +20,21 @@
  * CSV parsing implementations.
  * <ul>
  *   <li>
- *       {@link me.mneri.csv.parser.internal.ScalarLineParser}: A parser that processes CSV input one character at a
+ *       {@link me.mneri.csv.parser.internal.ScalarPageParser}: A parser that processes CSV input one character at a
  *       time.
  *   </li>
  *   <li>
- *       {@link me.mneri.csv.parser.internal.VectorLineParser}: An optimized parser that leverages SIMD (Single
+ *       {@link me.mneri.csv.parser.internal.VectorPageParser}: An optimized parser that leverages SIMD (Single
  *       Instruction, Multiple Data) operations to process multiple characters in parallel, providing superior
  *       performance on modern hardware.
  *   </li>
  * </ul>
  * <p>
- * {@link me.mneri.csv.parser.internal.VectorLineParser} makes use of the Vector API, which is an incubator feature not
+ * {@link me.mneri.csv.parser.internal.VectorPageParser} makes use of the Vector API, which is an incubator feature not
  * yet available in standard Java installations, but can be enabled by adding the JVM flag
  * {@code --add-modules jdk.incubator.vector}. When the flag is active, CSV files are parsed by
- * {@link me.mneri.csv.parser.internal.VectorLineParser}; when not active
- * {@link me.mneri.csv.parser.internal.ScalarLineParser} is used instead.
+ * {@link me.mneri.csv.parser.internal.VectorPageParser}; when not active
+ * {@link me.mneri.csv.parser.internal.ScalarPageParser} is used instead.
  * <p>
  * <strong>Note:</strong> Classes in this package are internal implementation details and should not be used directly by
  * external code.</p>

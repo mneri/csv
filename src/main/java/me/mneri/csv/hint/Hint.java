@@ -29,5 +29,5 @@ public class Hint {
      * <p>
      * Advise CSV readers and writers to adapt their algorithms to this specific scenario and be more efficient.
      */
-    public static final int TINY_FIELDS = 1;
+    public static final long TINY_FIELDS = 1L;
 }

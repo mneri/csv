@@ -18,7 +18,7 @@
 
 package me.mneri.csv.deserializer
 
-import me.mneri.csv.line.RecycledLine
+import me.mneri.csv.parser.RecycledLine
 import spock.lang.Specification
 
 class StringArrayDeserializerTest extends Specification {

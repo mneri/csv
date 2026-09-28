@@ -16,9 +16,9 @@
  * limitations under the License.
  */
 
-package me.mneri.csv.line;
+package me.mneri.csv.parser;
 
-import me.mneri.csv.CsvReader;
+import me.mneri.csv.reader.CsvReader;
 
 import java.io.IOException;
 import java.math.BigDecimal;
