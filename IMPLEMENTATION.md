@@ -304,7 +304,7 @@ The table below shows profiling results for single-threaded parsing, broken down
 > cumulative stages (read; read and parse; read, parse and deserialize) and subtracting. The phases compete for the same
 > caches and branch predictors, so the split is approximate.
 
-> **Note**: I/O time is low because files are in the OS page cache during benchmark runs.
+> **Note**: I/O time is low because files are kept in the OS page cache during benchmark runs.
 
 A _parallel_ `CsvReader` splits the work between two threads:
 
@@ -316,6 +316,12 @@ While the client thread deserializes the lines of a page, the background thread 
 
 Notice how reading and parsing together account for 47.2% of execution time, while deserialization accounts for 52.8%.
 Because the workload is split almost evenly, this two-stage pipeline cuts the execution time significantly.
+
+Concurrency is managed using two `ArrayBlockingQueue` instances named `free` and `loaded`. The background thread takes a
+page from `free` (blocking if empty), populates it with parsed data, and places it into `loaded`. The client thread
+retrieves pages from `loaded` (blocking if empty), deserializes the lines, and returns the consumed page back to `free`.
+The synchronization overhead is therefore amortized across hundred of records per page rather than paid on every
+line.
 
 # Low-Level Optimisations
 Maintaining the state in a local variable or relying on the execution stack to keep an _implicit state_ (like
