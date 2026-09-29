@@ -5,6 +5,8 @@ A high-performance Java CSV parser and writer using the Java Vector API (SIMD).
 `mneri/csv` is a solid, allocation-conscious CSV reader/writer for Java. The parser uses the Java Vector API
 (`jdk.incubator.vector`) to accelerate delimiter detection using SIMD instructions.
 
+See [IMPLEMENTATION.md](IMPLEMENTATION.md) for a detailed overview of the project.  
+
 ## Reading a CSV File
 
 `CsvReader` uses a `Deserializer` to convert each CSV line into an object.
