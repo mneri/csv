@@ -324,10 +324,9 @@ The synchronization overhead is therefore amortized across hundred of records pe
 line.
 
 Multithreading is strictly opt-in. To instantiate a parallel `CsvReader`, callers invoke one of the
-`CsvReader.parallel()` factory methods and supply a `ThreadFactory`.
-
-Some Java parsers, such as `univocity-parsers`, enable parallel execution by default and require explicit opt-out
-configuration. In my opinion, this is not correct and `mneri/csv` takes the opposite stance.
+`CsvReader.parallel()` factory methods and supply a `ThreadFactory`. Some Java parsers (such as `univocity-parsers`)
+enable parallel execution by default and require explicit opt-out configuration. In my opinion, this is not correct and
+`mneri/csv` takes the opposite stance.
 
 # Low-Level Optimisations
 Maintaining the state in a local variable or relying on the execution stack to keep an _implicit state_ (like
