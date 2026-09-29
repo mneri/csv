@@ -93,7 +93,8 @@ incubator module. The Vector API can be enabled via the JVM flag `--add-modules 
 
 ## Performances
 
-See [PERFORMANCE.md](PERFORMANCE.md) for the full results, hardware details, and commands for running the benchmarks.
+See [PERFORMANCE.md](PERFORMANCE.md) for the full results, performance analysis, hardware details, and commands for running
+the benchmarks.
 
 Below, the comparison of `mneri/csv` performances against other Java frameworks using the popular `worldcitiespop.csv`
 benchmark. `mneri/csv` in Parallel/Vector configuration currently score the fastest.
