@@ -258,6 +258,12 @@ Calculating the mask is not free, but the cost is very well offset by the saving
 The table above shows the lookup reduction in three popular benchmarks. This result is not absolute and heavily depends
 on the input file.
 
+In [Parsing CSV with SIMD](https://chunkofcoal.com/posts/simd-csv/), Matthew Kim presents an algorithm that (at least on
+the surface) promises higher throughput than the vector approach used here. For example, his technique eliminates
+false-positive entirely and doesn't require to process the character at the start of a field. In `mneri/csv`, however,
+the transition table is the _non-negotiable_ core of the architecture. Maintaining an explicit, easy-to-reason-about
+transition table comes with trade-offs like accepting a slightly less optimal masking strategy.
+
 # Paging
 The `CsvReader` exposes a simple API. Note how lines are returned _one by one_ when the client calls `next()`.
 
