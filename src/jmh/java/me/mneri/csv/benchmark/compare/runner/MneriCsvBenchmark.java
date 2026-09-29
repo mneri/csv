@@ -27,13 +27,9 @@ import me.mneri.csv.reader.CsvReader;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.util.concurrent.TimeUnit;
 
-// Scalar forks don't load the Vector API module, so the reader falls back to the scalar parser.
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @Warmup(iterations = BenchmarkConstants.WARMUP_ITERATIONS)
@@ -43,9 +39,7 @@ public abstract class MneriCsvBenchmark {
     public static class SequentialScalar extends MneriCsvBenchmark {
         @Benchmark
         public void run(BenchmarkState state, Blackhole bh) throws IOException {
-            Reader in = new InputStreamReader(new FileInputStream(state.file()), state.charset());
-            try (CsvReader<String[]> reader = CsvReader.open(
-                    in, Rfc4180FullyRelaxedFormat.provider(), new StringArrayDeserializer())) {
+            try (CsvReader<String[]> reader = CsvReader.open(state.file(), state.charset(), Rfc4180FullyRelaxedFormat.provider(), new StringArrayDeserializer())) {
                 while (reader.hasNext()) {
                     bh.consume(reader.next());
                 }
@@ -57,9 +51,7 @@ public abstract class MneriCsvBenchmark {
     public static class SequentialVector extends MneriCsvBenchmark {
         @Benchmark
         public void run(BenchmarkState state, Blackhole bh) throws IOException {
-            Reader in = new InputStreamReader(new FileInputStream(state.file()), state.charset());
-            try (CsvReader<String[]> reader = CsvReader.open(
-                    in, Rfc4180FullyRelaxedFormat.provider(), new StringArrayDeserializer())) {
+            try (CsvReader<String[]> reader = CsvReader.open(state.file(), state.charset(), Rfc4180FullyRelaxedFormat.provider(), new StringArrayDeserializer())) {
                 while (reader.hasNext()) {
                     bh.consume(reader.next());
                 }
@@ -71,10 +63,7 @@ public abstract class MneriCsvBenchmark {
     public static class ParallelScalar extends MneriCsvBenchmark {
         @Benchmark
         public void run(BenchmarkState state, Blackhole bh) throws IOException {
-            Reader in = new InputStreamReader(new FileInputStream(state.file()), state.charset());
-            try (CsvReader<String[]> reader = CsvReader.parallel(
-                    new DefaultThreadFactory(), in, Rfc4180FullyRelaxedFormat.provider(),
-                    new StringArrayDeserializer())) {
+            try (CsvReader<String[]> reader = CsvReader.parallel(new DefaultThreadFactory(), state.file(), state.charset(), Rfc4180FullyRelaxedFormat.provider(), new StringArrayDeserializer())) {
                 while (reader.hasNext()) {
                     bh.consume(reader.next());
                 }
@@ -86,10 +75,7 @@ public abstract class MneriCsvBenchmark {
     public static class ParallelVector extends MneriCsvBenchmark {
         @Benchmark
         public void run(BenchmarkState state, Blackhole bh) throws IOException {
-            Reader in = new InputStreamReader(new FileInputStream(state.file()), state.charset());
-            try (CsvReader<String[]> reader = CsvReader.parallel(
-                    new DefaultThreadFactory(), in, Rfc4180FullyRelaxedFormat.provider(),
-                    new StringArrayDeserializer())) {
+            try (CsvReader<String[]> reader = CsvReader.parallel(new DefaultThreadFactory(), state.file(), state.charset(), Rfc4180FullyRelaxedFormat.provider(), new StringArrayDeserializer())) {
                 while (reader.hasNext()) {
                     bh.consume(reader.next());
                 }

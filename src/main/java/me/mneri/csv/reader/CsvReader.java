@@ -25,8 +25,12 @@ import me.mneri.csv.format.Rfc4180FullyRelaxedFormat;
 import me.mneri.csv.hint.Hint;
 import me.mneri.csv.parser.internal.PageLoader;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Reader;
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ThreadFactory;
@@ -81,6 +85,24 @@ public abstract class CsvReader<T> implements AutoCloseable {
     }
 
     /**
+     * Return a new {@link CsvReader} in open state, reading from the specified file.
+     *
+     * @param file    The file.
+     * @param charset The charset of the file.
+     * @param p       A provider of {@link Format}s.
+     * @param des     The deserializer, mapping CSV lines to Java objects.
+     * @param config  The configuration.
+     * @param <T>     The type of object a CSV line should be mapped to.
+     * @return A new {@link CsvReader}, in open state.
+     * @throws IOException If the file can't be opened.
+     */
+    public static <T> CsvReader<T> open(
+            File file, Charset charset, Format.Provider<? extends Format> p, Deserializer<T> des, Configuration config)
+            throws IOException {
+        return open(new InputStreamReader(new FileInputStream(file), charset), p, des, config);
+    }
+
+    /**
      * Return a new {@link CsvReader} in open state, reading from the specified reader.
      *
      * @param rdr The reader.
@@ -94,6 +116,22 @@ public abstract class CsvReader<T> implements AutoCloseable {
     }
 
     /**
+     * Return a new {@link CsvReader} in open state, reading from the specified file.
+     *
+     * @param file    The file.
+     * @param charset The charset of the file.
+     * @param p       A provider of {@link Format}s.
+     * @param des     The deserializer, mapping CSV lines to Java objects.
+     * @param <T>     The type of object a CSV line should be mapped to.
+     * @return A new {@link CsvReader}, in open state.
+     * @throws IOException If the file can't be opened.
+     */
+    public static <T> CsvReader<T> open(
+            File file, Charset charset, Format.Provider<? extends Format> p, Deserializer<T> des) throws IOException {
+        return open(file, charset, p, des, Configuration.standard());
+    }
+
+    /**
      * Return a new {@link CsvReader} in open state, reading from the specified reader, deserializing each line into a
      * {@link List<String>}.
      *
@@ -103,6 +141,21 @@ public abstract class CsvReader<T> implements AutoCloseable {
      */
     public static CsvReader<List<String>> open(Reader rdr, Format.Provider<? extends Format> p) {
         return open(rdr, p, new StringListDeserializer(), Configuration.standard());
+    }
+
+    /**
+     * Return a new {@link CsvReader} in open state, reading from the specified file, deserializing each line into a
+     * {@link List<String>}.
+     *
+     * @param file    The file.
+     * @param charset The charset of the file.
+     * @param p       A provider of {@link Format}s.
+     * @return A new {@link CsvReader}, in open state.
+     * @throws IOException If the file can't be opened.
+     */
+    public static CsvReader<List<String>> open(File file, Charset charset, Format.Provider<? extends Format> p)
+            throws IOException {
+        return open(file, charset, p, new StringListDeserializer(), Configuration.standard());
     }
 
     /**
@@ -119,6 +172,21 @@ public abstract class CsvReader<T> implements AutoCloseable {
     }
 
     /**
+     * Return a new {@link CsvReader} in open state, reading from the specified file, parsing with
+     * {@link Rfc4180FullyRelaxedFormat}.
+     *
+     * @param file    The file.
+     * @param charset The charset of the file.
+     * @param des     The deserializer, mapping CSV lines to Java objects.
+     * @param <T>     The type of object a CSV line should be mapped to.
+     * @return A new {@link CsvReader}, in open state.
+     * @throws IOException If the file can't be opened.
+     */
+    public static <T> CsvReader<T> open(File file, Charset charset, Deserializer<T> des) throws IOException {
+        return open(file, charset, Rfc4180FullyRelaxedFormat.provider(), des, Configuration.standard());
+    }
+
+    /**
      * Return a new {@link CsvReader} in open state, reading from the specified reader, deserializing each line into a
      * {@link List<String>}, parsing with {@link Rfc4180FullyRelaxedFormat}.
      *
@@ -127,6 +195,20 @@ public abstract class CsvReader<T> implements AutoCloseable {
      */
     public static CsvReader<List<String>> open(Reader rdr) {
         return open(rdr, Rfc4180FullyRelaxedFormat.provider(), new StringListDeserializer(), Configuration.standard());
+    }
+
+    /**
+     * Return a new {@link CsvReader} in open state, reading from the specified file, deserializing each line into a
+     * {@link List<String>}, parsing with {@link Rfc4180FullyRelaxedFormat}.
+     *
+     * @param file    The file.
+     * @param charset The charset of the file.
+     * @return A new {@link CsvReader}, in open state.
+     * @throws IOException If the file can't be opened.
+     */
+    public static CsvReader<List<String>> open(File file, Charset charset) throws IOException {
+        return open(file, charset, Rfc4180FullyRelaxedFormat.provider(), new StringListDeserializer(),
+                Configuration.standard());
     }
 
     /**
@@ -148,6 +230,26 @@ public abstract class CsvReader<T> implements AutoCloseable {
     }
 
     /**
+     * Return a new parallel {@link CsvReader} in open state, reading from the specified file. Pages are read and
+     * parsed on a background thread created by the specified factory, while the calling thread deserializes lines.
+     *
+     * @param threads The factory of the background thread.
+     * @param file    The file.
+     * @param charset The charset of the file.
+     * @param p       A provider of {@link Format}s.
+     * @param des     The deserializer, mapping CSV lines to Java objects.
+     * @param config  The configuration.
+     * @param <T>     The type of object a CSV line should be mapped to.
+     * @return A new {@link CsvReader}, in open state.
+     * @throws IOException If the file can't be opened.
+     */
+    public static <T> CsvReader<T> parallel(
+            ThreadFactory threads, File file, Charset charset, Format.Provider<? extends Format> p, Deserializer<T> des,
+            Configuration config) throws IOException {
+        return parallel(threads, new InputStreamReader(new FileInputStream(file), charset), p, des, config);
+    }
+
+    /**
      * Return a new parallel {@link CsvReader} in open state, reading from the specified reader.
      *
      * @param threads The factory of the background thread.
@@ -160,6 +262,24 @@ public abstract class CsvReader<T> implements AutoCloseable {
     public static <T> CsvReader<T> parallel(
             ThreadFactory threads, Reader rdr, Format.Provider<? extends Format> p, Deserializer<T> des) {
         return parallel(threads, rdr, p, des, Configuration.standard());
+    }
+
+    /**
+     * Return a new parallel {@link CsvReader} in open state, reading from the specified file.
+     *
+     * @param threads The factory of the background thread.
+     * @param file    The file.
+     * @param charset The charset of the file.
+     * @param p       A provider of {@link Format}s.
+     * @param des     The deserializer, mapping CSV lines to Java objects.
+     * @param <T>     The type of object a CSV line should be mapped to.
+     * @return A new {@link CsvReader}, in open state.
+     * @throws IOException If the file can't be opened.
+     */
+    public static <T> CsvReader<T> parallel(
+            ThreadFactory threads, File file, Charset charset, Format.Provider<? extends Format> p, Deserializer<T> des)
+            throws IOException {
+        return parallel(threads, file, charset, p, des, Configuration.standard());
     }
 
     /**
@@ -177,6 +297,22 @@ public abstract class CsvReader<T> implements AutoCloseable {
     }
 
     /**
+     * Return a new parallel {@link CsvReader} in open state, reading from the specified file, deserializing each line
+     * into a {@link List<String>}.
+     *
+     * @param threads The factory of the background thread.
+     * @param file    The file.
+     * @param charset The charset of the file.
+     * @param p       A provider of {@link Format}s.
+     * @return A new {@link CsvReader}, in open state.
+     * @throws IOException If the file can't be opened.
+     */
+    public static CsvReader<List<String>> parallel(
+            ThreadFactory threads, File file, Charset charset, Format.Provider<? extends Format> p) throws IOException {
+        return parallel(threads, file, charset, p, new StringListDeserializer(), Configuration.standard());
+    }
+
+    /**
      * Return a new parallel {@link CsvReader} in open state, reading from the specified reader, parsing with
      * {@link Rfc4180FullyRelaxedFormat}.
      *
@@ -191,6 +327,23 @@ public abstract class CsvReader<T> implements AutoCloseable {
     }
 
     /**
+     * Return a new parallel {@link CsvReader} in open state, reading from the specified file, parsing with
+     * {@link Rfc4180FullyRelaxedFormat}.
+     *
+     * @param threads The factory of the background thread.
+     * @param file    The file.
+     * @param charset The charset of the file.
+     * @param des     The deserializer, mapping CSV lines to Java objects.
+     * @param <T>     The type of object a CSV line should be mapped to.
+     * @return A new {@link CsvReader}, in open state.
+     * @throws IOException If the file can't be opened.
+     */
+    public static <T> CsvReader<T> parallel(ThreadFactory threads, File file, Charset charset, Deserializer<T> des)
+            throws IOException {
+        return parallel(threads, file, charset, Rfc4180FullyRelaxedFormat.provider(), des, Configuration.standard());
+    }
+
+    /**
      * Return a new parallel {@link CsvReader} in open state, reading from the specified reader, deserializing each
      * line into a {@link List<String>}, parsing with {@link Rfc4180FullyRelaxedFormat}.
      *
@@ -200,6 +353,22 @@ public abstract class CsvReader<T> implements AutoCloseable {
      */
     public static CsvReader<List<String>> parallel(ThreadFactory threads, Reader rdr) {
         return parallel(threads, rdr, Rfc4180FullyRelaxedFormat.provider(), new StringListDeserializer(),
+                Configuration.standard());
+    }
+
+    /**
+     * Return a new parallel {@link CsvReader} in open state, reading from the specified file, deserializing each line
+     * into a {@link List<String>}, parsing with {@link Rfc4180FullyRelaxedFormat}.
+     *
+     * @param threads The factory of the background thread.
+     * @param file    The file.
+     * @param charset The charset of the file.
+     * @return A new {@link CsvReader}, in open state.
+     * @throws IOException If the file can't be opened.
+     */
+    public static CsvReader<List<String>> parallel(ThreadFactory threads, File file, Charset charset)
+            throws IOException {
+        return parallel(threads, file, charset, Rfc4180FullyRelaxedFormat.provider(), new StringListDeserializer(),
                 Configuration.standard());
     }
 

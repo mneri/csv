@@ -11,7 +11,7 @@ The benchmark measures the execution time in milliseconds across three distinct 
 |----------------------|---------:|----------:|----------------:|-----------------:|---------------|
 | **WORLD_CITIES_POP** | 129.2 MB | 2,699,354 |               7 |         48 chars | Rare          |
 | **GTFS_STOP_TIMES**  | 253.1 MB | 3,116,850 |               9 |         81 chars | None          |
-| **GTFS_TRIPS**       |  12.3 MB |   114,393 |             ~ 8 |        107 chars | None          |
+| **GTFS_TRIPS**       |  12.3 MB |   114,393 |              ~8 |        107 chars | None          |
 
 `mneri/csv` appears under four configurations along two independent axes: _vectorization_ and _parallelism._
 
@@ -83,9 +83,9 @@ The benchmark measures the execution time in milliseconds across three distinct 
 > synchronization and queue contention overhead in `ParallelReader` outweigh its benefits (i.e., the executions with
 > `ParallelReader` were measurably slower than the ones without).
 
-`mneri/csv` ranks fastest in all three datasets when configured in Parallel/Vector mode. The Vector configurations
-require Java 16+ with the JVM option `--add-modules=jdk.incubator.vector`; the Sequential/Scalar and Parallel/Scalar
-configurations are available on every supported Java version.
+On the three selected benchmarks, `mneri/csv` ranks fastest in all three datasets when configured in Parallel/Vector
+mode. The Vector configurations require Java 16+ with the JVM option `--add-modules=jdk.incubator.vector`; the
+Sequential/Scalar and Parallel/Scalar configurations are available on every supported Java version.
 
 ## Performance Breakdown
 
@@ -103,8 +103,8 @@ execution times. The table below measures read, parse and deserialize times on t
 > cumulative stages (read; read and parse; read, parse and deserialize) and subtracting. The phases compete for the same
 > caches and branch predictors, so the split is approximate.
 
-In the benchmark, I/O is not a bottleneck. The file is being read from the OS page cache, and the UTF-8 decoder is
-taking its fast path for plain ASCII. This would be different with no warmup iterations.
+In the benchmark, I/O is not a bottleneck because the file is being read from the OS page cache. This would be different
+with no warmup iterations.
 
 _Deserialization takes more than half of the total execution time_, but it's mostly out of the hands of the parser.
 The parser doesn't allocate new objects, but only leaves "pointers" behind. The `StringArrayDeserializer` picks up those
@@ -126,7 +126,7 @@ In `WORLD_CITIES_POP` _the cost of reading and parsing is dominated by the cost 
 
 As shown in section [Performance Comparison with Popular Parsers](#performance-comparison-with-popular-parsers), the
 Parallel/Vector configuration processes the `WORLD_CITIES_POP` dataset in an average of `269.871` milliseconds. With
-deserialization setting a critical-path floor of `207.9 ms`, the remaining `~62 ms` can be attributed to:
+deserialization setting a critical-path floor of `207.9 ms`, the remaining `~62 ms` could be attributed to:
 
 * Thread synchronization via `ArrayBlockingQueue`.
 * Cache lines crossing from one core's cache to the other's.
@@ -134,8 +134,10 @@ deserialization setting a critical-path floor of `207.9 ms`, the remaining `~62 
   units.
 
 The parallel reader needs a free physical core to pay off. On a busy machine, or when the two threads share a core, it
-can be significantly slower. Its ceiling is the cost of deserialization, which always runs on the client's thread: the
-cheaper the domain objects, the larger the gain.
+can be significantly slower.
+
+The performance ceiling is the cost of deserialization, which always runs on the client's thread: the cheaper the domain
+objects, the larger the gain.
 
 ## Memory Allocation and Garbage Collection
 
