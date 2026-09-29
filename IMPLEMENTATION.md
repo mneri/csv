@@ -299,6 +299,10 @@ Pages are recycled, and there is a small and fixed number of them at all times. 
 lines, the page is cleared and handed back to the parser. Lines rarely align with page boundaries; when a line is split
 across pages, the trailing characters are copied to the beginning of the next page before parsing.
 
+Each page uses a single line instance, called `RecycledLine`: a flyweight facade that slides across the page buffer.
+Rather than allocating new objects for every record, `RecycledLine` updates its internal offset pointers as the cursor
+moves.
+
 # Multithreading
 The table below shows profiling results for single-threaded parsing, broken down by phase.
 
