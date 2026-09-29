@@ -58,7 +58,7 @@ to the next are not explicit, and their logic is pushed deep within the code. _W
 state transitions is difficult._
 
 `mneri/csv` takes a different approach: all the states are explicitly laid out in a transition table. Rows represent
-states, columns represent input characters, and the intersection indicates the next state.
+states, columns represent input characters, and the intersections indicate the next state.
 
 ```
 |                 | [A-Za-z0-9]     | ,               | \r              | \n              | "               | EOF         |
