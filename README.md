@@ -93,20 +93,9 @@ incubator module. The Vector API can be enabled via the JVM flag `--add-modules 
 
 ## Performances
 
-The project is designed for large CSV files and low overhead. It uses:
+See [PERFORMANCE.md](PERFORMANCE.md) for the full results, hardware details, and commands for running the benchmarks.
 
-* Transition tables instead of a large chain of `if`-`else` branches.
-* Recycled line buffers.
-* Sequential and Vector API parsers.
-* Small hot methods and separate slow paths for errors and unusual calls.
-
-There are a number of critical performance optimizations. Please see [IMPLEMENTATION.md](IMPLEMENTATION.md) for more
-details.
-
-The published benchmarks compare `mneri/csv` with several Java CSV libraries. Results depend on the dataset, JDK, CPU,
-operating system, JVM options, and system load.
-
-Below, the comparison of `mneri/csv` performances against other Java frameworks using the popular `worldcitiespop.txt`
+Below, the comparison of `mneri/csv` performances against other Java frameworks using the popular `worldcitiespop.csv`
 benchmark.
 
 | Dataset              | Rank | Benchmark                             | Score (ms/op) |    Error |
@@ -127,8 +116,6 @@ benchmark.
 |                      |   14 | `Super CSV`                           | **1,176.623** | ± 13.487 |
 |                      |   15 | `opencsv`                             | **1,181.589** |  ± 6.937 |
 |                      |   16 | `Apache Commons CSV`                  | **2,720.958** | ± 10.256 |
-
-See [PERFORMANCE.md](PERFORMANCE.md) for the full results, hardware details, and commands for running the benchmarks.
 
 [^1]: **Variable Number of Fields**: the format accepts files containing a different number of fields on
 different lines.
