@@ -194,8 +194,11 @@ private boolean isStartOfField(int state) {
 }
 ```
 Action flags are checked using a simple bitwise `&` operation (`state & SFH`). If the flag is set, the parser shall take
-the corresponding action. _This separation allows different CSV dialects to be plugged seamlessly into high-performance
-parsing pipelines without duplicating stream-handling or optimization logic._
+the corresponding action.
+
+There is a clear separation of mechanism (the parser) and policy (the format). _This separation allows different CSV
+dialects to be plugged seamlessly into the high-performance parsing pipeline without duplicating stream-handling or
+optimization logic._
 
 The parser components are deliberately kept stupid (and that's a compliment). The parser's main loop is incredibly
 simple and just about 20 lines of code.
