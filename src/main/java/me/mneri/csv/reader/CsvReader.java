@@ -38,9 +38,9 @@ import java.util.concurrent.ThreadFactory;
 /**
  * Read CSV streams and automatically transform lines into Java objects.
  * <p>
- * To create a new instance of {@code CsvReader}, use one of the provided {@code open()} factory methods. The
- * {@code parallel()} factory methods create a reader that reads and parses the stream on a background thread, created
- * by the specified {@link ThreadFactory}, while the calling thread deserializes lines.
+ * To create a new instance of {@code CsvReader}, use one of the provided {@code open()} or {@code parallel()} factory
+ * methods. The {@code parallel()} factory methods run on a background thread, created by the specified
+ * {@link ThreadFactory}.
  * <p>
  * The reader supports various CSV dialects called formats, and they can be configured by passing a specific
  * {@code Format} provider as an argument. Different formats offer distinct interpretations of a CSV file: some enforce
@@ -54,8 +54,7 @@ import java.util.concurrent.ThreadFactory;
  * <strong>Example</strong><br/>
  * <pre>{@code
  * Deserializer<Contact> deserializer = new ContactDeserializer();
- * try (CsvReader<Contact> reader = CsvReader.open(Files.newBufferedReader(path), Rfc4180StrictFormat.provider(),
- *                                                  deserializer)) {
+ * try (CsvReader<Contact> reader = CsvReader.open(file, charset, Rfc4180StrictFormat.provider(), deserializer)) {
  *     while (reader.hasNext()) {
  *         Contact contact = reader.next();
  *         // ...
@@ -372,10 +371,8 @@ public abstract class CsvReader<T> implements AutoCloseable {
                 Configuration.standard());
     }
 
-    private static <T> CsvReader<T> newInstance(
-            ThreadFactory threads, Reader rdr, Format.Provider<? extends Format> p, Deserializer<T> des,
-            Configuration config) {
-        PageLoader loader = new PageLoader(rdr, p, config.hints());
+    private static <T> CsvReader<T> newInstance(ThreadFactory threads, Reader in, Format.Provider<? extends Format> p, Deserializer<T> des, Configuration config) {
+        PageLoader loader = new PageLoader(in, p, config.hints());
         if (threads == null) {
             return new SequentialCsvReader<>(config.maxLineSize(), loader, des);
         }
