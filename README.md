@@ -109,16 +109,24 @@ operating system, JVM options, and system load.
 Below, the comparison of `mneri/csv` performances against other Java frameworks using the popular `worldcitiespop.txt`
 benchmark.
 
-| Dataset              | Rank | Benchmark                | Score (ms/op) |    Error |
-|----------------------|-----:|--------------------------|--------------:|---------:|
-| **WORLD_CITIES_POP** |    1 | `sesseltjonna-csv`       |   **302.635** |  ± 1.895 |
-|                      |    2 | `mneri/csv` (Vector API) |   **474.905** | ± 14.964 |
-|                      |    3 | `SimpleFlatMapper`       |   **502.712** |  ± 8.108 |
-|                      |    4 | `FastCSV`                |   **505.844** |  ± 6.906 |
-|                      |    5 | `univocity-parsers`      |   **537.645** |  ± 8.434 |
-|                      |    6 | `mneri/csv` (Sequential) |   **598.214** |  ± 5.530 |
-|                      |    7 | `opencsv`                | **1,198.996** | ± 14.248 |
-|                      |    8 | `Apache Commons CSV`     | **2,723.402** | ± 13.448 |
+| Dataset              | Rank | Benchmark                             | Score (ms/op) |    Error |
+|----------------------|-----:|---------------------------------------|--------------:|---------:|
+| **WORLD_CITIES_POP** |    1 | `mneri/csv` (Parallel/Vector)         |   **269.871** |  ± 4.864 |
+|                      |    2 | `sesseltjonna-csv`                    |   **301.261** |  ± 2.603 |
+|                      |    3 | `mneri/csv` (Parallel/Scalar)         |   **355.175** | ± 42.196 |
+|                      |    4 | `mneri/csv` (Sequential/Vector)       |   **386.606** |  ± 1.966 |
+|                      |    5 | `SimpleFlatMapper`                    |   **490.333** |  ± 4.741 |
+|                      |    6 | `univocity-parsers` (Parallel Reader) |   **496.941** |  ± 5.912 |
+|                      |    7 | `FastCSV`                             |   **504.354** |  ± 4.661 |
+|                      |    8 | `univocity-parsers` (Standard Reader) |   **521.132** |  ± 7.527 |
+|                      |    9 | `mneri/csv` (Sequential/Scalar)       |   **532.251** | ± 26.342 |
+|                      |   10 | `Quick CSV Streamer`                  |   **534.030** |  ± 5.720 |
+|                      |   11 | `picocsv`                             |   **551.995** |  ± 5.128 |
+|                      |   12 | `Jackson CSV`                         |   **774.857** |  ± 3.951 |
+|                      |   13 | `JavaCSV`                             | **1,066.995** | ± 22.780 |
+|                      |   14 | `Super CSV`                           | **1,176.623** | ± 13.487 |
+|                      |   15 | `opencsv`                             | **1,181.589** |  ± 6.937 |
+|                      |   16 | `Apache Commons CSV`                  | **2,720.958** | ± 10.256 |
 
 See [PERFORMANCE.md](PERFORMANCE.md) for the full results, hardware details, and commands for running the benchmarks.
 
