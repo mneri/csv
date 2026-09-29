@@ -101,7 +101,7 @@ benchmark. `mneri/csv` in Parallel/Vector configuration currently score the fast
 
 | Dataset              | Rank | Benchmark                             | Score (ms/op) |    Error |
 |----------------------|-----:|---------------------------------------|--------------:|---------:|
-| **WORLD_CITIES_POP** |    1 | `mneri/csv` (Parallel/Vector)         |   **269.871** |  ± 4.864 |
+| **WORLD_CITIES_POP** |    1 | `mneri/csv` (Parallel/Vector) 🏆      |   **269.871** |  ± 4.864 |
 |                      |    2 | `sesseltjonna-csv`                    |   **301.261** |  ± 2.603 |
 |                      |    3 | `mneri/csv` (Parallel/Scalar)         |   **355.175** | ± 42.196 |
 |                      |    4 | `mneri/csv` (Sequential/Vector)       |   **386.606** |  ± 1.966 |
