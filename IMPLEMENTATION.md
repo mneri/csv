@@ -95,6 +95,11 @@ transition table along with the state changes. Below is an example for the `BEFO
 Consuming the character `a` while in state `BEFORE_LINE` makes the parser transition to the state `FIELD` and record the
 start of a field (`START_FIELD` action).
 
+Querying a transition table for every character carries a very noticeable performance penalty. Approaches like
+`SimpleFlatMapper` and `sesseltjonna-csv` are inherently faster because they don't pay for these array lookups. In
+`mneri/csv`, however, an explicit transition table is a _non-negotiable core requirement._ Much of the rest of this
+document focuses on performance, in an attempt to overcome this architectural penalty.
+
 # Formats
 `mneri/csv` supports many different CSV dialects, each one implemented as a _separate transition table_ and enclosed in
 a [`Format`](https://github.com/mneri/csv/tree/master/src/main/java/me/mneri/csv/format) implementation.
