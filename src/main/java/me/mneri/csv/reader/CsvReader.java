@@ -383,6 +383,16 @@ public abstract class CsvReader<T> implements AutoCloseable {
     }
 
     /**
+     * Closes the stream and releases any system resources associated with it. Once the reader has been closed, further
+     * {@link CsvReader#hasNext()}, {@link CsvReader#next()} invocations will throw an {@link IllegalStateException}.
+     * Closing a previously closed reader has no effect.
+     *
+     * @throws IOException if an I/O error occurs.
+     */
+    @Override
+    public abstract void close() throws IOException;
+
+    /**
      * Returns {@code true} if the reader has more elements (in other words, returns {@code true} if
      * {@link CsvReader#next()} would return an element rather than throwing an exception).
      *
@@ -398,16 +408,6 @@ public abstract class CsvReader<T> implements AutoCloseable {
      * @throws IOException If an I/O error occurs.
      */
     public abstract T next() throws IOException;
-
-    /**
-     * Closes the stream and releases any system resources associated with it. Once the reader has been closed, further
-     * {@link CsvReader#hasNext()}, {@link CsvReader#next()} invocations will throw an {@link IllegalStateException}.
-     * Closing a previously closed reader has no effect.
-     *
-     * @throws IOException if an I/O error occurs.
-     */
-    @Override
-    public abstract void close() throws IOException;
 
     /**
      * The settings of a {@link CsvReader}.
