@@ -201,25 +201,24 @@ The parser components are deliberately kept stupid (and that's a compliment). Th
 simple and just about 20 lines of code.
 
 # Vector API
-The [Vector API](https://openjdk.org/jeps/508) is an exciting feature of JDK 16 and above that allows engineers to
-access CPU vector operations.
+The [Vector API](https://openjdk.org/jeps/508) is an exciting feature of JDK 16 and above that allows engineers to access CPU vector operations.
 
 Vector operations (also known as SIMD, Single Instruction Multiple Data) can substantially speed up computation. Instead
-of processing values one-by-one in a sequential loop, the CPU operates on entire blocks of data in a single clock cycle.
+of processing values one-by-one in a sequential loop, the CPU computes an entire blocks of data in a single clock cycle.
 For some time now, the Java C2 JIT compiler can transform tight loops into vector operations, but the result has always
 been somewhat unreliable. The Vector API gives engineers explicit control. If the Java runtime supports the Vector API,
 `mneri/csv` will leverage vector operations. If not, it will fall back to sequential operations.
 
-Rather than processing every character, `mneri/csv` uses vector operations to calculate a 64-bit mask. The mask
-indicates which characters must be processed, and which can be ignored. In the example below, bits are set at key
-positions (such as the first character of a field, commas, and new-line characters).
+`mneri/csv` uses vector operations to calculate a 64-bit mask. The mask indicates which characters must be processed,
+and which can be ignored. In the example below, bits are set at key positions (such as the first character of a field,
+commas, and new-line characters).
 ```
 CSV chunk: a a a a , b b b b , c c c c \r\n
 Mask:      1 0 0 0 1 1 0 0 0 1 1 0 0 0 1 1
 ```
 Processing only these characters is sufficient to keep the state machine consistent, while the characters with bits set
 to zero can be safely skipped. The mask can occasionally contain false-positives, for example a comma enclosed in a
-qualified field (this is unavoidable, but luckily rare). In this case the state machine knows it is inside a qualified
+qualified field (this is unavoidable, but luckily rare). In this case, the state machine knows it is inside a qualified
 field and correctly ignores the comma.
 
 Below is an abstraction of the vectorised parser's loop[^6].
@@ -258,6 +257,36 @@ Calculating the mask is not free, but the cost is very well offset by the saving
 
 The table above shows the lookup reduction in three popular benchmarks. This result is not absolute and heavily depends
 on the input file.
+
+# Paging
+The `CsvReader` exposes a simple API. Note how lines are returned _one by one_ when the client calls `next()`.
+
+```java
+try (CsvReader<Contact> reader = CsvReader.open(new File("contacts.csv"), StandardCharsets.UTF_8, new ContactDeserializer())) {
+    while (reader.hasNext()) {
+        Contact contact = reader.next();
+        // ...
+    }
+}
+```
+
+Internally, the mechanics are quite different. Lines are parsed in blocks called pages (by default, `4096` characters).
+_All the lines in a page are parsed at once._ The parser hands the page to the `CsvReader` which operates a cursor and
+returns one line at a time (exposing a nice and simple interface to the client).
+
+Working with pages has important performance benefits.
+
+* **The CPU registers stay hot for longer**. Inside the parser loop, hot variables (such as the active state, buffers,
+  indexes and offsets) stay pinned in the hardware registers throughout the entire block. 
+* **Data stays in the CPU caches**. A page is small on purpose. 4096 characters (8 KB in standard Java UTF-16
+  representation) comfortably fit inside the L1 or L2 data cache of modern CPUs, ensuring the state machine operates
+  entirely at cache speed.
+* **Helps the hardware prefetcher**. Accessing memory sequentially gives the CPU spatial prefetcher a deterministic
+  access pattern, allowing it to load upcoming cache lines before the parser requests them.
+
+Pages are recycled, and there is a small and fixed number of them at all times. Once the client has consumed all the
+lines, the page is cleared and handed back to the parser. Lines rarely align with page boundaries. When a line is split
+across pages, the trailing characters are copied to the beginning of the next page before parsing.
 
 # Low-Level Optimisations
 Maintaining the state in a local variable or relying on the execution stack to keep an _implicit state_ (like

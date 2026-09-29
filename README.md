@@ -10,8 +10,8 @@ A high-performance Java CSV parser and writer using the Java Vector API (SIMD).
 `CsvReader` uses a `Deserializer` to convert each CSV line into an object.
 
 ```java
-try(CsvReader<Contact> reader = CsvReader.open(new File("contacts.csv"), StandardCharsets.UTF_8, new ContactDeserializer())){
-    while(reader.hasNext()) {
+try (CsvReader<Contact> reader = CsvReader.open(new File("contacts.csv"), StandardCharsets.UTF_8, new ContactDeserializer())) {
+    while (reader.hasNext()) {
         Contact contact = reader.next(); // Records are mapped to domain objects via the provided ContactDeserializer
         // ...
     }
@@ -41,8 +41,8 @@ return it from the method.
 `CsvWriter` uses a `Serializer` to convert each object into a CSV line.
 
 ```java
-try(CsvWriter<Contact> writer = CsvWriter.open(new File("contacts.csv"), StandardCharsets.UTF_8, new ContactSerializer())){
-    for(Contact contact : contacts) {
+try (CsvWriter<Contact> writer = CsvWriter.open(new File("contacts.csv"), StandardCharsets.UTF_8, new ContactSerializer())) {
+    for (Contact contact : contacts) {
         writer.write(contact); // Domain objects are mapped to records via the provided ContactSerializer
     }
 }
