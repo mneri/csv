@@ -270,23 +270,52 @@ try (CsvReader<Contact> reader = CsvReader.open(new File("contacts.csv"), Standa
 }
 ```
 
-Internally, the mechanics are quite different. Lines are parsed in blocks called pages (by default, `4096` characters).
+Internally, the mechanics are quite different. Lines are parsed in blocks called pages (by default, 4096 characters).
 _All the lines in a page are parsed at once._ The parser hands the page to the `CsvReader` which operates a cursor and
 returns one line at a time (exposing a nice and simple interface to the client).
 
 Working with pages has important performance benefits.
 
 * **The CPU registers stay hot for longer**. Inside the parser loop, hot variables (such as the active state, buffers,
-  indexes and offsets) stay pinned in the hardware registers throughout the entire block. 
-* **Data stays in the CPU caches**. A page is small on purpose. 4096 characters (8 KB in standard Java UTF-16
-  representation) comfortably fit inside the L1 or L2 data cache of modern CPUs, ensuring the state machine operates
-  entirely at cache speed.
+  indexes and offsets) stay pinned in the hardware registers throughout the entire block.
+* **Data stays in the CPU caches**. A page is small on purpose: 4096 characters (8 KB in standard Java UTF-16
+  representation) can comfortably fit inside the L1 or L2 data cache of modern CPUs, so there's a better chance the
+  parser operates entirely at cache speed.
 * **Helps the hardware prefetcher**. Accessing memory sequentially gives the CPU spatial prefetcher a deterministic
   access pattern, allowing it to load upcoming cache lines before the parser requests them.
 
+Performances increased by 10-15% when paging was introduced.
+
 Pages are recycled, and there is a small and fixed number of them at all times. Once the client has consumed all the
-lines, the page is cleared and handed back to the parser. Lines rarely align with page boundaries. When a line is split
+lines, the page is cleared and handed back to the parser. Lines rarely align with page boundaries; when a line is split
 across pages, the trailing characters are copied to the beginning of the next page before parsing.
+
+# Multithreading
+The table below shows profiling results for single-threaded parsing, broken down by phase.
+
+| Dataset              | Phase                                  | Class                     | Execution Time | Execution % |
+|----------------------|----------------------------------------|---------------------------|---------------:|------------:|
+| **WORLD_CITIES_POP** | I/O (Reading and decoding)             | `java.io.Reader`          |        26.2 ms |        6.7% |
+|                      | Parsing                                | `VectorPageParser`        |       159.6 ms |       40.5% |
+|                      | Deserializing (domain object creation) | `StringArrayDeserializer` |       207.9 ms |       52.8% |
+|                      | **Total**                              |                           |   **393.7 ms** |    **100%** |
+
+> **Note**: It is not possible to measure these parts in isolation with JMH; the values are obtained by measuring
+> cumulative stages (read; read and parse; read, parse and deserialize) and subtracting. The phases compete for the same
+> caches and branch predictors, so the split is approximate.
+
+> **Note**: I/O time is low because files are in the OS page cache during benchmark runs.
+
+A _parallel_ `CsvReader` splits the work between two threads:
+
+* A background thread reads the stream and parses it into pages.
+* The client's thread deserializes the lines into domain objects (in the table above, each CSV line is mapped to a
+  `String[]`).
+
+While the client thread deserializes the lines of a page, the background thread concurrently parses the next page.
+
+Notice how reading and parsing together account for 47.2% of execution time, while deserialization accounts for 52.8%.
+Because the workload is split almost evenly, this two-stage pipeline cuts the execution time significantly.
 
 # Low-Level Optimisations
 Maintaining the state in a local variable or relying on the execution stack to keep an _implicit state_ (like
