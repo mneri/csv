@@ -538,7 +538,30 @@ so infrequently.
 _It sounds off, but sometimes you can get better performances by adding a method call._
 
 # Performances
-See [PERFORMANCE.md](https://github.com/mneri/csv/blob/master/PERFORMANCE.md) for a full picture.
+See [PERFORMANCE.md](PERFORMANCE.md) for the full results, performance analysis, hardware details, and commands for running
+the benchmarks.
+
+Below, the comparison of `mneri/csv` performances against other Java frameworks using the popular `worldcitiespop.csv`
+benchmark. `mneri/csv` in Parallel/Vector configuration currently score the fastest.
+
+| Dataset              | Rank | Benchmark                             | Score (ms/op) |    Error |
+|----------------------|-----:|---------------------------------------|--------------:|---------:|
+| **WORLD_CITIES_POP** |    1 | `mneri/csv` (Parallel/Vector) 🏆      |   **269.871** |  ± 4.864 |
+|                      |    2 | `sesseltjonna-csv`                    |   **301.261** |  ± 2.603 |
+|                      |    3 | `mneri/csv` (Parallel/Scalar)         |   **355.175** | ± 42.196 |
+|                      |    4 | `mneri/csv` (Sequential/Vector)       |   **386.606** |  ± 1.966 |
+|                      |    5 | `SimpleFlatMapper`                    |   **490.333** |  ± 4.741 |
+|                      |    6 | `univocity-parsers` (Parallel Reader) |   **496.941** |  ± 5.912 |
+|                      |    7 | `FastCSV`                             |   **504.354** |  ± 4.661 |
+|                      |    8 | `univocity-parsers` (Standard Reader) |   **521.132** |  ± 7.527 |
+|                      |    9 | `mneri/csv` (Sequential/Scalar)       |   **532.251** | ± 26.342 |
+|                      |   10 | `Quick CSV Streamer`                  |   **534.030** |  ± 5.720 |
+|                      |   11 | `picocsv`                             |   **551.995** |  ± 5.128 |
+|                      |   12 | `Jackson CSV`                         |   **774.857** |  ± 3.951 |
+|                      |   13 | `JavaCSV`                             | **1,066.995** | ± 22.780 |
+|                      |   14 | `Super CSV`                           | **1,176.623** | ± 13.487 |
+|                      |   15 | `opencsv`                             | **1,181.589** |  ± 6.937 |
+|                      |   16 | `Apache Commons CSV`                  | **2,720.958** | ± 10.256 |
 
 [^1]: As defined by the ABNF grammar in RFC 4180 it is a regular language. The document also lists a series of rules,
   one of which saying _"Each line should contain the same number of fields throughout the file"._ This rule would make
