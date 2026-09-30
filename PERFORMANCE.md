@@ -25,9 +25,9 @@ The benchmark measures the execution time in milliseconds across three distinct 
 
 | Dataset              | Rank | Benchmark                             | Score (ms/op) |    Error |
 |----------------------|-----:|---------------------------------------|--------------:|---------:|
-| **WORLD_CITIES_POP** |    1 | `mneri/csv` (Parallel/Vector)         |   **269.871** |  ± 4.864 |
-|                      |    2 | `sesseltjonna-csv`                    |   **301.261** |  ± 2.603 |
-|                      |    3 | `mneri/csv` (Parallel/Scalar)         |   **355.175** | ± 42.196 |
+| **WORLD_CITIES_POP** | 🥇 1 | `mneri/csv` (Parallel/Vector)         |   **269.871** |  ± 4.864 |
+|                      | 🥈 2 | `sesseltjonna-csv`                    |   **301.261** |  ± 2.603 |
+|                      | 🥉 3 | `mneri/csv` (Parallel/Scalar)         |   **355.175** | ± 42.196 |
 |                      |    4 | `mneri/csv` (Sequential/Vector)       |   **386.606** |  ± 1.966 |
 |                      |    5 | `SimpleFlatMapper`                    |   **490.333** |  ± 4.741 |
 |                      |    6 | `univocity-parsers` (Parallel Reader) |   **496.941** |  ± 5.912 |
@@ -41,9 +41,9 @@ The benchmark measures the execution time in milliseconds across three distinct 
 |                      |   14 | `Super CSV`                           | **1,176.623** | ± 13.487 |
 |                      |   15 | `opencsv`                             | **1,181.589** |  ± 6.937 |
 |                      |   16 | `Apache Commons CSV`                  | **2,720.958** | ± 10.256 |
-| **GTFS_STOP_TIMES**  |    1 | `mneri/csv` (Parallel/Vector)         |   **360.476** |  ± 2.952 |
-|                      |    2 | `sesseltjonna-csv`                    |   **445.516** |  ± 3.776 |
-|                      |    3 | `mneri/csv` (Parallel/Scalar)         |   **516.884** | ± 16.110 |
+| **GTFS_STOP_TIMES**  | 🥇 1 | `mneri/csv` (Parallel/Vector)         |   **360.476** |  ± 2.952 |
+|                      | 🥈 2 | `sesseltjonna-csv`                    |   **445.516** |  ± 3.776 |
+|                      | 🥉 3 | `mneri/csv` (Parallel/Scalar)         |   **516.884** | ± 16.110 |
 |                      |    4 | `mneri/csv` (Sequential/Vector)       |   **544.439** | ± 13.690 |
 |                      |    5 | `SimpleFlatMapper`                    |   **664.271** |  ± 7.708 |
 |                      |    6 | `univocity-parsers` (Parallel Reader) |   **693.279** |  ± 8.635 |
@@ -57,9 +57,9 @@ The benchmark measures the execution time in milliseconds across three distinct 
 |                      |   14 | `JavaCSV`                             | **1,741.311** | ± 66.842 |
 |                      |   15 | `Super CSV`                           | **1,842.576** | ± 41.252 |
 |                      |   16 | `Apache Commons CSV`                  | **5,214.185** | ± 22.720 |
-| **GTFS_TRIPS**       |    1 | `mneri/csv` (Parallel/Vector)         |    **20.889** |  ± 0.081 |
-|                      |    2 | `sesseltjonna-csv`                    |    **24.081** |  ± 0.231 |
-|                      |    3 | `mneri/csv` (Sequential/Vector)       |    **26.401** |  ± 1.091 |
+| **GTFS_TRIPS**       | 🥇 1 | `mneri/csv` (Parallel/Vector)         |    **20.889** |  ± 0.081 |
+|                      | 🥈 2 | `sesseltjonna-csv`                    |    **24.081** |  ± 0.231 |
+|                      | 🥉 3 | `mneri/csv` (Sequential/Vector)       |    **26.401** |  ± 1.091 |
 |                      |    4 | `univocity-parsers` (Parallel Reader) |    **26.413** |  ± 0.264 |
 |                      |    5 | `SimpleFlatMapper`                    |    **28.248** |  ± 2.005 |
 |                      |    6 | `Quick CSV Streamer`                  |    **28.334** |  ± 0.282 |
