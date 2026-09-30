@@ -83,9 +83,9 @@ The benchmark measures the execution time in milliseconds across three distinct 
 > synchronization and queue contention overhead in `ParallelReader` outweigh its benefits (i.e., the executions with
 > `ParallelReader` were measurably slower than the ones without).
 
-On the three selected benchmarks, `mneri/csv` ranks fastest in all three datasets when configured in Parallel/Vector
-mode. The Vector configurations require Java 16+ with the JVM option `--add-modules=jdk.incubator.vector`; the
-Sequential/Scalar and Parallel/Scalar configurations are available on every supported Java version.
+On the three selected benchmarks, `mneri/csv` ranks fastest when configured in Parallel/Vector mode. The Vector
+configurations require Java 16+ with the JVM option `--add-modules=jdk.incubator.vector`; the Sequential/Scalar and
+Parallel/Scalar configurations are available on every supported Java version.
 
 ## Performance Breakdown
 

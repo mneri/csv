@@ -1,13 +1,11 @@
 # mneri/csv
 
-A high-performance Java CSV parser and writer using the Java Vector API (SIMD).
+`mneri/csv` is a top-of-the-class Java CSV parser engineered for flexibility, high performance, and minimal garbage
+collection pressure.
 
-`mneri/csv` is a solid, allocation-conscious CSV reader/writer for Java. The parser uses the Java Vector API
-(`jdk.incubator.vector`) to accelerate delimiter detection using SIMD instructions.
+See [IMPLEMENTATION.md](IMPLEMENTATION.md) for a detailed overview of the project.
 
-See [IMPLEMENTATION.md](IMPLEMENTATION.md) for a detailed overview of the project.  
-
-## Reading a CSV File
+## Quick Example
 
 `CsvReader` uses a `Deserializer` to convert each CSV line into an object.
 
@@ -37,31 +35,6 @@ public class ContactDeserializer implements Deserializer<Contact> {
 
 The `RecycledLine` passed to `deserialize()` is reused by the reader. Use it only inside the method. Do not store it or
 return it from the method.
-
-## Writing a CSV File
-
-`CsvWriter` uses a `Serializer` to convert each object into a CSV line.
-
-```java
-try (CsvWriter<Contact> writer = CsvWriter.open(new File("contacts.csv"), StandardCharsets.UTF_8, new ContactSerializer())) {
-    for (Contact contact : contacts) {
-        writer.write(contact); // Domain objects are mapped to records via the provided ContactSerializer
-    }
-}
-```
-
-Where `ContactSerializer` is:
-
-```java
-public class ContactSerializer implements CsvSerializer<Contact> {
-    @Override
-    public void serialize(Contact person, List<String> out) {
-        out.add(contact.getFirstName());
-        out.add(contact.getLastName());
-        // ...
-    }
-}
-```
 
 ## Dialect Support
 
@@ -99,7 +72,7 @@ See [PERFORMANCE.md](PERFORMANCE.md) for the full results, performance analysis,
 the benchmarks.
 
 Below, the comparison of `mneri/csv` performances against other Java frameworks using the popular `worldcitiespop.csv`
-benchmark. `mneri/csv` in Parallel/Vector configuration currently score the fastest.
+benchmark. `mneri/csv` in Parallel/Vector configuration consistently scores top-of-the-tier.
 
 | Dataset              | Rank | Benchmark                             | Score (ms/op) |    Error |
 |----------------------|-----:|---------------------------------------|--------------:|---------:|
