@@ -126,6 +126,22 @@ class MacintoshFormatTest extends Specification {
         "in several fields and lines"      | '"a""",""""\r"""b"' || [['a"', '"'], ['"b']]
     }
 
+    def "the end of file ends the last line: #description"() {
+        expect:
+        driver.parse(input) == expected
+
+        where:
+        description                        | input      || expected
+        "after a CR"                       | "a\r"      || [["a"]]
+        "after an unquoted field"          | "a\rb"     || [["a"], ["b"]]
+        "after a LF, which is ordinary"    | "a\rb\n"   || [["a"], ["b\n"]]
+        "after a comma"                    | "a\rb,"    || [["a"], ["b", ""]]
+        "after a closing quote"            | 'a\r"b"'   || [["a"], ["b"]]
+        "after an escaped quote"           | 'a\r"b"""' || [["a"], ['b"']]
+        "after an empty quoted field"      | 'a\r""'    || [["a"], [""]]
+        "after an empty quoted last field" | 'a\rb,""'  || [["a"], ["b", ""]]
+    }
+
     def "rejects what a strict format does not allow: #description"() {
         when:
         driver.parse(input)

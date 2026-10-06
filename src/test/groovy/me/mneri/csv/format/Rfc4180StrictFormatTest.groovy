@@ -121,6 +121,21 @@ class Rfc4180StrictFormatTest extends Specification {
         "in several fields and lines"      | '"a""",""""\r\n"""b"' || [['a"', '"'], ['"b']]
     }
 
+    def "the end of file ends the last line: #description"() {
+        expect:
+        driver.parse(input) == expected
+
+        where:
+        description                        | input        || expected
+        "after a CR LF"                    | "a\r\n"      || [["a"]]
+        "after an unquoted field"          | "a\r\nb"     || [["a"], ["b"]]
+        "after a comma"                    | "a\r\nb,"    || [["a"], ["b", ""]]
+        "after a closing quote"            | 'a\r\n"b"'   || [["a"], ["b"]]
+        "after an escaped quote"           | 'a\r\n"b"""' || [["a"], ['b"']]
+        "after an empty quoted field"      | 'a\r\n""'    || [["a"], [""]]
+        "after an empty quoted last field" | 'a\r\nb,""'  || [["a"], ["b", ""]]
+    }
+
     def "rejects what RFC 4180 does not allow: #description"() {
         when:
         driver.parse(input)

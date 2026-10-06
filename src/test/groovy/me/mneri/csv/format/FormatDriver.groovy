@@ -76,8 +76,10 @@ class FormatDriver {
             pos = pos + 1
         }
 
+        // Every format must end the last line at the end of file. CsvReader drops a line that is never ended, so the
+        // driver mustn't keep it either: that would hide the bug from the tests.
         if (line != null) {
-            result.add(line)
+            throw new IllegalStateException("The end of file didn't end the last line: " + line)
         }
 
         return result

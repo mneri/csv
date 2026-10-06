@@ -181,6 +181,27 @@ class Rfc4180FullyRelaxedFormatTest extends Specification {
         "escaped quote at the beginning"   | '"""'          || [['"']]
     }
 
+    def "the end of file ends the last line: #description"() {
+        expect:
+        driver.parse(input) == expected
+
+        where:
+        description                              | input      || expected
+        "after a LF"                             | "a\n"      || [["a"]]
+        "after a CR LF"                          | "a\r\n"    || [["a"]]
+        "after a CR"                             | "a\nb\r"   || [["a"], ["b"]]
+        "after an unquoted field"                | "a\nb"     || [["a"], ["b"]]
+        "after a quote inside an unquoted field" | 'a\nb"'    || [["a"], ['b"']]
+        "after a comma"                          | "a\nb,"    || [["a"], ["b", ""]]
+        "after a closing quote"                  | 'a\n"b"'   || [["a"], ["b"]]
+        "after an escaped quote"                 | 'a\n"b"""' || [["a"], ['b"']]
+        "after text after the closing quote"     | 'a\n"b"c'  || [["a"], ["bc"]]
+        "after an empty quoted field"            | 'a\n""'    || [["a"], [""]]
+        "after an empty quoted last field"       | 'a\nb,""'  || [["a"], ["b", ""]]
+        "after an opening quote"                 | 'a\n"'     || [["a"], [""]]
+        "inside a quoted field"                  | 'a\n"b'    || [["a"], ["b"]]
+    }
+
     def "never throws, on every input of up to 6 characters made of a, comma, quote, CR and LF"() {
         given:
         def alphabet = ["a", ",", '"', "\r", "\n"]

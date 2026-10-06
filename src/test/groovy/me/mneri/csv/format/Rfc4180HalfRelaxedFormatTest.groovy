@@ -143,6 +143,23 @@ class Rfc4180HalfRelaxedFormatTest extends Specification {
         "the comma after a quote ends the field" | 'a",b'          || [['a"', "b"]]
     }
 
+    def "the end of file ends the last line: #description"() {
+        expect:
+        driver.parse(input) == expected
+
+        where:
+        description                              | input      || expected
+        "after a LF"                             | "a\n"      || [["a"]]
+        "after a CR LF"                          | "a\r\n"    || [["a"]]
+        "after an unquoted field"                | "a\nb"     || [["a"], ["b"]]
+        "after a quote inside an unquoted field" | 'a\nb"'    || [["a"], ['b"']]
+        "after a comma"                          | "a\nb,"    || [["a"], ["b", ""]]
+        "after a closing quote"                  | 'a\n"b"'   || [["a"], ["b"]]
+        "after an escaped quote"                 | 'a\n"b"""' || [["a"], ['b"']]
+        "after an empty quoted field"            | 'a\n""'    || [["a"], [""]]
+        "after an empty quoted last field"       | 'a\nb,""'  || [["a"], ["b", ""]]
+    }
+
     def "rejects what it does not relax: #description"() {
         when:
         driver.parse(input)
