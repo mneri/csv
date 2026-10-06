@@ -76,7 +76,7 @@ public final class Rfc4180StrictFormat implements Format {
        FLD|SFH,             BFF|SFH|EFH,         CAR|SFH|EFH,         ERR|ERH,             SQT,                 EOF|SFH|EFH|ELH|RPL, 0,0,  // BFF
        QOT|SFH,             QOT|SFH,             QOT|SFH,             QOT|SFH,             SQE,                 ERR|ERH,             0,0,  // SQT
        ERR|ERH,             BFF|EFB,             CAR|EFB,             ERR|ERH,             QOT|RMB,             EOF|EFB|ELH|RPL,     0,0,  // ESC
-       ERR|ERH,             BFF|SFH|EFH,         CAR|SFH|EFH,         ERR|ERH,             QOT|SFH,             EOF|SFH|EFH|RPL,     0,0,  // SQE
+       ERR|ERH,             BFF|SFH|EFH,         CAR|SFH|EFH,         ERR|ERH,             QOT|SFH,             EOF|SFH|EFH|ELH|RPL, 0,0,  // SQE
        FLD|SFH,             BFF|SFH|EFH,         CAR|SFH|EFH,         ERR|ERH,             SQT,                 EOF|STP,             0,0,  // BFL *
        ERR|ERH,             ERR|ERH,             ERR|ERH,             BFL|ELH,             ERR|ERH,             ERR|ERH,             0,0,  // CAR
        ERR|ERH,             ERR|ERH,             ERR|ERH,             ERR|ERH,             ERR|ERH,             EOF|STP,             0,0,  // EOF
