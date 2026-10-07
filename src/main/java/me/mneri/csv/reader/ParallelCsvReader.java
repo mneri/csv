@@ -42,7 +42,7 @@ import java.util.concurrent.ThreadFactory;
  * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
  */
 final class ParallelCsvReader<T> extends CsvReader<T> {
-    private static final int N_PAGES = 3;
+    private static final int N_PAGES = 4; // At least 3
 
     private final BlockingQueue<Page> free = new ArrayBlockingQueue<>(N_PAGES);
     private final BlockingQueue<Page> loaded = new ArrayBlockingQueue<>(N_PAGES);
@@ -111,13 +111,15 @@ final class ParallelCsvReader<T> extends CsvReader<T> {
     }
 
     private void flip() throws IOException {
+        Page next;
         try {
-            free.put(page);
-            page = loaded.take();
+            next = loaded.take(); // If the wait is interrupted, nothing has changed: hasNext() can simply try again
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new InterruptedIOException();
         }
+        free.offer(page); // Never fails, and can't be interrupted: the queue has room for all the pages
+        page = next;
     }
 
     private IOException rethrow(Exception e) {
