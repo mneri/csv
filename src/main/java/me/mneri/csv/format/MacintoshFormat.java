@@ -90,6 +90,7 @@ public final class MacintoshFormat implements Format {
        0,                   0,                   0,                   0,                   0,                   0,0,0,
        0,                   0,                   0,                   0,                   0,                   0,0,0,
        0,                   0,                   0,                   0,                   0,                   0,0,0,
+       0,                   0,                   0,                   0,                   0,                   0,0,0,
        0,                   0,                   0,                   0,                   0,                   0,0,0};
     //@formatter:on
 
