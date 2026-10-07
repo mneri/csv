@@ -23,6 +23,7 @@ import me.mneri.csv.format.Rfc4180StrictFormat;
 import me.mneri.csv.serializer.Serializer;
 
 import java.io.*;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,29 +40,31 @@ public class CsvWriter<T> implements Closeable, Flushable {
     /**
      * Return a new {@link CsvWriter} in open state, writing to the specified file.
      *
-     * @param file The file.
-     * @param p    A provider of {@link Format}s.
-     * @param ser  The serializer, mapping Java objects to CSV lines.
-     * @param <T>  The type of object to map to a CSV line.
+     * @param file    The file.
+     * @param charset The charset of the file.
+     * @param p       A provider of {@link Format}s.
+     * @param ser     The serializer, mapping Java objects to CSV lines.
+     * @param <T>     The type of object to map to a CSV line.
      * @return A new {@link CsvWriter}, in open state.
      * @throws IOException If an I/O error occurs.
      */
-    public static <T> CsvWriter<T> open(File file, Format.Provider<? extends Format> p, Serializer<T> ser)
-            throws IOException {
-        return open(new FileWriter(file), p, ser);
+    public static <T> CsvWriter<T> open(
+            File file, Charset charset, Format.Provider<? extends Format> p, Serializer<T> ser) throws IOException {
+        return open(new OutputStreamWriter(new FileOutputStream(file), charset), p, ser);
     }
 
     /**
      * Return a new {@link CsvWriter} in open state, writing to the specified file in {@link Rfc4180StrictFormat}.
      *
-     * @param file The file.
-     * @param ser  The serializer, mapping Java objects to CSV lines.
-     * @param <T>  The type of object to map to a CSV line.
+     * @param file    The file.
+     * @param charset The charset of the file.
+     * @param ser     The serializer, mapping Java objects to CSV lines.
+     * @param <T>     The type of object to map to a CSV line.
      * @return A new {@link CsvWriter}, in open state.
      * @throws IOException If an I/O error occurs.
      */
-    public static <T> CsvWriter<T> open(File file, Serializer<T> ser) throws IOException {
-        return open(file, Rfc4180StrictFormat.provider(), ser);
+    public static <T> CsvWriter<T> open(File file, Charset charset, Serializer<T> ser) throws IOException {
+        return open(file, charset, Rfc4180StrictFormat.provider(), ser);
     }
 
     /**

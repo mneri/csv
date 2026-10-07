@@ -20,14 +20,24 @@ package me.mneri.csv.writer
 
 import java.io.StringWriter
 import me.mneri.csv.format.Format
+import me.mneri.csv.format.Rfc4180StrictFormat
 import me.mneri.csv.serializer.Serializer
 import spock.lang.Specification
+import spock.lang.TempDir
+
+import static java.nio.charset.StandardCharsets.UTF_16
 
 class CsvWriterTest extends Specification {
+    static final STRICT = Rfc4180StrictFormat.provider()
+    static final LISTS = { List values, List<String> out -> out.addAll(values) } as Serializer
+
     def output = Spy(StringWriter)
     def format = Mock(Format)
     def serializer = Mock(Serializer)
     def writer = new CsvWriter(output, () -> format, serializer)
+
+    @TempDir
+    File folder
 
     def "write() writes #value as #expected correctly"() {
         given:
@@ -96,5 +106,23 @@ class CsvWriterTest extends Specification {
 
         then:
         noExceptionThrown()
+    }
+
+    def "#signature writes the file in the charset given"() {
+        given:
+        def file = new File(folder, "test.csv")
+
+        when:
+        def csv = open(file)
+        csv.write(["é", "中文"])
+        csv.close()
+
+        then: "UTF-16 is no platform's default charset"
+        file.bytes == "é,中文\r\n".getBytes(UTF_16)
+
+        where:
+        signature                                   | open
+        "open(File, Charset, Provider, Serializer)" | { f -> CsvWriter.open(f, UTF_16, STRICT, LISTS) }
+        "open(File, Charset, Serializer)"           | { f -> CsvWriter.open(f, UTF_16, LISTS) }
     }
 }
