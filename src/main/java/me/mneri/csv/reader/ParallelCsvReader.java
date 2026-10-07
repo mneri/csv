@@ -43,6 +43,7 @@ import java.util.concurrent.ThreadFactory;
  */
 final class ParallelCsvReader<T> extends CsvReader<T> {
     private static final int N_PAGES = 4; // At least 3
+    private static final long CLOSE_TIMEOUT_MILLIS = 1_000;
 
     private final BlockingQueue<Page> free = new ArrayBlockingQueue<>(N_PAGES);
     private final BlockingQueue<Page> loaded = new ArrayBlockingQueue<>(N_PAGES);
@@ -100,16 +101,16 @@ final class ParallelCsvReader<T> extends CsvReader<T> {
     public void close() throws IOException {
         closed = true;
         cursor = Integer.MAX_VALUE; // Sends hasNext() to its slow path, which throws
-        thread.interrupt(); // Once the thread is over, this and join() have no effect
+        thread.interrupt();
         try {
-            thread.join();
+            thread.join(CLOSE_TIMEOUT_MILLIS);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new InterruptedIOException();
         }
-        loader.close(); // The worker is over: the stream is ours again
     }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     private void flip() throws IOException {
         Page next;
         try {
@@ -129,10 +130,6 @@ final class ParallelCsvReader<T> extends CsvReader<T> {
         return (IOException) e;
     }
 
-    /**
-     * The body of the background thread, which is the only one to touch the stream: it loads pages from the free queue
-     * and publishes them to the loaded queue, until the last page or until the client closes the reader.
-     */
     private final class Worker implements Runnable {
         @Override
         public void run() {
@@ -149,6 +146,11 @@ final class ParallelCsvReader<T> extends CsvReader<T> {
                 loaded.put(current);
             } catch (InterruptedException e) {
                 // The client closed the reader
+            } finally {
+                try {
+                    loader.close();
+                } catch (IOException ignored) { // A stream that is only read loses nothing if it fails to close
+                }
             }
         }
     }

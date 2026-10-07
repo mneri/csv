@@ -106,6 +106,31 @@ class ParallelCsvReaderTest extends CsvReaderContract {
         stream.go.countDown()
     }
 
+    @Timeout(10) // If close() hangs, fail instead of freezing the build
+    def "close() doesn't wait forever for a background thread stuck in a read that ignores interrupts"() {
+        given: "a stream that keeps the background thread in read(), as a silent socket does"
+        def stream = new StuckReader()
+        def reader = open(stream)
+        stream.reading.await()
+
+        when:
+        reader.close()
+
+        then: "close() returns, though the read hasn't"
+        noExceptionThrown()
+
+        when: "the read returns"
+        stream.go.countDown()
+        threads[0].join(5_000)
+
+        then: "the background thread closes the stream, and ends"
+        stream.closed
+        !threads[0].alive
+
+        cleanup: "release the read anyway, or closing the reader again could hang too"
+        stream.go.countDown()
+    }
+
     /**
      * A stream that stops before its first character, until it's told to go.
      */
@@ -132,6 +157,37 @@ class ParallelCsvReaderTest extends CsvReaderContract {
         @Override
         void close() throws IOException {
             input.close()
+        }
+    }
+
+    /**
+     * A stream whose first read blocks until it's told to go, and ignores interrupts meanwhile, as sockets and pipes do.
+     */
+    static class StuckReader extends Reader {
+        final CountDownLatch reading = new CountDownLatch(1) // Counted down when the loader first calls read()
+        final CountDownLatch go = new CountDownLatch(1)
+        volatile boolean closed
+
+        @Override
+        int read(char[] buf, int off, int len) throws IOException {
+            reading.countDown()
+            boolean interrupted = false
+            while (go.count > 0) {
+                try {
+                    go.await()
+                } catch (InterruptedException ignored) {
+                    interrupted = true // Noted, but the read goes on
+                }
+            }
+            if (interrupted) {
+                Thread.currentThread().interrupt()
+            }
+            return -1
+        }
+
+        @Override
+        void close() throws IOException {
+            closed = true
         }
     }
 }
