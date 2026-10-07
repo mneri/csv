@@ -131,6 +131,31 @@ class ParallelCsvReaderTest extends CsvReaderContract {
         stream.go.countDown()
     }
 
+    def "close() on an interrupted thread still closes the stream"() {
+        given: "a stream long enough to keep the background thread waiting for the client"
+        def stream = new RecordingReader((1..1_000).collect { "$it,aaa" }.join("\n"))
+        def reader = open(stream, maxLineSize: 16)
+        reader.next()
+
+        when: "the client closes the reader while its thread is interrupted, as a cancelled task does"
+        Thread.currentThread().interrupt()
+        reader.close()
+
+        then: "the interrupt is reported"
+        thrown(InterruptedIOException)
+        Thread.interrupted() // The flag is set again; this clears it
+
+        when:
+        threads[0].join(5_000)
+
+        then: "the background thread ends, and closes the stream"
+        !threads[0].alive
+        stream.closed
+
+        cleanup:
+        Thread.interrupted()
+    }
+
     /**
      * A stream that stops before its first character, until it's told to go.
      */
