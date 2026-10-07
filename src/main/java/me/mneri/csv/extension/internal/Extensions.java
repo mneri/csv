@@ -18,6 +18,8 @@
 
 package me.mneri.csv.extension.internal;
 
+import me.mneri.csv.extension.VectorHelper;
+
 /**
  * Utility class for JVM APIs.
  */
@@ -34,15 +36,11 @@ public final class Extensions {
      */
     private static boolean isSimdSupported() {
         try {
-            Class.forName("jdk.incubator.vector.Vector"); // The SIMD extension is currently in the incubator
+            // VectorHelper is compiled for Java 17, and loads only with the module jdk.incubator.vector
+            Class.forName(VectorHelper.class.getName());
             return true;
         } catch (ClassNotFoundException | LinkageError ignored) {
+            return false;
         }
-        try {
-            Class.forName("java.lang.vector.Vector"); // The package name is speculation
-            return true;
-        } catch (ClassNotFoundException | LinkageError ignored) {
-        }
-        return false;
     }
 }

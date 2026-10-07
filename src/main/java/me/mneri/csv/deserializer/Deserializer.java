@@ -42,7 +42,7 @@ import java.io.IOException;
  * The {@link RecycledLine} instance passed to the {@link #deserialize(RecycledLine)} method is internally reused,
  * cleared, and repopulated. Implementations of this interface should never store, return or otherwise use the
  * {@code RecycledLine} instance outside the scope of this method. The state of {@code RecycledLine} can (and will)
- * change frequently and without warning. Clients should use {@code RecycleLine} in the scope of the
+ * change frequently and without warning. Clients should use {@code RecycledLine} in the scope of the
  * {@link #deserialize(RecycledLine)} method to create domain objects.
  *
  * @param <T> The type of the objects.
@@ -52,7 +52,7 @@ import java.io.IOException;
 public interface Deserializer<T> {
     /**
      * Given a {@link RecycledLine}, construct an object. The order of the fields is the same as found in the CSV.
-     * <i>
+     * <p>
      * Implementations of this interface should never store, return or otherwise use the {@link RecycledLine} instance
      * outside the scope of this method.
      *

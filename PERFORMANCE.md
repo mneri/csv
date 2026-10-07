@@ -18,7 +18,7 @@ The benchmark measures the execution time in milliseconds across three distinct 
 * **Vectorization (Scalar vs. Vector)**: The _Vector API_ was introduced in Java 16 and, if supported by the
   environment, the parser leverages the CPU's SIMD instruction set to process a CSV file in 64-character blocks. If not,
   the parser falls back to processing the stream character by character. The Vector API is still in incubation and must
-  be explicitly enabled via the JVM option `--add-modules=jdk.incubator.vector`.
+  be explicitly enabled via the JVM option `--add-modules=jdk.incubator.vector`; `mneri/csv` uses it from Java 17.
 * **Parallelism (Sequential vs. Parallel)**: `mneri/csv` exposes two separate APIs: `CsvReader.open()` and
   `CsvReader.parallel()`. In parallel mode, a background thread reads the input and parses the fields, while the object
   deserialization is left to the client's thread (i.e., instantiating the domain objects).
@@ -84,7 +84,7 @@ The benchmark measures the execution time in milliseconds across three distinct 
 > `ParallelReader` were measurably slower than the ones without).
 
 On the three selected benchmarks, `mneri/csv` ranks fastest when configured in Parallel/Vector mode. The Vector
-configurations require Java 16+ with the JVM option `--add-modules=jdk.incubator.vector`; the Sequential/Scalar and
+configurations require Java 17+ with the JVM option `--add-modules=jdk.incubator.vector`; the Sequential/Scalar and
 Parallel/Scalar configurations are available on every supported Java version.
 
 ## Performance Breakdown
@@ -95,7 +95,7 @@ execution times. The table below measures read, parse and deserialize times on t
 | Dataset              | Phase                                  | Class                     | Execution Time | Execution % |
 |----------------------|----------------------------------------|---------------------------|----------------|-------------|
 | **WORLD_CITIES_POP** | Reading (and decoding)                 | `java.io.Reader`          | 26.2 ms        | 6.7%        |
-|                      | Parsing                                | `VectorLineParser`        | 159.6 ms       | 40.5%       |
+|                      | Parsing                                | `VectorPageParser`        | 159.6 ms       | 40.5%       |
 |                      | Deserializing (domain object creation) | `StringArrayDeserializer` | 207.9 ms       | 52.8%       |
 |                      | **Total**                              |                           | **393.7 ms**   | **100%**    |
 

@@ -116,7 +116,7 @@ private static final int[] DFA = {
    FLD|SFH,     BFF|SFH|EFH, CAR|SFH|EFH, ERR|ERH,     SQT,         EOF|SFH|EFH|ELH|RPL, 0,0,  // BFF
    QOT|SFH,     QOT|SFH,     QOT|SFH,     QOT|SFH,     SQE,         ERR|ERH,             0,0,  // SQT
    ERR|ERH,     BFF|EFB,     CAR|EFB,     ERR|ERH,     QOT|RMB,     EOF|EFB|ELH|RPL,     0,0,  // ESC
-   ERR|ERH,     BFF|SFH|EFH, CAR|SFH|EFH, ERR|ERH,     QOT|SFH,     EOF|SFH|EFH|RPL,     0,0,  // SQE
+   ERR|ERH,     BFF|SFH|EFH, CAR|SFH|EFH, ERR|ERH,     QOT|SFH,     EOF|SFH|EFH|ELH|RPL, 0,0,  // SQE
    FLD|SFH,     BFF|SFH|EFH, CAR|SFH|EFH, ERR|ERH,     SQT,         EOF|STP,             0,0,  // BFL *
    ERR|ERH,     ERR|ERH,     ERR|ERH,     BFL|ELH,     ERR|ERH,     ERR|ERH,             0,0,  // CAR
    ERR|ERH,     ERR|ERH,     ERR|ERH,     ERR|ERH,     ERR|ERH,     EOF|STP,             0,0,  // EOF
@@ -214,8 +214,9 @@ The [Vector API](https://openjdk.org/jeps/508) is an exciting feature of JDK 16 
 Vector operations (also known as SIMD, Single Instruction Multiple Data) can substantially speed up computation. Instead
 of processing values one-by-one in a sequential loop, the CPU computes an entire blocks of data in a single clock cycle.
 For some time now, the Java C2 JIT compiler can transform tight loops into vector operations, but the result has always
-been somewhat unreliable. The Vector API gives engineers explicit control. If the Java runtime supports the Vector API,
-`mneri/csv` will leverage vector operations. If not, it will fall back to sequential operations.
+been somewhat unreliable. The Vector API gives engineers explicit control. If the Java runtime supports the Vector API
+(JDK 17 and above, with `--add-modules jdk.incubator.vector`), `mneri/csv` will leverage vector operations. If not, it
+will fall back to sequential operations.
 
 `mneri/csv` uses vector operations to calculate a 64-bit mask. The mask indicates which characters must be processed,
 and which can be ignored. In the example below, bits are set at key positions (such as the first character of a field,
@@ -233,15 +234,14 @@ Below is an abstraction of the vectorised parser's loop[^6].
 ```java
 do {
     while (bitmask == 0L) {
-        strideStart = strideEnd;
-        strideEnd += STRIDE; // The stride is 64 characters for a 64-bit bitmask
-        bitmask = bitmask(s, strideStart);
+        strideStart += STRIDE; // The stride is 64 characters for a 64-bit bitmask
+        bitmask = format.bitmask(state, buf, strideStart);
     }
     shift = Long.numberOfTrailingZeros(bitmask);
     bitmask &= bitmask - 1L; // Kernighan's trick
     pos = strideStart + shift;
 
-    state = format.consume(state, getChar(pos));
+    state = format.consume(state, buf[pos]);
     if (isStartOfField(state)) {
         // ...
     }
@@ -453,7 +453,7 @@ above, `movabs` loads the hardcoded constants into the `r11` CPU register, then 
 `eax` register.
 
 The lookup happens inside the `Format`'s `consume()` method. We can observe that the method was fully inlined into the
-`SequentialLineParser` and `VectorLineParser` code.
+`ScalarPageParser` and `VectorPageParser` code.
 
 It is to be said that the behaviour of the JIT compiler, and especially inlining, can vary between executions and is
 not a guarantee, but _this is as good as it can get._
@@ -477,63 +477,71 @@ try (CsvReader<Contact> reader = CsvReader.open(new File("contacts.csv"), Standa
     }
 }
 ```
-Under this pattern, `hasNext()` _prepares_ the next element returning `true` if present, while `next()` simply returns
-the element to the client. If the client follows the pattern, when `hasNext()` is called the state of `CsvReader` is
-_always_ `ELEMENT_NOT_PREPARED`; the method then loads a new element and sets the state to `ELEMENT_PREPARED` before the
-client calls to `next()`.
+Lines are parsed a page at a time, so the next line is almost always in the current page: in the common case,
+`hasNext()` only has to compare the cursor with the number of lines in the page.
 
-| Method      | Common-Case Initial State | Common-Case Final State |
-|-------------|---------------------------|-------------------------|
-| `hasNext()` | `ELEMENT_NOT_PREPARED`    | `ELEMENT_PREPARED`      |
-| `next()`    | `ELEMENT_PREPARED`        | `ELEMENT_NOT_PREPARED`  |
+```java
+public boolean hasNext() throws IOException {
+    return cursor < page.lineCount() || hasNext2(); // hasNext2() is only called at the end of the page
+}
+```
+Notice how `hasNext()` performs a single comparison, skipping other sanity checks like verifying whether the reader is
+still open. This minimalism keeps the bytecode footprint tiny and the method is very likely to be inlined in the caller.
+All the edge-cases are handled by the `hasNext2()` method.
 
-Obviously, the code must be robust enough to handle a client using it _slightly_ wrong, but we can structure it in a way
-to have a performance gain if the client does it correctly.
+```java
+private boolean hasNext2() throws IOException {
+    if (closed) {
+        throw new IllegalStateException("The reader is closed.");
+    }
+    while (cursor == page.lineCount()) {
+        if (page.error() != null) {
+            throw rethrow(page.error());
+        }
+        if (page.isLast()) {
+            return false;
+        }
+        flip(); // Load the next page
+        cursor = 0;
+    }
+    return true;
+}
+```
+`hasNext2()` is called once per page, not once per line. It catches a closed reader too: `close()` moves the cursor past
+the end of the page, so `hasNext()` doesn't need to check. `next()` reuses `hasNext()`.
 
 ```java
 public T next() throws IOException {
-    if (state == ELEMENT_PREPARED) {
-        state = ELEMENT_NOT_PREPARED;
-        return deserializer.deserialize(line);
+    if (!hasNext()) {
+        throw new NoSuchElementException();
     }
-    return next2(); // Only called if the client doesn't follow the idiomatic pattern hasNext()-next()
+    return deserializer.deserialize(page.line(cursor++));
 }
 ```
-Notice how `next()` performs only a single check (`state == ELEMENT_PREPARED`), skipping other sanity checks like
-verifying whether the reader is still open or trying to prepare an element on-the-fly. This minimalism keeps the
-bytecode footprint tiny and the method is very likely to be inlined in the caller. All the edge-cases are handled by the
-`next2()` method.
-
-```java
-  private T next2() throws IOException {
-      if (state == READER_CLOSED) {
-          readerIsClosedException();
-      }
-      if (!hasNext()) {
-          noSuchElementException();
-      }
-      state = ELEMENT_NOT_PREPARED;
-      return deserializer.deserialize(line);
-    }
-```
-If the client behaves correctly, `next2()` will never be called.
 
 This technique is not limited to the `CsvReader` class, but used throughout the code. Another example can be found in
-`RandomAccessStream`.
+`InternalRecycledLine`, which implements `RecycledLine`.
 
 ```java
-  public int getChar(long pos) throws IOException {
-      if (pos >= first && pos < last) {
-          return cb[(int) (pos + offset)];
-      }
-      return getChar2(pos);
-  }
+public String getString(int n) throws IOException {
+    if (n < 0 || n >= getFieldCount()) {
+        noSuchFieldException(n);
+    }
+    int i = from + 2 * n;
+    int length = fieldLength(i);
+    if (length == 0) {
+        return null;
+    }
+    if (!isDirty()) {
+        return new String(buf, fieldStart(i), length);
+    }
+    return getDirtyString(n, length);
+}
 ```
-`getChar()` only checks if the position is within range and immediately returns; if not, it delegates to `getChar2()`.
-The cold method performs further checks and might make calls to reload the buffer (`cb`). `getChar2()` is invoked 
-approximately once every `8,000` calls of `getChar()`. We need `getChar()` to be inlined, and to push the JIT compiler
-to do so we must keep it as lean as possible. We are happy to pay a full method call for `getChar2()` because it happens
-so infrequently.
+A line is _dirty_ when the parser removed characters from it, such as the first double quote of an escaped `""`. Most
+lines are clean, and their fields are copied straight from the page buffer; `getDirtyString()` skips the removed
+characters of the others. We need `getString()` to be inlined, and to push the JIT compiler to do so we must keep it as
+lean as possible. We are happy to pay a full method call for `getDirtyString()` because it happens so infrequently.
 
 _It sounds off, but sometimes you can get better performances by adding a method call._
 
@@ -574,4 +582,4 @@ benchmark. `mneri/csv` in Parallel/Vector configuration currently score the fast
   the use of _"should"_ and not _"must"_). The client can easily enforce this rule in their custom `Deserializer`.
 [^5]: `Rfc4180FullyRelaxedFormat` ignores all format errors, but some exceptions (such as `IOException`) can still
   happen.
-[^6]: For the full implementation, see [VectorLineParser.java](https://github.com/mneri/csv/blob/master/src/main/java/me/mneri/csv/parser/internal/VectorLineParser.java)
+[^6]: For the full implementation, see [VectorPageParser.java](https://github.com/mneri/csv/blob/master/src/main/java/me/mneri/csv/parser/internal/VectorPageParser.java)

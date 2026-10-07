@@ -23,7 +23,7 @@ Where `ContactDeserializer` is:
 ```java
 public class ContactDeserializer implements Deserializer<Contact> {
     @Override
-    public Contact deserialize(RecycledCsvLine line) {
+    public Contact deserialize(RecycledLine line) throws IOException {
         Contact contact = new Contact();
         contact.setFirstName(line.getString(0));
         contact.setLastName(line.getString(1));
@@ -52,7 +52,7 @@ The available formats are:
 
 | Format                                      | Line Termination             | Variable Number of Fields[^1] | Quotes in Unqualified Fields[^2] | Extra Text After Qualified Field[^3] | Truncated Qualified Fields[^4] |
 |:--------------------------------------------|:-----------------------------|:-----------------------------:|:--------------------------------:|:------------------------------------:|:------------------------------:|
-| **Machintosh[^5]**                          | `\r`                         |                               |                no                |                  no                  |               no               |
+| **Macintosh[^5]**                           | `\r`                         |                               |                no                |                  no                  |               no               |
 | **RFC&nbsp;4180&nbsp;"Strict"**             | `\r\n`                       |                               |                no                |                  no                  |               no               |
 | **RFC&nbsp;4180&nbsp;"Half&nbsp;Relaxed"**  | `\r\n`,&nbsp;`\n`            |                               |                                  |                  no                  |               no               |
 | **RFC&nbsp;4180&nbsp;"Fully&nbsp;Relaxed"** | `\r\n`,&nbsp;`\r`,&nbsp;`\n` |                               |                                  |                                      |                                |
@@ -60,11 +60,12 @@ The available formats are:
 
 ## Vector API
 `mneri/csv` features an alternative high-performance parser implementation built on top of Java's **Vector API**. By 
-everaging SIMD (Single Instruction, Multiple Data) CPU instructions (such as AVX or NEON), this parser can process
+leveraging SIMD (Single Instruction, Multiple Data) CPU instructions (such as AVX or NEON), this parser can process
 chunks of data concurrently in a single CPU cycle, significantly lowering parsing time.
 
-Because the Vector API is an incubating feature in Java (available from **Java 16 and later**), it is hidden behind an
-incubator module. The Vector API can be enabled via the JVM flag `--add-modules jdk.incubator.vector`.
+Because the Vector API is an incubating feature in Java, it is hidden behind an incubator module. On **Java 17 and
+later**, the Vector API can be enabled via the JVM flag `--add-modules jdk.incubator.vector`; otherwise, the parser
+processes the input one character at a time.
 
 ## Performances
 

@@ -85,7 +85,7 @@ public final class InternalRecycledLine implements RecycledLine {
      *
      * @param n {@inheritDoc}
      * @return {@inheritDoc}
-     * @throws {@inheritDoc}
+     * @throws IOException {@inheritDoc}
      */
     @Override
     public String getString(int n) throws IOException {
@@ -114,7 +114,7 @@ public final class InternalRecycledLine implements RecycledLine {
      *
      * @param n {@inheritDoc}
      * @return {@inheritDoc}
-     * @throws {@inheritDoc}
+     * @throws IOException {@inheritDoc}
      */
     @Override
     public BigDecimal getBigDecimal(int n) throws IOException {
@@ -352,7 +352,7 @@ public final class InternalRecycledLine implements RecycledLine {
      * @param n     {@inheritDoc}
      * @param radix {@inheritDoc}
      * @return {@inheritDoc}
-     * @throws {@inheritDoc}
+     * @throws IOException {@inheritDoc}
      */
     @Override
     public short getShort(int n, int radix, short def) throws IOException {
@@ -365,7 +365,7 @@ public final class InternalRecycledLine implements RecycledLine {
      *
      * @param n {@inheritDoc}
      * @return {@inheritDoc}
-     * @throws {@inheritDoc}
+     * @throws IOException {@inheritDoc}
      */
     @Override
     public int getUnsignedInteger(int n, int def) throws IOException {
@@ -378,7 +378,7 @@ public final class InternalRecycledLine implements RecycledLine {
      *
      * @param n {@inheritDoc}
      * @return {@inheritDoc}
-     * @throws {@inheritDoc}
+     * @throws IOException {@inheritDoc}
      */
     @Override
     public long getUnsignedLong(int n, long def) throws IOException {

@@ -24,8 +24,7 @@ import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
 /**
- * Implements a <i>fully relaxed</i> interpretation of the RFC4180 standard mirroring the behaviour of Microsoft Excel,
- * which accepts
+ * Implements a <i>fully relaxed</i> interpretation of the RFC4180 standard mirroring the behaviour of Microsoft Excel.
  * <p>
  * The following features are supported:
  * <ul>

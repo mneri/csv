@@ -32,8 +32,8 @@ import java.util.concurrent.ThreadFactory;
 /**
  * A {@link CsvReader} that loads pages on a background thread, while the calling thread deserializes lines.
  * <p>
- * Three pages rotate between the two threads: one with the client, one being loaded, and a spare that lets the loader
- * run a page ahead. A page always has a single owner, and changes owner only through a queue: the queues are the only
+ * Four pages rotate between the two threads: one with the client, one being loaded, and two spares that let the loader
+ * run ahead. A page always has a single owner, and changes owner only through a queue: the queues are the only
  * synchronization, and they also make the page's content visible to its new owner.
  * <p>
  * Pages are as large as the longest line accepted.
