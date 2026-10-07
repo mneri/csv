@@ -98,7 +98,7 @@ public abstract class CsvReader<T> implements AutoCloseable {
     public static <T> CsvReader<T> open(
             File file, Charset charset, Format.Provider<? extends Format> p, Deserializer<T> des, Configuration config)
             throws IOException {
-        return open(new InputStreamReader(new FileInputStream(file), charset), p, des, config);
+        return newInstance(null, file, charset, p, des, config);
     }
 
     /**
@@ -245,7 +245,7 @@ public abstract class CsvReader<T> implements AutoCloseable {
     public static <T> CsvReader<T> parallel(
             ThreadFactory threads, File file, Charset charset, Format.Provider<? extends Format> p, Deserializer<T> des,
             Configuration config) throws IOException {
-        return parallel(threads, new InputStreamReader(new FileInputStream(file), charset), p, des, config);
+        return newInstance(Objects.requireNonNull(threads), file, charset, p, des, config);
     }
 
     /**
@@ -377,6 +377,18 @@ public abstract class CsvReader<T> implements AutoCloseable {
             return new SequentialCsvReader<>(config.maxLineSize(), loader, des);
         }
         return new ParallelCsvReader<>(threads, config.maxLineSize(), loader, des);
+    }
+
+    private static <T> CsvReader<T> newInstance(
+            ThreadFactory threads, File file, Charset charset, Format.Provider<? extends Format> p, Deserializer<T> des, Configuration config)
+            throws IOException {
+        FileInputStream in = new FileInputStream(file);
+        try {
+            return newInstance(threads, new InputStreamReader(in, charset), p, des, config);
+        } catch (RuntimeException | Error e) {
+            in.close();
+            throw e;
+        }
     }
 
     CsvReader() {
