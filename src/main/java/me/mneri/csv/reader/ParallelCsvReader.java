@@ -27,6 +27,7 @@ import java.io.InterruptedIOException;
 import java.util.NoSuchElementException;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadFactory;
 
 /**
@@ -62,6 +63,9 @@ final class ParallelCsvReader<T> extends CsvReader<T> {
             free.add(new Page(pageSize));
         }
         thread = threads.newThread(new Worker());
+        if (thread == null) {
+            throw new RejectedExecutionException("The thread factory didn't create a thread.");
+        }
         thread.start();
     }
 

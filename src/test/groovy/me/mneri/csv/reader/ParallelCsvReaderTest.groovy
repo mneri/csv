@@ -25,6 +25,7 @@ import me.mneri.csv.reader.CsvReader.Configuration
 import spock.lang.Timeout
 
 import java.util.concurrent.CountDownLatch
+import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.ThreadFactory
 
 class ParallelCsvReaderTest extends CsvReaderContract {
@@ -53,6 +54,14 @@ class ParallelCsvReaderTest extends CsvReaderContract {
         then:
         threads.size() == 1
         stream.threads == threads as Set
+    }
+
+    def "a thread factory that makes no thread is rejected"() {
+        when: "ThreadFactory.newThread() returns null when it rejects the request"
+        CsvReader.parallel({ null } as ThreadFactory, new StringReader("a,b"))
+
+        then:
+        thrown(RejectedExecutionException)
     }
 
     def "close() ends the background thread, after #linesRead lines (#parser parser)"() {
