@@ -28,6 +28,7 @@ import me.mneri.csv.parser.internal.PageLoader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.Charset;
@@ -98,7 +99,7 @@ public abstract class CsvReader<T> implements AutoCloseable {
     public static <T> CsvReader<T> open(
             File file, Charset charset, Format.Provider<? extends Format> p, Deserializer<T> des, Configuration config)
             throws IOException {
-        return newInstance(null, file, charset, p, des, config);
+        return newInstance(null, new FileInputStream(file), charset, p, des, config);
     }
 
     /**
@@ -245,7 +246,7 @@ public abstract class CsvReader<T> implements AutoCloseable {
     public static <T> CsvReader<T> parallel(
             ThreadFactory threads, File file, Charset charset, Format.Provider<? extends Format> p, Deserializer<T> des,
             Configuration config) throws IOException {
-        return newInstance(Objects.requireNonNull(threads), file, charset, p, des, config);
+        return newInstance(Objects.requireNonNull(threads), new FileInputStream(file), charset, p, des, config);
     }
 
     /**
@@ -379,13 +380,11 @@ public abstract class CsvReader<T> implements AutoCloseable {
         return new ParallelCsvReader<>(threads, config.maxLineSize(), loader, des);
     }
 
-    private static <T> CsvReader<T> newInstance(
-            ThreadFactory threads, File file, Charset charset, Format.Provider<? extends Format> p, Deserializer<T> des, Configuration config)
-            throws IOException {
-        FileInputStream in = new FileInputStream(file);
+    static <T> CsvReader<T> newInstance(ThreadFactory threads, InputStream in, Charset charset, Format.Provider<? extends Format> p, Deserializer<T> des, Configuration config)
+        throws IOException {
         try {
             return newInstance(threads, new InputStreamReader(in, charset), p, des, config);
-        } catch (RuntimeException | Error e) {
+        } catch (Throwable e) {
             in.close();
             throw e;
         }
