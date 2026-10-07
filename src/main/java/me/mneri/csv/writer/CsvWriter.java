@@ -116,11 +116,11 @@ public class CsvWriter<T> implements Closeable, Flushable {
         if (state == CLOSED) {
             return;
         }
+        state = CLOSED;
         try {
-            state = CLOSED;
             writer.flush();
-            writer.close();
         } finally {
+            writer.close();
             writer = null;
         }
     }

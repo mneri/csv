@@ -99,6 +99,18 @@ class CsvWriterTest extends Specification {
         1 * output.close()
     }
 
+    def "close() closes the output stream even if flushing fails"() {
+        given:
+        output.flush() >> { throw new IOException() }
+
+        when:
+        writer.close()
+
+        then:
+        thrown(IOException)
+        1 * output.close()
+    }
+
     def "close() twice doesn't throw an exception"() {
         when:
         writer.close()
