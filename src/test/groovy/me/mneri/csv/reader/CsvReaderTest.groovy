@@ -18,12 +18,9 @@
 
 package me.mneri.csv.reader
 
-import me.mneri.csv.concurrent.DefaultThreadFactory
 import me.mneri.csv.deserializer.Deserializer
-import me.mneri.csv.deserializer.StringListDeserializer
-import me.mneri.csv.exception.UnexpectedCharacterException
-import me.mneri.csv.format.Rfc4180FullyRelaxedFormat
-import me.mneri.csv.format.Rfc4180StrictFormat
+import me.mneri.csv.format.Format
+import me.mneri.csv.parser.RecycledLine
 import me.mneri.csv.reader.CsvReader.Configuration
 import spock.lang.Specification
 import spock.lang.TempDir
@@ -34,12 +31,23 @@ import java.util.concurrent.ThreadFactory
 
 import static java.nio.charset.StandardCharsets.UTF_16
 import static java.nio.charset.StandardCharsets.UTF_8
+import static me.mneri.csv.format.Format.*
 
+/**
+ * The factory methods are given test doubles of the format, the deserializer and the thread factory. The methods that
+ * don't take one build their own default, so the features that check the defaults read with the real ones.
+ */
 class CsvReaderTest extends Specification {
-    static final THREADS = new DefaultThreadFactory()
-    static final FORMAT = Rfc4180FullyRelaxedFormat.provider()
-    static final LISTS = new StringListDeserializer()
-    static final FIELD_COUNTS = { line -> line.fieldCount } as Deserializer
+    // A format that makes the whole stream a single field, ended by the end of file
+    static final SINGLE_FIELD = { ->
+        def rules = { int s, int c ->
+            boolean inField = (s & 0xFFFF) != 0
+            c == -1 ? (inField ? EFH | ELH | STP : STP) : (inField ? 1 : 1 | SFH)
+        }
+        [base: { 0 }, bitmask: { int s, char[] buf, int offset -> -1L }, consume: rules, consumeSlow: rules] as Format
+    } as Format.Provider
+    static final FIELDS = { RecycledLine line -> (0..<line.fieldCount).collect { line.getString(it) } } as Deserializer
+    static final THREADS = { Runnable runnable -> new Thread(runnable).tap { daemon = true } } as ThreadFactory
     static final STANDARD = Configuration.standard()
     static final LONG_LINES = Configuration.builder().withMaxLineSize(8_192).build()
     static final HUGE_PAGES = Configuration.builder().withMaxLineSize(Integer.MAX_VALUE).build()
@@ -108,40 +116,67 @@ class CsvReaderTest extends Specification {
         type = signature.startsWith("parallel") ? ParallelCsvReader : SequentialCsvReader
     }
 
-    def "#signature parses with #format"() {
+    def "#signature uses the format given"() {
+        given:
+        def format = Mock(Format.Provider)
+
+        when:
+        def reader = open(arguments("a", [format: format]))
+
+        then:
+        1 * format.provide() >> SINGLE_FIELD.provide()
+
+        cleanup:
+        reader?.close()
+
+        where:
+        [signature, open] << factories { it.contains("Provider") }
+    }
+
+    def "#signature uses Rfc4180FullyRelaxedFormat"() {
         expect: "text after a closing quote and a lone CR, which Rfc4180StrictFormat rejects"
-        read(open, 'a,"b"c\rd', [format: Rfc4180StrictFormat.provider()]) == expected
+        read(open, 'a,"b"c\rd') == [["a", "bc"], ["d"]]
 
         where:
-        [signature, open] << factories()
-        format = signature.contains("Provider") ? "the format given" : "Rfc4180FullyRelaxedFormat"
-        expected = signature.contains("Provider") ? UnexpectedCharacterException : [["a", "bc"], ["d"]]
+        [signature, open] << factories { !it.contains("Provider") }
     }
 
-    def "#signature maps the lines with #deserializer"() {
+    def "#signature maps the lines with the deserializer given"() {
+        given:
+        def deserializer = Mock(Deserializer)
+
+        when:
+        def lines = read(open, "a", [deserializer: deserializer])
+
+        then:
+        1 * deserializer.deserialize({ it.getString(0) == "a" }) >> "x"
+        lines == ["x"]
+
+        where:
+        [signature, open] << factories { it.contains("Deserializer") }
+    }
+
+    def "#signature maps the lines to lists of strings"() {
         expect:
-        read(open, "a,,b\nc", [deserializer: FIELD_COUNTS]) == expected
+        read(open, "a") == [["a"]]
+
+        where:
+        [signature, open] << factories { !it.contains("Deserializer") }
+    }
+
+    def "#signature reads with #configuration: a line of 5,000 characters"() {
+        expect: "the standard configuration takes lines of up to 4,096 characters, the one given up to 8,192"
+        read(open, "a" * 5_000, [configuration: LONG_LINES]) == expected
 
         where:
         [signature, open] << factories()
-        deserializer = signature.contains("Deserializer") ? "the deserializer given" : "StringListDeserializer"
-        expected = signature.contains("Deserializer") ? [3, 1] : [["a", null, "b"], ["c"]]
-    }
-
-    def "#signature reads with #configuration: a line of #length characters"() {
-        expect: "the standard configuration takes lines of up to 4,096 characters, the one given up to 8,192"
-        read(open, "a" * (length - 1) + "\nb\n", [configuration: LONG_LINES]) == expected
-
-        where:
-        [signature, open, length] << factories().collectMany { s, o -> [4_096, 4_097].collect { [s, o, it] } }
         configuration = signature.contains("Configuration") ? "the configuration given" : "the standard configuration"
-        expected = length <= 4_096 || signature.contains("Configuration") ?
-                [["a" * (length - 1)], ["b"]] : BufferOverflowException
+        expected = signature.contains("Configuration") ? [["a" * 5_000]] : BufferOverflowException
     }
 
     def "#signature reads the file with the charset given"() {
         expect: "UTF-16 is no platform's default charset"
-        read(open, "é,ü\n", [charset: UTF_16]) == [["é", "ü"]]
+        read(open, "é", [charset: UTF_16]) == [["é"]]
 
         where:
         [signature, open] << factories { it.contains("File") }
@@ -153,6 +188,23 @@ class CsvReaderTest extends Specification {
 
         where:
         [signature, open] << factories { it.contains("File") }
+    }
+
+    def "#signature makes its background thread with the thread factory given"() {
+        given:
+        def threads = Mock(ThreadFactory)
+
+        when:
+        def reader = open(arguments("a", [threads: threads]))
+
+        then:
+        1 * threads.newThread(_) >> { Runnable runnable -> THREADS.newThread(runnable) }
+
+        cleanup:
+        reader?.close()
+
+        where:
+        [signature, open] << factories { it.startsWith("parallel") }
     }
 
     def "#signature rejects a null thread factory"() {
@@ -168,19 +220,19 @@ class CsvReaderTest extends Specification {
         def stream = Mock(InputStream)
 
         when:
-        CsvReader.newInstance(threads, stream, charset, format, new StringListDeserializer(), config)
+        CsvReader.newInstance(threads, stream, charset, format, FIELDS, config)
 
         then:
         thrown(RuntimeException)
         1 * stream.close()
 
         where:
-        description                                | threads   | charset | format | config
-        "no charset"                               | null      | null    | FORMAT | STANDARD
-        "no format"                                | null      | UTF_8   | null   | STANDARD
-        "no configuration"                         | null      | UTF_8   | FORMAT | null
-        "pages too large to allocate"              | null      | UTF_8   | FORMAT | HUGE_PAGES
-        "parallel, a factory that makes no thread" | NO_THREAD | UTF_8   | FORMAT | STANDARD
+        description                                | threads   | charset | format       | config
+        "no charset"                               | null      | null    | SINGLE_FIELD | STANDARD
+        "no format"                                | null      | UTF_8   | null         | STANDARD
+        "no configuration"                         | null      | UTF_8   | SINGLE_FIELD | null
+        "pages too large to allocate"              | null      | UTF_8   | SINGLE_FIELD | HUGE_PAGES
+        "parallel, a factory that makes no thread" | NO_THREAD | UTF_8   | SINGLE_FIELD | STANDARD
     }
 
     /**
@@ -191,14 +243,14 @@ class CsvReaderTest extends Specification {
     }
 
     /**
-     * Return the arguments for a factory method: a reader and a file of the text, and defaults for the others.
+     * Return the arguments for a factory method: a reader and a file of the text, and test doubles for the others.
      */
     Map arguments(String text, Map overrides = [:]) {
         Charset charset = overrides.charset ?: UTF_8
         def file = new File(folder, "test.csv")
         file.bytes = text.getBytes(charset)
-        return [reader: new StringReader(text), file: file, charset: charset, threads: THREADS, format: FORMAT,
-                deserializer: LISTS, configuration: STANDARD] + overrides
+        return [reader: new StringReader(text), file: file, charset: charset, threads: THREADS, format: SINGLE_FIELD,
+                deserializer: FIELDS, configuration: STANDARD] + overrides
     }
 
     /**

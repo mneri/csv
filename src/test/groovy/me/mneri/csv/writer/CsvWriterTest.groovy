@@ -20,7 +20,6 @@ package me.mneri.csv.writer
 
 import java.io.StringWriter
 import me.mneri.csv.format.Format
-import me.mneri.csv.format.Rfc4180StrictFormat
 import me.mneri.csv.serializer.Serializer
 import spock.lang.Specification
 import spock.lang.TempDir
@@ -28,9 +27,6 @@ import spock.lang.TempDir
 import static java.nio.charset.StandardCharsets.UTF_16
 
 class CsvWriterTest extends Specification {
-    static final STRICT = Rfc4180StrictFormat.provider()
-    static final LISTS = { List values, List<String> out -> out.addAll(values) } as Serializer
-
     def output = Spy(StringWriter)
     def format = Mock(Format)
     def serializer = Mock(Serializer)
@@ -143,21 +139,38 @@ class CsvWriterTest extends Specification {
         noExceptionThrown()
     }
 
-    def "#signature writes the file in the charset given"() {
+    def "open(File, Charset, Provider, Serializer) writes the file in the charset given"() {
         given:
+        format.delimiter() >> ','
+        format.qualifier() >> '"'
+        format.lineSeparator() >> "\r\n"
+        serializer.serialize(_, (List<String>) _) >> { o, List<String> list ->
+            list.addAll(["é", "中文"])
+        }
         def file = new File(folder, "test.csv")
 
         when:
-        def csv = open(file)
-        csv.write(["é", "中文"])
+        def csv = CsvWriter.open(file, UTF_16, () -> format, serializer)
+        csv.write(new Object())
         csv.close()
 
         then: "UTF-16 is no platform's default charset"
         file.bytes == "é,中文\r\n".getBytes(UTF_16)
+    }
 
-        where:
-        signature                                   | open
-        "open(File, Charset, Provider, Serializer)" | { f -> CsvWriter.open(f, UTF_16, STRICT, LISTS) }
-        "open(File, Charset, Serializer)"           | { f -> CsvWriter.open(f, UTF_16, LISTS) }
+    def "open(File, Charset, Serializer) writes the file in the charset given"() {
+        given:
+        serializer.serialize(_, (List<String>) _) >> { o, List<String> list ->
+            list.addAll(["é", "中文"])
+        }
+        def file = new File(folder, "test.csv")
+
+        when: "the format is Rfc4180StrictFormat, built into this overload"
+        def csv = CsvWriter.open(file, UTF_16, serializer)
+        csv.write(new Object())
+        csv.close()
+
+        then: "UTF-16 is no platform's default charset"
+        file.bytes == "é,中文\r\n".getBytes(UTF_16)
     }
 }

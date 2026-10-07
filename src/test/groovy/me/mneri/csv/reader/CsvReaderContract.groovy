@@ -28,6 +28,8 @@ import me.mneri.csv.hint.Hint
 import me.mneri.csv.reader.CsvReader.Configuration
 import spock.lang.Specification
 
+import java.nio.BufferOverflowException
+
 /**
  * The behaviour that every {@link CsvReader} shares. The test of each reader extends this class and says how to open
  * that reader; the features below then run against it.
@@ -61,6 +63,30 @@ abstract class CsvReaderContract extends Specification {
 
         where:
         [parser, maxLineSize] << [PARSERS.keySet(), [16, 17, 64, 4_096]].combinations()
+    }
+
+    def "accepts a line of #length characters in pages of 100, line break included: #accepted (#parser parser)"() {
+        given:
+        def reader = open("b\n" + "a" * (length - 1) + "\nc\n", parser: parser, maxLineSize: 100)
+        def lines = []
+        def overflow = false
+
+        when:
+        try {
+            while (reader.hasNext()) {
+                lines << reader.next()
+            }
+        } catch (BufferOverflowException ignored) {
+            overflow = true
+        }
+
+        then:
+        overflow == !accepted
+        lines == (accepted ? [["b"], ["a" * (length - 1)], ["c"]] : [["b"]])
+
+        where:
+        [parser, length] << [PARSERS.keySet(), [99, 100, 101]].combinations()
+        accepted = length <= 100
     }
 
     def "an empty stream has no lines (#parser parser)"() {
