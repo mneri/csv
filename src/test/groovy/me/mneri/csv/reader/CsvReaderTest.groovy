@@ -50,7 +50,6 @@ class CsvReaderTest extends Specification {
     static final THREADS = { Runnable runnable -> new Thread(runnable).tap { daemon = true } } as ThreadFactory
     static final STANDARD = Configuration.standard()
     static final LONG_LINES = Configuration.builder().withMaxLineSize(8_192).build()
-    static final HUGE_PAGES = Configuration.builder().withMaxLineSize(Integer.MAX_VALUE).build()
     static final NO_THREAD = { null } as ThreadFactory
 
     static final Map<String, Closure<CsvReader>> FACTORIES = [
@@ -231,7 +230,6 @@ class CsvReaderTest extends Specification {
         "no charset"                               | null      | null    | SINGLE_FIELD | STANDARD
         "no format"                                | null      | UTF_8   | null         | STANDARD
         "no configuration"                         | null      | UTF_8   | SINGLE_FIELD | null
-        "pages too large to allocate"              | null      | UTF_8   | SINGLE_FIELD | HUGE_PAGES
         "parallel, a factory that makes no thread" | NO_THREAD | UTF_8   | SINGLE_FIELD | STANDARD
     }
 

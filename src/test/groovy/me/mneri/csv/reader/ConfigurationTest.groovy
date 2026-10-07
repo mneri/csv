@@ -23,7 +23,7 @@ class ConfigurationTest extends Specification {
         config.hints() == Hint.TINY_FIELDS
     }
 
-    def "rejects a non-positive max line size: #size"() {
+    def "rejects a max line size out of range: #size"() {
         when:
         Configuration.builder().withMaxLineSize(size)
 
@@ -31,7 +31,13 @@ class ConfigurationTest extends Specification {
         thrown(IllegalArgumentException)
 
         where:
-        size << [0, -1]
+        size << [0, -1, Configuration.MAX_LINE_SIZE_LIMIT + 1, Integer.MAX_VALUE]
+    }
+
+    def "accepts the largest max line size"() {
+        expect:
+        Configuration.builder().withMaxLineSize(Configuration.MAX_LINE_SIZE_LIMIT).build().maxLineSize() ==
+                Configuration.MAX_LINE_SIZE_LIMIT
     }
 
     def "a builder can't be used after build(): #use"() {

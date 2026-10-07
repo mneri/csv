@@ -439,6 +439,12 @@ public abstract class CsvReader<T> implements AutoCloseable {
         public static final int DEFAULT_MAX_LINE_SIZE = 4_096;
 
         /**
+         * The largest maximum length of a line, in characters. A page holds arrays of about twice as many elements,
+         * and their length must fit an {@code int}.
+         */
+        public static final int MAX_LINE_SIZE_LIMIT = 1 << 29;
+
+        /**
          * The default hints to the reader: none.
          */
         public static final long DEFAULT_HINTS = 0L;
@@ -507,13 +513,15 @@ public abstract class CsvReader<T> implements AutoCloseable {
              *
              * @param maxLineSize The maximum length of a line, in characters, line break included.
              * @return This builder.
-             * @throws IllegalArgumentException If the length is not positive.
+             * @throws IllegalArgumentException If the length is not between 1 and
+             *                                  {@link Configuration#MAX_LINE_SIZE_LIMIT}.
              * @throws IllegalStateException    If the configuration has already been built.
              */
             public Builder withMaxLineSize(int maxLineSize) {
                 notBuiltOrThrow();
-                if (maxLineSize <= 0) {
-                    throw new IllegalArgumentException("The maximum line size must be positive: " + maxLineSize);
+                if (maxLineSize <= 0 || maxLineSize > MAX_LINE_SIZE_LIMIT) {
+                    throw new IllegalArgumentException(
+                            "The maximum line size must be between 1 and " + MAX_LINE_SIZE_LIMIT + ": " + maxLineSize);
                 }
                 configuration.maxLineSize = maxLineSize;
                 return this;
