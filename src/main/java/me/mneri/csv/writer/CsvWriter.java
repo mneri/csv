@@ -58,6 +58,7 @@ public class CsvWriter<T> implements Closeable, Flushable {
      * @param ser  The serializer, mapping Java objects to CSV lines.
      * @param <T>  The type of object to map to a CSV line.
      * @return A new {@link CsvWriter}, in open state.
+     * @throws IOException If an I/O error occurs.
      */
     public static <T> CsvWriter<T> open(File file, Serializer<T> ser) throws IOException {
         return open(file, Rfc4180StrictFormat.provider(), ser);
@@ -138,6 +139,12 @@ public class CsvWriter<T> implements Closeable, Flushable {
         return false;
     }
 
+    /**
+     * Serialize the object into a CSV line, and write the line.
+     *
+     * @param object The object.
+     * @throws IOException If an I/O error occurs.
+     */
     public void write(T object) throws IOException {
         isOpenOrThrow();
         line.clear();
@@ -145,6 +152,12 @@ public class CsvWriter<T> implements Closeable, Flushable {
         writeLine(line);
     }
 
+    /**
+     * Serialize each object into a CSV line, and write the lines.
+     *
+     * @param objects The objects.
+     * @throws IOException If an I/O error occurs.
+     */
     public void writeAll(List<T> objects) throws IOException {
         isOpenOrThrow();
         for (T object : objects) {

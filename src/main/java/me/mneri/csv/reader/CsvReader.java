@@ -61,7 +61,6 @@ import java.util.concurrent.ThreadFactory;
  *         // ...
  *     }
  * }}</pre>
- * <p>
  *
  * @param <T> The type of the Java objects to read.
  * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;

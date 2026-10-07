@@ -35,6 +35,11 @@ public final class VectorPageParser implements PageParser {
     private final Format format;
     private int state; // The state of the format, kept from one page to the next
 
+    /**
+     * Return a new {@code VectorPageParser}.
+     *
+     * @param provider A provider of {@link Format}s.
+     */
     public VectorPageParser(Format.Provider<? extends Format> provider) {
         this.format = provider.provide();
         this.state = format.base();

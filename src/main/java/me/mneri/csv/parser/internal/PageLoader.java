@@ -36,6 +36,13 @@ public final class PageLoader implements Closeable {
     private final Reader in;
     private final PageParser parser;
 
+    /**
+     * Return a new {@code PageLoader}.
+     *
+     * @param in       The reader.
+     * @param provider A provider of {@link Format}s.
+     * @param hints    The hints to the reader.
+     */
     public PageLoader(Reader in, Format.Provider<? extends Format> provider, long hints) {
         this.in = in;
         if (Extensions.SIMD_SUPPORTED && (hints & Hint.TINY_FIELDS) == 0) {

@@ -26,6 +26,11 @@ import java.io.IOException;
  * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
  */
 public class NoSuchFieldException extends IOException {
+    /**
+     * Return a new {@code NoSuchFieldException}.
+     *
+     * @param n The index of the field.
+     */
     public NoSuchFieldException(int n) {
         super("No such field: " + n);
     }

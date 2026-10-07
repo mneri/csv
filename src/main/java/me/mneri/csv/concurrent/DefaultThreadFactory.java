@@ -33,6 +33,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 public final class DefaultThreadFactory implements ThreadFactory {
     private static final AtomicInteger COUNT = new AtomicInteger();
 
+    /**
+     * Return a new {@code DefaultThreadFactory}.
+     */
+    public DefaultThreadFactory() {
+    }
+
     @Override
     public Thread newThread(Runnable runnable) {
         Thread thread = new Thread(runnable, "csv-reader-" + COUNT.incrementAndGet());

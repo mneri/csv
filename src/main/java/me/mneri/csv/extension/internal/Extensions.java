@@ -24,6 +24,9 @@ import me.mneri.csv.extension.VectorHelper;
  * Utility class for JVM APIs.
  */
 public final class Extensions {
+    /**
+     * {@code true} if the Vector API is available, {@code false} otherwise.
+     */
     public static final boolean SIMD_SUPPORTED = isSimdSupported();
 
     private Extensions() {

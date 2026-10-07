@@ -70,6 +70,15 @@ public interface Line {
      */
     boolean getBoolean(int i, boolean def) throws IOException;
 
+    /**
+     * Copy the characters of the field at the specified index into an array.
+     *
+     * @param i     The index of the field.
+     * @param dest  The destination array.
+     * @param start The starting position in the destination array.
+     * @return The number of characters copied.
+     * @throws IOException If an I/O error occurs.
+     */
     int getCharArray(int i, char[] dest, int start) throws IOException;
 
     /**

@@ -26,6 +26,9 @@ import java.io.IOException;
  * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
  */
 public class UnexpectedCharacterException extends IOException {
+    /**
+     * The absolute position of the character in the stream.
+     */
     private final long position;
 
     /**

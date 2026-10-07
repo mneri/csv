@@ -28,6 +28,12 @@ import java.io.IOException;
  * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
  */
 public class StringArrayDeserializer implements Deserializer<String[]> {
+    /**
+     * Return a new {@code StringArrayDeserializer}.
+     */
+    public StringArrayDeserializer() {
+    }
+
     @Override
     public String[] deserialize(RecycledLine line) throws IOException {
         final int len = line.getFieldCount();

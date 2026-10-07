@@ -30,6 +30,12 @@ import java.util.List;
  * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
  */
 public class StringListDeserializer implements Deserializer<List<String>> {
+    /**
+     * Return a new {@code StringListDeserializer}.
+     */
+    public StringListDeserializer() {
+    }
+
     @Override
     public List<String> deserialize(RecycledLine line) throws IOException {
         final int len = line.getFieldCount();

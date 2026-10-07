@@ -72,6 +72,11 @@ public final class Page {
     private boolean last;
     private Exception error;
 
+    /**
+     * Return a new {@code Page}.
+     *
+     * @param capacity The number of characters the page can hold.
+     */
     public Page(int capacity) {
         this.capacity = capacity;
         this.buf = new char[capacity + PADDING];
@@ -81,12 +86,20 @@ public final class Page {
         this.line = new InternalRecycledLine(this);
     }
 
+    /**
+     * Return the number of lines in this page.
+     *
+     * @return The number of lines.
+     */
     public int lineCount() {
         return lineCount;
     }
 
     /**
      * Return line {@code i}. The same object is returned for every line, and is valid until the next call.
+     *
+     * @param i The index of the line.
+     * @return The line.
      */
     public InternalRecycledLine line(int i) {
         return line.moveTo(i);
@@ -94,6 +107,8 @@ public final class Page {
 
     /**
      * Return {@code true} if no page follows this one.
+     *
+     * @return {@code true} if no page follows this one.
      */
     public boolean isLast() {
         return last;
@@ -101,6 +116,8 @@ public final class Page {
 
     /**
      * Return the error that stopped parsing after the last line of this page, or {@code null}.
+     *
+     * @return The error, or {@code null}.
      */
     public Exception error() {
         return error;
@@ -155,6 +172,8 @@ public final class Page {
     /**
      * Carry the tail of this page over to the start of the next page, which is reset. The next page can be this page
      * itself, and must be as large.
+     *
+     * @param next The next page.
      */
     public void carryover(Page next) {
         int length = limit - tail;

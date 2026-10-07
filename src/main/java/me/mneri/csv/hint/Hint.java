@@ -30,4 +30,7 @@ public class Hint {
      * Advise CSV readers and writers to adapt their algorithms to this specific scenario and be more efficient.
      */
     public static final long TINY_FIELDS = 1L;
+
+    private Hint() {
+    }
 }
