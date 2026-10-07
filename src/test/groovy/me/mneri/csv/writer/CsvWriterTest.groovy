@@ -43,6 +43,7 @@ class CsvWriterTest extends Specification {
         given:
         format.delimiter() >> ','
         format.qualifier() >> '"'
+        format.lineSeparator() >> "\r\n"
         serializer.serialize(_, (List<String>) _) >> { o, List<String> list ->
             list.addAll(value)
         }
@@ -64,6 +65,28 @@ class CsvWriterTest extends Specification {
         ["apple\nbanana"]       | "\"apple\nbanana\"\r\n"
         ["apple\rbanana"]       | "\"apple\rbanana\"\r\n"
         ["apple\r\nbanana"]     | "\"apple\r\nbanana\"\r\n"
+    }
+
+    def "write() ends each line with the format's line separator: #description"() {
+        given:
+        format.delimiter() >> ','
+        format.qualifier() >> '"'
+        format.lineSeparator() >> separator
+        serializer.serialize(_, (List<String>) _) >> { o, List<String> list ->
+            list.addAll(["a", "b"])
+        }
+
+        when:
+        writer.write(new Object())
+        writer.write(new Object())
+
+        then:
+        output.toString() == ("a,b" + separator) * 2
+
+        where:
+        description | separator
+        "CR LF"     | "\r\n"
+        "CR"        | "\r"
     }
 
     def "#label throws IllegalStateException when the writer is closed"() {

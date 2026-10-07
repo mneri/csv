@@ -292,4 +292,9 @@ class MsExcelFormatTest extends Specification {
         semicolon | ";"       | "CR LF" | "\r\n"
         semicolon | ";"       | "CR"    | "\r"
     }
+
+    def "the line separator is CR LF"() {
+        expect:
+        MsExcelFormat.provider(Locale.US).provide().lineSeparator() == "\r\n"
+    }
 }

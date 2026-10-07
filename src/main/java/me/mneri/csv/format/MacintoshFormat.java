@@ -232,4 +232,14 @@ public final class MacintoshFormat implements Format {
     public int qualifier() {
         return '"';
     }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public String lineSeparator() {
+        return "\r";
+    }
 }

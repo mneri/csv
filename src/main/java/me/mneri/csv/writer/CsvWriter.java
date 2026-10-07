@@ -200,6 +200,6 @@ public class CsvWriter<T> implements Closeable, Flushable {
             }
             writeField(line.get(line.size() - 1));
         }
-        writer.write("\r\n");
+        writer.write(format.lineSeparator());
     }
 }

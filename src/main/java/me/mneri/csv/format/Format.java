@@ -205,4 +205,11 @@ public interface Format {
      * @return The qualifier.
      */
     int qualifier();
+
+    /**
+     * Return the {@code Format}'s line separator, which writers end each line with.
+     *
+     * @return The line separator.
+     */
+    String lineSeparator();
 }

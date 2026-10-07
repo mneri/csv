@@ -201,4 +201,9 @@ class Rfc4180StrictFormatTest extends Specification {
         then:
         driver.parse(input) == rows
     }
+
+    def "the line separator is CR LF"() {
+        expect:
+        Rfc4180StrictFormat.provider().provide().lineSeparator() == "\r\n"
+    }
 }

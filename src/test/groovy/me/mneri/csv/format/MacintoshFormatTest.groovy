@@ -202,4 +202,9 @@ class MacintoshFormatTest extends Specification {
         then:
         driver.parse(input) == rows
     }
+
+    def "the line separator is CR"() {
+        expect:
+        MacintoshFormat.provider().provide().lineSeparator() == "\r"
+    }
 }

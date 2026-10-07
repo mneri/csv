@@ -230,4 +230,14 @@ public final class Rfc4180StrictFormat implements Format {
     public int qualifier() {
         return '"';
     }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public String lineSeparator() {
+        return "\r\n";
+    }
 }

@@ -224,4 +224,9 @@ class Rfc4180HalfRelaxedFormatTest extends Specification {
         "LF"    | "\n"
         "CR LF" | "\r\n"
     }
+
+    def "the line separator is CR LF"() {
+        expect:
+        Rfc4180HalfRelaxedFormat.provider().provide().lineSeparator() == "\r\n"
+    }
 }
