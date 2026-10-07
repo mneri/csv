@@ -41,7 +41,7 @@ public final class DefaultThreadFactory implements ThreadFactory {
 
     @Override
     public Thread newThread(Runnable runnable) {
-        Thread thread = new Thread(runnable, "csv-reader-" + COUNT.incrementAndGet());
+        Thread thread = new Thread(runnable, "mneri/csv-" + COUNT.incrementAndGet());
         thread.setDaemon(true);
         return thread;
     }
