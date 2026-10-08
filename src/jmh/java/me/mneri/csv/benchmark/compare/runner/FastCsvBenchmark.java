@@ -38,11 +38,14 @@ import java.util.concurrent.TimeUnit;
 public class FastCsvBenchmark {
     @Benchmark
     public void run(BenchmarkState state, Blackhole bh) throws IOException {
-        CsvReader.builder()
+        try (CsvReader<CsvRecord> reader = CsvReader.builder()
                 .extraFieldStrategy(FieldMismatchStrategy.IGNORE)
                 .missingFieldStrategy(FieldMismatchStrategy.IGNORE)
-                .ofCsvRecord(new FileReader(state.file(), state.charset()))
-                .forEach(record -> bh.consume(toDomain(record)));
+                .ofCsvRecord(new FileReader(state.file(), state.charset()))) {
+            for (CsvRecord record : reader) {
+                bh.consume(toDomain(record));
+            }
+        }
     }
 
     private String[] toDomain(CsvRecord record) {
