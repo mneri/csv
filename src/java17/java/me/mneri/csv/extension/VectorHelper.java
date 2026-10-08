@@ -31,7 +31,10 @@ import jdk.incubator.vector.VectorSpecies;
  * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
  */
 public final class VectorHelper {
-    private static final VectorSpecies<Short> SHORT_SPECIES = ShortVector.SPECIES_PREFERRED;
+    // A bitmask covers 64 characters, so a vector may hold at most 64 lanes: wider ones (ARM SVE allows 2,048 bits, or
+    // 128 shorts) would read past the page's 64-character padding, and VectorMask.toLong() rejects them.
+    private static final VectorSpecies<Short> SHORT_SPECIES = ShortVector.SPECIES_PREFERRED.length() <= Long.SIZE ?
+            ShortVector.SPECIES_PREFERRED : ShortVector.SPECIES_512;
     private static final int SHORT_STRIDE = SHORT_SPECIES.length();
 
     private VectorHelper() {
