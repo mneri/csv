@@ -103,8 +103,8 @@ final class ParallelCsvReader<T> extends CsvReader<T> {
         }
 
         do {
-            if (page.error() != null) {
-                rethrow(page.error());
+            if (page.hasError()) {
+                page.rethrow();
             }
             if (page.isLast()) {
                 return false;
@@ -137,22 +137,6 @@ final class ParallelCsvReader<T> extends CsvReader<T> {
         }
     }
 
-    private void rethrow(Throwable t) throws IOException {
-        if (t instanceof IOException) {
-            throw (IOException) t;
-        }
-        if (t instanceof InterruptedException) {
-            throw new InterruptedIOException();
-        }
-        if (t instanceof RuntimeException) {
-            throw (RuntimeException) t;
-        }
-        if (t instanceof Error) {
-            throw (Error) t;
-        }
-        throw new IOException(t);
-    }
-
     private final class Worker implements Runnable {
         @Override
         @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -168,7 +152,7 @@ final class ParallelCsvReader<T> extends CsvReader<T> {
                     loader.load(current);
                 }
             } catch (Throwable t) {
-                current.fail(t);
+                current.fail(t instanceof InterruptedException ? new InterruptedIOException() : t);
             } finally {
                 loaded.offer(current); // Non-blocking
                 try {

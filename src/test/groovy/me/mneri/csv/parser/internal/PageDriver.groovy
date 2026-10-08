@@ -50,8 +50,8 @@ class PageDriver {
                 def line = page.line(i)
                 out << (0..<line.fieldCount).collect { line.getString(it) ?: "" }
             }
-            if (page.error() != null) {
-                throw page.error()
+            if (page.hasError()) {
+                page.rethrow()
             }
             if (page.isLast()) {
                 return out

@@ -19,11 +19,11 @@
 package me.mneri.csv.reader;
 
 import me.mneri.csv.deserializer.Deserializer;
+import me.mneri.csv.parser.internal.InternalRecycledLine;
 import me.mneri.csv.parser.internal.Page;
 import me.mneri.csv.parser.internal.PageLoader;
 
 import java.io.IOException;
-import java.io.InterruptedIOException;
 import java.util.NoSuchElementException;
 
 /**
@@ -36,11 +36,14 @@ import java.util.NoSuchElementException;
  * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
  */
 final class SequentialCsvReader<T> extends CsvReader<T> {
+    private static final int STATE_OPEN = 0;
+    private static final int STATE_CLOSED = 1;
+
     private final PageLoader loader;
     private final Deserializer<T> deserializer;
     private final Page page;
     private int cursor;
-    private boolean closed;
+    private int state = STATE_OPEN;
 
     SequentialCsvReader(int pageSize, PageLoader loader, Deserializer<T> deserializer) {
         this.loader = loader;
@@ -49,26 +52,32 @@ final class SequentialCsvReader<T> extends CsvReader<T> {
     }
 
     @Override
+    public void close() throws IOException {
+        state = STATE_CLOSED;
+        cursor = Integer.MAX_VALUE;
+        loader.close();
+    }
+
+    @Override
     public boolean hasNext() throws IOException {
-        // Optimization: the page holds hundreds of lines, so this is true hundreds of times in a row. The rest is in
-        // the cold-path method hasNext2(), keeping this method small enough to be inlined by the JIT compiler.
         return cursor < page.lineCount() || hasNext2();
     }
 
     private boolean hasNext2() throws IOException {
-        if (closed) {
+        if (state != STATE_OPEN) {
             throw new IllegalStateException("The reader is closed.");
         }
-        while (cursor == page.lineCount()) {
-            if (page.error() != null) {
-                rethrow(page.error());
+        do {
+            if (page.hasError()) {
+                page.rethrow();
             }
             if (page.isLast()) {
                 return false;
             }
             flip();
-            cursor = 0;
-        }
+        } while (page.lineCount() == 0);
+
+        cursor = 0;
         return true;
     }
 
@@ -77,34 +86,12 @@ final class SequentialCsvReader<T> extends CsvReader<T> {
         if (!hasNext()) {
             throw new NoSuchElementException();
         }
-        return deserializer.deserialize(page.line(cursor++));
-    }
-
-    @Override
-    public void close() throws IOException {
-        closed = true;
-        cursor = Integer.MAX_VALUE; // Sends hasNext() to its slow path, which throws
-        loader.close(); // Closing a closed stream has no effect
+        InternalRecycledLine line = page.line(cursor++);
+        return deserializer.deserialize(line);
     }
 
     private void flip() {
-        page.carryover(page); // The page's own tail moves to its start
+        page.carryover(page);
         loader.load(page);
-    }
-
-    private void rethrow(Throwable t) throws IOException {
-        if (t instanceof IOException) {
-            throw (IOException) t;
-        }
-        if (t instanceof InterruptedException) {
-            throw new InterruptedIOException();
-        }
-        if (t instanceof RuntimeException) {
-            throw (RuntimeException) t;
-        }
-        if (t instanceof Error) {
-            throw (Error) t;
-        }
-        throw new IOException(t);
     }
 }

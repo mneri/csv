@@ -115,12 +115,31 @@ public final class Page {
     }
 
     /**
-     * Return the error that stopped parsing after the last line of this page, or {@code null}.
+     * Return {@code true} if an error stopped parsing after the last line of this page.
      *
-     * @return The error, or {@code null}.
+     * @return {@code true} if an error stopped parsing after the last line of this page.
      */
-    public Throwable error() {
-        return error;
+    public boolean hasError() {
+        return error != null;
+    }
+
+    /**
+     * Throw the error that stopped parsing after the last line of this page. Call it only if {@link #hasError()} is
+     * {@code true}.
+     *
+     * @throws IOException The error, or an {@code IOException} wrapping it if it's another checked exception.
+     */
+    public void rethrow() throws IOException {
+        if (error instanceof IOException) {
+            throw (IOException) error;
+        }
+        if (error instanceof RuntimeException) {
+            throw (RuntimeException) error;
+        }
+        if (error instanceof Error) {
+            throw (Error) error;
+        }
+        throw new IOException(error);
     }
 
     void startLine(int pos) {
@@ -162,6 +181,8 @@ public final class Page {
 
     /**
      * Parsing failed: the error is thrown after the lines already in this page.
+     *
+     * @param t The error.
      */
     public void fail(Throwable t) {
         error = t;
