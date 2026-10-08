@@ -23,6 +23,7 @@ import me.mneri.csv.parser.internal.Page;
 import me.mneri.csv.parser.internal.PageLoader;
 
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.util.NoSuchElementException;
 
 /**
@@ -60,7 +61,7 @@ final class SequentialCsvReader<T> extends CsvReader<T> {
         }
         while (cursor == page.lineCount()) {
             if (page.error() != null) {
-                throw rethrow(page.error());
+                rethrow(page.error());
             }
             if (page.isLast()) {
                 return false;
@@ -91,10 +92,19 @@ final class SequentialCsvReader<T> extends CsvReader<T> {
         loader.load(page);
     }
 
-    private IOException rethrow(Exception e) {
-        if (e instanceof RuntimeException) {
-            throw (RuntimeException) e;
+    private void rethrow(Throwable t) throws IOException {
+        if (t instanceof IOException) {
+            throw (IOException) t;
         }
-        return (IOException) e;
+        if (t instanceof InterruptedException) {
+            throw new InterruptedIOException();
+        }
+        if (t instanceof RuntimeException) {
+            throw (RuntimeException) t;
+        }
+        if (t instanceof Error) {
+            throw (Error) t;
+        }
+        throw new IOException(t);
     }
 }

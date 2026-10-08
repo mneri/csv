@@ -70,7 +70,7 @@ public final class Page {
 
     private final InternalRecycledLine line;
     private boolean last;
-    private Exception error;
+    private Throwable error;
 
     /**
      * Return a new {@code Page}.
@@ -119,7 +119,7 @@ public final class Page {
      *
      * @return The error, or {@code null}.
      */
-    public Exception error() {
+    public Throwable error() {
         return error;
     }
 
@@ -163,8 +163,8 @@ public final class Page {
     /**
      * Parsing failed: the error is thrown after the lines already in this page.
      */
-    void fail(Exception e) {
-        error = e;
+    public void fail(Throwable t) {
+        error = t;
         last = true;
         finish();
     }

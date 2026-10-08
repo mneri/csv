@@ -19,6 +19,7 @@
 package me.mneri.csv.reader;
 
 import me.mneri.csv.deserializer.Deserializer;
+import me.mneri.csv.parser.internal.InternalRecycledLine;
 import me.mneri.csv.parser.internal.Page;
 import me.mneri.csv.parser.internal.PageLoader;
 
@@ -43,53 +44,75 @@ import java.util.concurrent.ThreadFactory;
  * @author Massimo Neri &lt;<a href="mailto:hello@mneri.me">hello@mneri.me</a>&gt;
  */
 final class ParallelCsvReader<T> extends CsvReader<T> {
-    private static final int N_PAGES = 4; // At least 3
-    private static final long CLOSE_TIMEOUT_MILLIS = 1_000;
+    private static final int STATE_OPEN = 0;
+    private static final int STATE_CLOSED = 1;
+
+    private static final int N_PAGES = 4;
+    private static final long CLOSE_TIMEOUT_MILLIS = 1_000L;
 
     private final BlockingQueue<Page> free = new ArrayBlockingQueue<>(N_PAGES);
     private final BlockingQueue<Page> loaded = new ArrayBlockingQueue<>(N_PAGES);
+
     private final PageLoader loader;
     private final Deserializer<T> deserializer;
-    private final Thread thread;
+    private final Thread worker;
+
     private Page page;
     private int cursor;
-    private boolean closed;
+    private int state = STATE_OPEN;
 
     ParallelCsvReader(ThreadFactory threads, int pageSize, PageLoader loader, Deserializer<T> deserializer) {
         this.loader = loader;
         this.deserializer = deserializer;
-        this.page = new Page(pageSize); // The client's page: empty, it's handed back at the first read
-        for (int i = 1; i < N_PAGES; i++) {
+
+        // Please note, there are N_PAGES in total and the two ArrayBlockingQueues are of size N_PAGES each.
+        this.page = new Page(pageSize);
+        for (int i = 0; i < N_PAGES - 1; i++) {
             free.add(new Page(pageSize));
         }
-        thread = threads.newThread(new Worker());
-        if (thread == null) {
+
+        worker = threads.newThread(new Worker());
+        if (worker == null) {
             throw new RejectedExecutionException("The thread factory didn't create a thread.");
         }
-        thread.start();
+        worker.start();
+    }
+
+    @Override
+    public void close() throws IOException {
+        state = STATE_CLOSED;
+        cursor = Integer.MAX_VALUE;
+
+        worker.interrupt();
+        try {
+            worker.join(CLOSE_TIMEOUT_MILLIS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new InterruptedIOException();
+        }
     }
 
     @Override
     public boolean hasNext() throws IOException {
-        // Optimization: the page holds hundreds of lines, so this is true hundreds of times in a row. The rest is in
-        // the cold-path method hasNext2(), keeping this method small enough to be inlined by the JIT compiler.
         return cursor < page.lineCount() || hasNext2();
     }
 
     private boolean hasNext2() throws IOException {
-        if (closed) {
+        if (state != STATE_OPEN) {
             throw new IllegalStateException("The reader is closed.");
         }
-        while (cursor == page.lineCount()) {
+
+        do {
             if (page.error() != null) {
-                throw rethrow(page.error());
+                rethrow(page.error());
             }
             if (page.isLast()) {
                 return false;
             }
             flip();
-            cursor = 0;
-        }
+        } while (page.lineCount() == 0);
+
+        cursor = 0;
         return true;
     }
 
@@ -98,62 +121,59 @@ final class ParallelCsvReader<T> extends CsvReader<T> {
         if (!hasNext()) {
             throw new NoSuchElementException();
         }
-        return deserializer.deserialize(page.line(cursor++));
-    }
-
-    @Override
-    public void close() throws IOException {
-        closed = true;
-        cursor = Integer.MAX_VALUE; // Sends hasNext() to its slow path, which throws
-        thread.interrupt();
-        try {
-            thread.join(CLOSE_TIMEOUT_MILLIS);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new InterruptedIOException();
-        }
+        InternalRecycledLine line = page.line(cursor++);
+        return deserializer.deserialize(line);
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     private void flip() throws IOException {
-        Page next;
         try {
-            next = loaded.take(); // If the wait is interrupted, nothing has changed: hasNext() can simply try again
+            Page next = loaded.take(); // Blocking
+            free.offer(page); // Non-blocking
+            page = next;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new InterruptedIOException();
         }
-        free.offer(page); // Never fails, and can't be interrupted: the queue has room for all the pages
-        page = next;
     }
 
-    private IOException rethrow(Exception e) {
-        if (e instanceof RuntimeException) {
-            throw (RuntimeException) e;
+    private void rethrow(Throwable t) throws IOException {
+        if (t instanceof IOException) {
+            throw (IOException) t;
         }
-        return (IOException) e;
+        if (t instanceof InterruptedException) {
+            throw new InterruptedIOException();
+        }
+        if (t instanceof RuntimeException) {
+            throw (RuntimeException) t;
+        }
+        if (t instanceof Error) {
+            throw (Error) t;
+        }
+        throw new IOException(t);
     }
 
     private final class Worker implements Runnable {
         @Override
+        @SuppressWarnings("ResultOfMethodCallIgnored")
         public void run() {
+            Page current = free.remove(); // Non-blocking (at the start a free page is always available).
             try {
-                Page current = free.take();
                 loader.load(current);
                 while (!current.isLast()) {
-                    Page next = free.take();
+                    Page next = free.take(); // Blocking
                     current.carryover(next);
-                    loaded.put(current);
-                    loader.load(next);
+                    loaded.offer(current); // Non-blocking
                     current = next;
+                    loader.load(current);
                 }
-                loaded.put(current);
-            } catch (InterruptedException e) {
-                // The client closed the reader
+            } catch (Throwable t) {
+                current.fail(t);
             } finally {
+                loaded.offer(current); // Non-blocking
                 try {
                     loader.close();
-                } catch (IOException ignored) { // A stream that is only read loses nothing if it fails to close
+                } catch (IOException ignored) {
                 }
             }
         }

@@ -27,6 +27,7 @@ import me.mneri.csv.format.Rfc4180StrictFormat
 import me.mneri.csv.hint.Hint
 import me.mneri.csv.reader.CsvReader.Configuration
 import spock.lang.Specification
+import spock.lang.Timeout
 
 import java.nio.BufferOverflowException
 
@@ -161,6 +162,7 @@ abstract class CsvReaderContract extends Specification {
         [parser, maxLineSize] << [PARSERS.keySet(), [16, 4_096]].combinations()
     }
 
+    @Timeout(10) // If the reader hangs, fail instead of freezing the build
     def "an exception from the stream is thrown after the lines read before it: #failure.class.simpleName (#parser parser)"() {
         given: "a stream that fails after its first 100 characters"
         def expected = (1..1_000).collect { [it.toString(), "aaa"] }
@@ -174,17 +176,17 @@ abstract class CsvReaderContract extends Specification {
         }
 
         then: "the exception is the stream's own, after the lines of the pages loaded before it"
-        def e = thrown(Exception)
+        def e = thrown(Throwable)
         e.is(failure)
         !lines.isEmpty()
         lines == expected.take(lines.size())
 
         where:
-        [failure, parser] << [[new IOException("The disk is on fire"), new IllegalStateException("Broken stream")],
-                              PARSERS.keySet()].combinations()
+        [failure, parser] << [[new IOException("The disk is on fire"), new IllegalStateException("Broken stream"),
+                               new LinkageError("A class failed to load")], PARSERS.keySet()].combinations()
     }
 
-    def "an exception from the deserializer is thrown by next() (#parser parser)"() {
+    def "an exception from the deserializer is thrown by next(), which then moves on (#parser parser)"() {
         given:
         def failure = new IOException("Bad line")
         def deserializer = { line -> line.getString(0) == "b" ? { throw failure }() : line.getString(0) } as Deserializer
@@ -198,6 +200,13 @@ abstract class CsvReaderContract extends Specification {
         def e = thrown(IOException)
         e.is(failure)
         first == "a"
+
+        when: "the client skips the line and carries on"
+        def last = reader.next()
+
+        then:
+        last == "c"
+        !reader.hasNext()
 
         where:
         parser << PARSERS.keySet()

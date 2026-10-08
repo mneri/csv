@@ -24,6 +24,7 @@ import me.mneri.csv.format.Format
 import me.mneri.csv.reader.CsvReader.Configuration
 import spock.lang.Timeout
 
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.ThreadFactory
@@ -163,6 +164,88 @@ class ParallelCsvReaderTest extends CsvReaderContract {
 
         cleanup:
         Thread.interrupted()
+    }
+
+    @Timeout(10) // If the reader hangs, fail instead of freezing the build
+    def "after an error from the stream, the background thread closes the stream and ends"() {
+        given:
+        def failure = new LinkageError("A class failed to load")
+        def text = (1..1_000).collect { "$it,aaa" }.join("\n")
+        def stream = new RecordingReader(text, failAfter: 100, failure: failure)
+        def reader = open(stream, maxLineSize: 16)
+
+        when:
+        readAll(reader)
+
+        then: "the client gets the error"
+        def e = thrown(LinkageError)
+        e.is(failure)
+
+        when:
+        threads[0].join(5_000)
+
+        then:
+        !threads[0].alive
+        stream.closed
+    }
+
+    @Timeout(10) // If the reader hangs, fail instead of freezing the build
+    def "an interrupt of the background thread that doesn't come from close() is thrown as InterruptedIOException"() {
+        given: "a stream long enough to keep the background thread waiting for the client"
+        def expected = (1..1_000).collect { [it.toString(), "aaa"] }
+        def reader = open(expected*.join(",").join("\n"), maxLineSize: 16)
+        def lines = [reader.next()]
+        while (threads[0].state != Thread.State.WAITING) {
+            Thread.onSpinWait()
+        }
+
+        when: "someone else interrupts the background thread, and the client keeps reading"
+        threads[0].interrupt()
+        while (reader.hasNext()) {
+            lines << reader.next()
+        }
+
+        then: "the client gets the lines loaded before the interrupt, then the interrupt"
+        thrown(InterruptedIOException)
+        lines == expected.take(lines.size())
+        !Thread.interrupted() // The client itself wasn't interrupted
+
+        when:
+        threads[0].join(5_000)
+
+        then:
+        !threads[0].alive
+    }
+
+    @Timeout(10) // If the client hangs, fail instead of freezing the build
+    def "close() from another thread wakes a client that waits for a page"() {
+        given: "a stream that keeps the background thread in read(), as a silent socket does"
+        def stream = new StuckReader()
+        def reader = open(stream)
+        stream.reading.await()
+
+        and: "a client that waits for the first page"
+        def outcome = new CompletableFuture()
+        def client = Thread.startDaemon {
+            try {
+                outcome.complete(reader.hasNext())
+            } catch (Throwable e) {
+                outcome.complete(e)
+            }
+        }
+        while (client.state != Thread.State.WAITING) {
+            Thread.onSpinWait()
+        }
+
+        when: "another thread closes the reader, then the read returns"
+        reader.close()
+        stream.go.countDown()
+
+        then: "the client stops waiting"
+        outcome.get() != null
+
+        cleanup:
+        stream.go.countDown()
     }
 
     /**

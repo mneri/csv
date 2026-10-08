@@ -29,12 +29,12 @@ class RecordingReader extends Reader {
     volatile boolean closed
     private final Reader input
     private final int failAfter
-    private final Exception failure
+    private final Throwable failure
     private int position
 
     /**
      * Return a new stream of the text. The options are {@code failAfter}, the number of characters after which the
-     * stream throws, and {@code failure}, the exception it throws.
+     * stream throws, and {@code failure}, what it throws: an exception or an error.
      */
     RecordingReader(Map options = [:], String text) {
         this.input = new StringReader(text)
