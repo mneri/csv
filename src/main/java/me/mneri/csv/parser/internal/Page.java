@@ -170,6 +170,7 @@ public final class Page {
      */
     void stop() {
         tail = lineStart;
+        parsed = limit; // If the page isn't full, the loader can read more and parsing resumes here
     }
 
     /**
@@ -219,11 +220,28 @@ public final class Page {
         next.error = null;
     }
 
+    /**
+     * Return {@code true} if the page holds as many characters as it can.
+     *
+     * @return {@code true} if the page is full.
+     */
+    boolean isFull() {
+        return limit == capacity;
+    }
+
+    /**
+     * Read at least one character, or the end of the stream, then keep reading while the stream has characters ready,
+     * until the page is full. The page must not be full.
+     */
     void fill(Reader in) throws IOException {
-        int read = 0;
-        while (limit < capacity && (read = in.read(buf, limit, capacity - limit)) >= 0) {
-            limit += read;
-        }
+        int read;
+        do {
+            read = in.read(buf, limit, capacity - limit);
+            if (read > 0) {
+                limit += read;
+            }
+        } while (read >= 0 && limit < capacity && in.ready());
+
         last = read < 0;
         Arrays.fill(buf, limit, limit + PADDING, '\0');
     }

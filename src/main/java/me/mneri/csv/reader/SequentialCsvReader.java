@@ -42,6 +42,7 @@ final class SequentialCsvReader<T> extends CsvReader<T> {
     private final PageLoader loader;
     private final Deserializer<T> deserializer;
     private final Page page;
+
     private int cursor;
     private int state = STATE_OPEN;
 

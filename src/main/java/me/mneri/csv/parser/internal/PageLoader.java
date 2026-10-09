@@ -52,6 +52,11 @@ public final class PageLoader implements Closeable {
         }
     }
 
+    @Override
+    public void close() throws IOException {
+        in.close();
+    }
+
     /**
      * Fill the page, which already holds the tail of the previous page, and parse it. Errors are recorded in the page
      * and thrown to the client after the page's lines.
@@ -60,18 +65,16 @@ public final class PageLoader implements Closeable {
      */
     public void load(Page page) {
         try {
-            page.fill(in);
-            parser.parse(page);
-            if (page.tail == 0 && !page.isLast()) { // A single line fills the whole page
+            do {
+                page.fill(in);
+                parser.parse(page);
+            } while (page.lineCount() == 0 && !page.isLast() && !page.isFull());
+
+            if (page.lineCount() == 0 && !page.isLast()) { // A single line fills the whole page
                 page.fail(new BufferOverflowException());
             }
-        } catch (IOException | RuntimeException e) {
+        } catch (Exception e) {
             page.fail(e);
         }
-    }
-
-    @Override
-    public void close() throws IOException {
-        in.close();
     }
 }

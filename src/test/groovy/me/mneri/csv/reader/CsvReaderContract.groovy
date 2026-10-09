@@ -212,6 +212,26 @@ abstract class CsvReaderContract extends Specification {
         parser << PARSERS.keySet()
     }
 
+    @Timeout(10) // If the reader waits for a full page, fail instead of freezing the build
+    def "returns the lines that have arrived without waiting for a full page (#parser parser)"() {
+        given: "a pipe whose writer has sent two lines and stays open, like a socket waiting for a reply"
+        def pipe = new PipedReader(1_024)
+        def writer = new PipedWriter(pipe)
+        writer.write("a,b\nc,d\n")
+        writer.flush()
+        def reader = open(pipe, parser: parser)
+
+        expect:
+        reader.next() == ["a", "b"]
+        reader.next() == ["c", "d"]
+
+        cleanup:
+        writer.close()
+
+        where:
+        parser << PARSERS.keySet()
+    }
+
     def "close() closes the stream, after #linesRead lines (#parser parser)"() {
         given:
         def stream = new RecordingReader("a\nb\nc")
