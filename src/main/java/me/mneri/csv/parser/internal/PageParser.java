@@ -25,9 +25,13 @@ package me.mneri.csv.parser.internal;
  */
 public interface PageParser {
     /**
-     * Parse the page from where parsing stopped in the previous page. A line that runs into the end of the page is
-     * left as the page's tail, and the parser keeps its state to resume in the next page. Parsing errors are recorded
-     * in the page.
+     * Parse the characters the page has just read, going on from where the previous call stopped: the parser keeps the
+     * state of the format from one call to the next. The lines go into the page's table as they end; a line that runs
+     * past the characters read stays unfinished, and the next call goes on with it. Parsing errors are recorded in the
+     * page.
+     * <p>
+     * The parser reads where the new characters start from the page, rather than taking it as an argument: in our
+     * measurements, the argument made the scalar parser 10% slower.
      *
      * @param page The page.
      */

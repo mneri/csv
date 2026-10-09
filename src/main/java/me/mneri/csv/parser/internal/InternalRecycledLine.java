@@ -36,7 +36,7 @@ import java.math.BigInteger;
  * {@code InternalRecycledLine}, {@code Page} and {@code PageParser} implementations are closely related, and together
  * they compose the parsing and data extraction behaviour. As the page is processed, the page parser populates the
  * page's table by recording positional markers via calls to {@link Page#startField(int)}, {@link Page#endField(int)},
- * and {@link Page#dirty(int)}. Rather than eagerly allocating or copying strings, {@code InternalRecycledLine} only
+ * and {@link Page#exclude(int)}. Rather than eagerly allocating or copying strings, {@code InternalRecycledLine} only
  * points at one line of the table. When a field value is subsequently requested by the client (for example, via
  * {@link #getString(int)}), {@code InternalRecycledLine} uses the saved markers to read and assemble the data directly
  * from the page's buffer on demand.
@@ -57,7 +57,7 @@ public final class InternalRecycledLine implements RecycledLine {
 
     InternalRecycledLine(Page page) {
         this.page = page;
-        this.buf = page.buf;
+        this.buf = page.buffer;
         this.fields = page.fields;
         this.lines = page.lines;
     }

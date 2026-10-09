@@ -42,7 +42,7 @@ class PageDriver {
         def page = new Page(pageSize)
 
         while (true) {
-            page.carryover(page)
+            page.carryOverTo(page)
             page.fill(reader)
             parser.parse(page)
 
@@ -56,7 +56,7 @@ class PageDriver {
             if (page.isLast()) {
                 return out
             }
-            if (page.tail == 0) {
+            if (page.lineCount() == 0) {
                 throw new BufferOverflowException()
             }
         }

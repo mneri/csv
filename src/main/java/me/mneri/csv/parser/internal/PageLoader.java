@@ -58,8 +58,9 @@ public final class PageLoader implements Closeable {
     }
 
     /**
-     * Fill the page, which already holds the tail of the previous page, and parse it. Errors are recorded in the page
-     * and thrown to the client after the page's lines.
+     * Read characters into the page, after the unfinished line it already holds, and parse them. A slow stream can send
+     * a line in pieces: the page is read and parsed again until it holds a complete line, the stream ends, or the page
+     * is full. Errors are recorded in the page, and thrown to the client after the page's lines.
      *
      * @param page The page.
      */

@@ -48,11 +48,11 @@ public final class VectorPageParser implements PageParser {
     @Override
     public void parse(Page page) {
         final Format format = this.format;
-        final char[] buf = page.buf;
+        final char[] buf = page.buffer;
         final int limit = page.limit;
 
         long bitmask = 0L;
-        int strideStart = page.parsed - STRIDE;
+        int strideStart = page.fresh - STRIDE;
         int s = state;
 
         while (true) {
@@ -80,8 +80,7 @@ public final class VectorPageParser implements PageParser {
                     } else if (page.isLast()) {
                         c = -1;
                     } else {
-                        state = s;
-                        page.stop();
+                        state = s; // The line runs past the limit: the next call goes on from this state
                         return;
                     }
 
@@ -97,7 +96,7 @@ public final class VectorPageParser implements PageParser {
 
                 if (isPastDirtyOrReplay(s)) {
                     if (isPastDirty(s)) {
-                        page.dirty(pos - 1);
+                        page.exclude(pos - 1);
                     }
                     if (isReplay(s)) {
                         bitmask |= 1L << shift;
@@ -106,11 +105,9 @@ public final class VectorPageParser implements PageParser {
             } while (isNotEndOfLineAndNotEndOfFileAndNotError(s));
 
             if (isEndOfLine(s)) {
-                page.endLine();
-                page.startLine(isReplay(s) ? pos : pos + 1); // A replayed character belongs to the next line
+                page.endLine(isReplay(s) ? pos : pos + 1); // A replayed character belongs to the next line
             }
             if (isEndOfFile(s)) {
-                page.finish();
                 return;
             }
             if (isError(s)) {

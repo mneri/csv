@@ -92,7 +92,7 @@ final class SequentialCsvReader<T> extends CsvReader<T> {
     }
 
     private void flip() {
-        page.carryover(page);
+        page.carryOverTo(page);
         loader.load(page);
     }
 }

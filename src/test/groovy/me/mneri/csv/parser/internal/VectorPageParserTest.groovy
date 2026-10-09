@@ -192,7 +192,7 @@ class VectorPageParserTest extends Specification {
         pageSize << [7, 8, 9, 10, 11, 4_096]
     }
 
-    def "at the end of a page that isn't the last, leaves the line in progress as the tail: #description"() {
+    def "at the end of a page that isn't the last, leaves the line in progress for the next page: #description"() {
         given:
         def page = new Page(4)
         page.fill(new StringReader(input))
@@ -203,12 +203,12 @@ class VectorPageParserTest extends Specification {
 
         then:
         page.lineCount() == lines
-        page.tail == tail
+        page.end == end
         !page.isLast()
         !calls*.get(1).contains("EOF")
 
         where:
-        description                        | input      || lines | tail
+        description                        | input      || lines | end
         "a line in progress"               | "Ab;Cdef;" || 1     | 3
         "a line that fills the whole page" | "Abcdef;"  || 0     | 0
     }

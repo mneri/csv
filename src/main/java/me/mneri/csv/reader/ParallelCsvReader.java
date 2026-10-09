@@ -146,7 +146,7 @@ final class ParallelCsvReader<T> extends CsvReader<T> {
                 loader.load(current);
                 while (!current.isLast()) {
                     Page next = free.take(); // Blocking
-                    current.carryover(next);
+                    current.carryOverTo(next);
                     loaded.offer(current); // Non-blocking
                     current = next;
                     loader.load(current);

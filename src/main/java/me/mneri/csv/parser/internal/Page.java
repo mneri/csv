@@ -23,14 +23,22 @@ import java.io.Reader;
 import java.util.Arrays;
 
 /**
- * A page of characters read from the stream, and a table of the lines parsed from it.
- * <p>
- * A page holds only complete lines. A line that doesn't fit at the end of a page (the tail) is carried to the start of
- * the next page, together with the fields found so far, and parsing resumes where it stopped.
- * <p>
+ * A page of characters read from the stream, and a table of the lines parsed from them.
+ * <pre>
+ * | complete lines | unfinished line | free space |
+ * 0               end              limit       capacity
+ * </pre>
+ * A page goes round in four steps:
+ * <ol>
+ *     <li>{@code fill()} reads characters into the free space;</li>
+ *     <li>the parser goes on from where it stopped, and records each line in the table as it ends;</li>
+ *     <li>the client reads the complete lines;</li>
+ *     <li>{@link #carryOverTo(Page)} moves the unfinished line to the start of the next page.</li>
+ * </ol>
  * The lines are stored as a table, in three arrays that the parser fills from left to right:
  * <ul>
- *     <li>{@code fields}: a pair of positions in the buffer for each field, where it starts and where it ends;</li>
+ *     <li>{@code fields}: a pair of positions in the buffer for each field, where it starts and where it ends. The
+ *     start of the field in progress waits in {@code fields[fieldsSize]} until the field ends;</li>
  *     <li>{@code excluded}: the positions of the characters to drop from the fields, such as the first quote of an
  *     escaped quote;</li>
  *     <li>{@code lines}: where each line ends in the other two arrays. Line {@code i} owns the pairs in
@@ -53,12 +61,12 @@ public final class Page {
     // The SIMD parser always reads 64 characters at a time, even at the end of the page.
     private static final int PADDING = Long.SIZE;
 
-    final char[] buf;
+    final char[] buffer;
     final int capacity;
-    long base;   // Absolute position of buf[0] in the stream, for error messages
-    int limit;   // buf[0, limit) holds the characters read
-    int tail;    // Start of the characters not parsed into lines, carried to the next page
-    int parsed;  // buf[0, parsed) has already been parsed: parsing resumes here
+    long base;  // The position of buf[0] in the stream, for error messages
+    int end;    // Where the complete lines end and the unfinished line starts
+    int fresh;  // Where the characters of the last fill() start: the parser goes on from here
+    int limit;  // Where the characters read end
 
     final int[] fields;
     int fieldsSize;
@@ -66,7 +74,6 @@ public final class Page {
     int excludedSize;
     final int[] lines; // Starts with (0, 0): where the first line starts
     private int lineCount;
-    private int lineStart;
 
     private final InternalRecycledLine line;
     private boolean last;
@@ -79,7 +86,7 @@ public final class Page {
      */
     public Page(int capacity) {
         this.capacity = capacity;
-        this.buf = new char[capacity + PADDING];
+        this.buffer = new char[capacity + PADDING];
         this.fields = new int[2 * (capacity + 1)];
         this.excluded = new int[capacity];
         this.lines = new int[2 * (capacity + 2)];
@@ -142,8 +149,42 @@ public final class Page {
         throw new IOException(error);
     }
 
-    void startLine(int pos) {
-        lineStart = pos;
+    /**
+     * Return {@code true} if the page holds as many characters as it can.
+     *
+     * @return {@code true} if the page is full.
+     */
+    boolean isFull() {
+        return limit == capacity;
+    }
+
+    /**
+     * Read characters into the free space: at least one, or the end of the stream, then more while the stream has them
+     * ready, until the page is full. The page must not be full.
+     */
+    void fill(Reader in) throws IOException {
+        fresh = limit;
+
+        int read;
+        do {
+            read = in.read(buffer, limit, capacity - limit);
+            if (read > 0) {
+                limit += read;
+            }
+        } while (read >= 0 && limit < capacity && in.ready());
+
+        last = read < 0;
+        Arrays.fill(buffer, limit, limit + PADDING, '\0');
+    }
+
+    /**
+     * Parsing failed: the error is thrown after the lines already in this page, and no page follows.
+     *
+     * @param t The error.
+     */
+    public void fail(Throwable t) {
+        error = t;
+        last = true;
     }
 
     void startField(int pos) {
@@ -155,94 +196,54 @@ public final class Page {
         fieldsSize += 2;
     }
 
-    void dirty(int pos) {
+    void exclude(int pos) {
         excluded[excludedSize++] = pos;
     }
 
-    void endLine() {
+    void endLine(int pos) { // The line ends before pos, where the next line starts
         lineCount++;
         lines[2 * lineCount] = fieldsSize;
         lines[2 * lineCount + 1] = excludedSize;
+        end = pos;
     }
 
     /**
-     * The line in progress ran into the end of the page: it will be carried over to the next page.
-     */
-    void stop() {
-        tail = lineStart;
-        parsed = limit; // If the page isn't full, the loader can read more and parsing resumes here
-    }
-
-    /**
-     * The stream is over: no page follows this one.
-     */
-    void finish() {
-        tail = limit;
-    }
-
-    /**
-     * Parsing failed: the error is thrown after the lines already in this page.
-     *
-     * @param t The error.
-     */
-    public void fail(Throwable t) {
-        error = t;
-        last = true;
-        finish();
-    }
-
-    /**
-     * Carry the tail of this page over to the start of the next page, which is reset. The next page can be this page
-     * itself, and must be as large.
+     * Move the unfinished line to the start of the next page, with the fields found in it so far and the characters to
+     * exclude from them. The next page can be this page itself, and must be as large.
+     * <pre>
+     * this page | complete lines | unfinished line |
+     *           0               end              limit
+     * next page | unfinished line |
+     *           0           limit - end
+     * </pre>
      *
      * @param next The next page.
      */
-    public void carryover(Page next) {
-        int length = limit - tail;
-        int fieldsFrom = lines[2 * lineCount];
-        int excludedFrom = lines[2 * lineCount + 1];
-        System.arraycopy(buf, tail, next.buf, 0, length);
-        for (int i = fieldsFrom; i <= fieldsSize; i++) { // <=: the start of the field in progress, if any
-            next.fields[i - fieldsFrom] = fields[i] - tail;
-        }
-        for (int i = excludedFrom; i < excludedSize; i++) {
-            next.excluded[i - excludedFrom] = excluded[i] - tail;
-        }
-        next.base = base + tail;
-        next.limit = length;
-        next.tail = 0;
-        next.parsed = length;
-        next.fieldsSize = fieldsSize - fieldsFrom;
-        next.excludedSize = excludedSize - excludedFrom;
+    public void carryOverTo(Page next) {
+        int shift = end; // The unfinished line moves back by this many characters
+
+        // In the table, the entries of the unfinished line come after those of the complete lines
+        int firstField = lines[2 * lineCount];
+        int firstExcluded = lines[2 * lineCount + 1];
+
+        System.arraycopy(buffer, shift, next.buffer, 0, limit - shift);
+        copyPositions(fields, firstField, fieldsSize + 1, next.fields, shift); // + 1: the field in progress
+        copyPositions(excluded, firstExcluded, excludedSize, next.excluded, shift);
+
+        next.base = base + shift;
+        next.end = 0;
+        next.limit = limit - shift;
+        next.fieldsSize = fieldsSize - firstField;
+        next.excludedSize = excludedSize - firstExcluded;
         next.lineCount = 0;
-        next.lineStart = 0;
         next.last = false;
         next.error = null;
     }
 
-    /**
-     * Return {@code true} if the page holds as many characters as it can.
-     *
-     * @return {@code true} if the page is full.
-     */
-    boolean isFull() {
-        return limit == capacity;
-    }
-
-    /**
-     * Read at least one character, or the end of the stream, then keep reading while the stream has characters ready,
-     * until the page is full. The page must not be full.
-     */
-    void fill(Reader in) throws IOException {
-        int read;
-        do {
-            read = in.read(buf, limit, capacity - limit);
-            if (read > 0) {
-                limit += read;
-            }
-        } while (read >= 0 && limit < capacity && in.ready());
-
-        last = read < 0;
-        Arrays.fill(buf, limit, limit + PADDING, '\0');
+    // Copy the positions src[from, to) to the start of dst, moving them back by shift characters, like the characters
+    private static void copyPositions(int[] src, int from, int to, int[] dst, int shift) {
+        for (int i = from; i < to; i++) {
+            dst[i - from] = src[i] - shift;
+        }
     }
 }

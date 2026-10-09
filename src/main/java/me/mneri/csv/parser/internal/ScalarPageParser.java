@@ -47,10 +47,10 @@ public final class ScalarPageParser implements PageParser {
     @Override
     public void parse(Page page) {
         final Format format = this.format;
-        final char[] buf = page.buf;
+        final char[] buf = page.buffer;
         final int limit = page.limit;
 
-        int pos = page.parsed;
+        int pos = page.fresh;
         int s = state;
 
         while (true) {
@@ -64,8 +64,7 @@ public final class ScalarPageParser implements PageParser {
                     }
                     if (pos >= limit) {
                         if (!page.isLast()) {
-                            state = s;
-                            page.stop();
+                            state = s; // The line runs past the limit: the next call goes on from this state
                             return;
                         }
                         s = format.consume(s, -1);
@@ -80,7 +79,7 @@ public final class ScalarPageParser implements PageParser {
                 } while (isJustStartOfFieldOrEndOfField(s));
                 if (isPastDirtyOrReplay(s)) {
                     if (isPastDirty(s)) {
-                        page.dirty(pos - 2); // -1: refers to previous position; -1: pos was already incremented
+                        page.exclude(pos - 2); // -1: refers to previous position; -1: pos was already incremented
                     }
                     if (isReplay(s)) {
                         pos = pos - 1;
@@ -89,11 +88,9 @@ public final class ScalarPageParser implements PageParser {
             } while (isNotEndOfLineAndNotEndOfFileAndNotError(s));
 
             if (isEndOfLine(s)) {
-                page.endLine();
-                page.startLine(pos);
+                page.endLine(pos);
             }
             if (isEndOfFile(s)) {
-                page.finish();
                 return;
             }
             if (isError(s)) {
